@@ -10,13 +10,16 @@ final class CorePerformanceTests: XCTestCase {
             configuration: ComputeConfiguration(workerCount: 4),
             maximumReadCount: 2_000
         )
-        var batch = AssetReadBatch(capacity: 2_000)
 
         let options = XCTMeasureOptions()
         options.iterationCount = 10
         measure(metrics: [XCTClockMetric(), XCTCPUMetric(), XCTMemoryMetric()], options: options) {
             let done = expectation(description: "tick")
             Task {
+                // Ownership is local to the sending task. This XCTest path favors
+                // Swift 6 race safety; the raw benchmark separately measures the
+                // reusable preallocated batch path.
+                var batch = AssetReadBatch(capacity: 2_000)
                 env.assets.fillReadBatch(selectionStride: 10, into: &batch)
                 let output = await computer.compute(batch: batch)
                 let result = env.assets.commit(AssetTransactionPlan(revision: batch.revision, deltas: output.deltas))
