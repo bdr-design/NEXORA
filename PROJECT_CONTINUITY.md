@@ -44,3 +44,6 @@ Verify publication of NXR-0001, then begin the minimal measured core implementat
 - Commit: `e83ceb843548f196c8bd37d64d7c3285bd43b77e`
 - Tree: `5d6fb1068eeb4228429168fcbe9a3811fe24496e`
 - Files: 47
+
+## Chat continuity rule
+`Docs/CHAT_CONTINUITY_PROTOCOL.md` is mandatory. If a session becomes heavy, unstable or ambiguous, stop sensitive changes, checkpoint repository state, and continue only after a new session verifies the authoritative repository context.
