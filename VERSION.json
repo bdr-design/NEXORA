@@ -1,0 +1,11 @@
+{
+  "project": "NEXORA",
+  "version": "0.1.0-dev.1",
+  "build": 1,
+  "update_id": "NXR-0001",
+  "phase": "foundation",
+  "status": "architecture-and-reference-foundation",
+  "date": "2026-09-30",
+  "minimum_scale_acceptance_assets": 20000,
+  "architecture_design_target_assets": 100000
+}
