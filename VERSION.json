@@ -4,9 +4,15 @@
   "update_id": "NXR-R001",
   "development_version": "0.0.1",
   "app_build": null,
-  "status": "non-production-foundation",
+  "status": "scaffold-ci-verified-not-gameplay",
   "full_gameplay_assets_proven": false,
   "device_performance_certified": false,
   "scheduler_implemented": false,
-  "retired_updates": ["NXR-0001", "NXR-0002", "NXR-0003"]
+  "retired_updates": [
+    "NXR-0001",
+    "NXR-0002",
+    "NXR-0003"
+  ],
+  "verified_code_commit": "c45d24e0445219fc0db4df5efd0e920b5e129c16",
+  "ci_run": 36646039605
 }

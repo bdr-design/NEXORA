@@ -13,3 +13,9 @@ found and corrected before remote submission.
 This update is non-production scaffolding. There is no game runtime, save format,
 financial engine, scheduler, renderer, IPA or claimed full-game scale result.
 Historical Git records remain separately recoverable; see Docs/RESET-RECORD.md.
+
+### Verified initial scaffold
+Apple CI run `36646039605` passed Debug/Release/TSan (19 named tests each),
+3 compiler misuse rejections, both iOS library compile gates, and five identity
+smoke scales. Verified code: `c45d24e0445219fc0db4df5efd0e920b5e129c16`.
+No old-source benchmark or acceptance result was reused.

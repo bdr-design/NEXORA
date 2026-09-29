@@ -28,3 +28,14 @@ sensitive game-state integration blocked until the execution gate is satisfied.
 
 For handoff: record exact remote HEAD, CI run, changed files, test failures and
 next safe step. Never infer them from this note when GitHub shows newer changes.
+
+## Verified restart checkpoint
+
+R001 initial scaffold gates passed in Apple CI run `36646039605`.
+Verified code commit: `c45d24e0445219fc0db4df5efd0e920b5e129c16`.
+Verified code tree: `3b3f8aee3e966dac3a330ff2f85b6ec4e2ebc910`.
+Artifact SHA-256: `d801954fec29799915363762163eff1e9f3fc7eff94c8a783b21ebdd981f7a96`.
+The final publication commit only records evidence and this handoff; source,
+tests, compiler checks and CI workflow are unchanged from the verified code.
+The requested active-tree replacement applies to main and foundation/clean-core.
+Verify their exact remote tips before beginning the next session.
