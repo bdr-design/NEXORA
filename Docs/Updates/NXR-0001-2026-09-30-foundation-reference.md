@@ -41,3 +41,6 @@ Implement and benchmark the minimal core in isolated steps: State Kernel, Simula
 - Content tree: `5d6fb1068eeb4228429168fcbe9a3811fe24496e`
 - Verified repository file count: 47
 - Verification source: GitHub recursive tree read after commit.
+
+## Continuity protection added
+NXR-0001 now includes a formal chat/session continuity protocol so implementation cannot silently depend on a long or unstable conversation. The protocol defines warning signs, stop conditions, required handoff contents, new-session startup verification, source-of-truth order and a sensitive-work freeze when context reliability degrades.
