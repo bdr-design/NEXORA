@@ -6,13 +6,14 @@ final class ParallelComputeTests: XCTestCase {
         let env = CoreBenchmarkEnvironment(capacity: 10_000)
         _ = env.seedAssets(count: 10_000)
         let computer = ParallelAssetComputer(
-            configuration: ComputeConfiguration(workerCount: 4, activeStride: 10),
-            maximumEntityCount: 10_000
+            configuration: ComputeConfiguration(workerCount: 4),
+            maximumReadCount: 1_000
         )
 
-        let snapshot = env.assets.snapshot()
-        let first = await computer.compute(snapshot: snapshot).deltas
-        let second = await computer.compute(snapshot: snapshot).deltas
+        var batch = AssetReadBatch(capacity: 1_000)
+        env.assets.fillReadBatch(selectionStride: 10, into: &batch)
+        let first = await computer.compute(batch: batch).deltas
+        let second = await computer.compute(batch: batch).deltas
         XCTAssertEqual(first, second)
         XCTAssertEqual(first.count, 1_000)
         XCTAssertEqual(first.map(\.id), first.map(\.id).sorted())

@@ -3,13 +3,10 @@ import NEXORADiagnostics
 
 public struct ComputeConfiguration: Sendable {
     public let workerCount: Int
-    public let activeStride: Int
 
-    public init(workerCount: Int, activeStride: Int = 10) {
+    public init(workerCount: Int) {
         precondition(workerCount > 0)
-        precondition(activeStride > 0)
         self.workerCount = workerCount
-        self.activeStride = activeStride
     }
 }
 
@@ -22,13 +19,12 @@ private final class WorkerDeltaBuffer: Sendable {
         buffer = Mutex(array)
     }
 
-    func fill(snapshot: AssetReadSnapshot, range: Range<Int>, stride: Int) {
+    func fill(batch: AssetReadBatch, range: Range<Int>) {
         buffer.withLock { output in
             output.removeAll(keepingCapacity: true)
             guard !range.isEmpty else { return }
-            for denseIndex in range where denseIndex % stride == 0 {
-                let value = snapshot.values[denseIndex]
-                output.append(AssetDelta(id: snapshot.ids[denseIndex], valueChange: value * 0.01))
+            for index in range {
+                output.append(AssetDelta(id: batch.ids[index], valueChange: batch.values[index] * 0.01))
             }
         }
     }
@@ -38,8 +34,6 @@ private final class WorkerDeltaBuffer: Sendable {
             output.append(contentsOf: source)
         }
     }
-
-    var count: Int { buffer.withLock { $0.count } }
 }
 
 public final class ParallelAssetComputer: Sendable {
@@ -51,24 +45,27 @@ public final class ParallelAssetComputer: Sendable {
 
     public init(
         configuration: ComputeConfiguration,
-        maximumEntityCount: Int,
+        maximumReadCount: Int,
         traceSink: any TraceSink = NullTraceSink(),
         traceIDs: TraceIDSource = TraceIDSource()
     ) {
+        precondition(maximumReadCount >= 0)
         self.configuration = configuration
-        let perWorker = max(1, (maximumEntityCount / configuration.activeStride) / configuration.workerCount + 16)
+        let perWorker = max(1, maximumReadCount / configuration.workerCount + 16)
         self.workerBuffers = (0..<configuration.workerCount).map { _ in WorkerDeltaBuffer(capacity: perWorker) }
         var merged: [AssetDelta] = []
-        merged.reserveCapacity(maximumEntityCount / configuration.activeStride + configuration.workerCount)
+        merged.reserveCapacity(maximumReadCount + configuration.workerCount)
         self.mergedBuffer = Mutex(merged)
         self.traceSink = traceSink
         self.traceIDs = traceIDs
     }
 
-    public func compute(snapshot: AssetReadSnapshot) async -> AssetComputeOutput {
+    public func compute(batch: AssetReadBatch) async -> AssetComputeOutput {
         let computeStart = MonotonicClock.nowNanoseconds()
-        let total = snapshot.count
-        guard total > 0 else { return AssetComputeOutput(deltas: [], computeNanoseconds: 0, mergeNanoseconds: 0, workerCount: 0) }
+        let total = batch.count
+        guard total > 0 else {
+            return AssetComputeOutput(deltas: [], computeNanoseconds: 0, mergeNanoseconds: 0, workerCount: 0)
+        }
         let workers = min(configuration.workerCount, total)
         let chunkSize = (total + workers - 1) / workers
 
@@ -77,9 +74,8 @@ public final class ParallelAssetComputer: Sendable {
                 let start = workerIndex * chunkSize
                 let end = min(start + chunkSize, total)
                 let worker = workerBuffers[workerIndex]
-                let stride = configuration.activeStride
                 group.addTask {
-                    worker.fill(snapshot: snapshot, range: start..<end, stride: stride)
+                    worker.fill(batch: batch, range: start..<end)
                     return workerIndex
                 }
             }
@@ -93,7 +89,7 @@ public final class ParallelAssetComputer: Sendable {
             startedNanoseconds: computeStart,
             durationNanoseconds: computeEnd &- computeStart,
             workCount: UInt32(clamping: total),
-            revision: snapshot.revision
+            revision: batch.revision
         ))
 
         let mergeStart = MonotonicClock.nowNanoseconds()
@@ -112,8 +108,9 @@ public final class ParallelAssetComputer: Sendable {
             startedNanoseconds: mergeStart,
             durationNanoseconds: mergeEnd &- mergeStart,
             workCount: UInt32(clamping: merged.count),
-            revision: snapshot.revision
+            revision: batch.revision
         ))
+
         return AssetComputeOutput(
             deltas: merged,
             computeNanoseconds: computeEnd &- computeStart,

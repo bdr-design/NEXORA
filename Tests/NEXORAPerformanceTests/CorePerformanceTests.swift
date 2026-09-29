@@ -7,20 +7,19 @@ final class CorePerformanceTests: XCTestCase {
         let env = CoreBenchmarkEnvironment(capacity: 20_000)
         _ = env.seedAssets(count: 20_000)
         let computer = ParallelAssetComputer(
-            configuration: ComputeConfiguration(workerCount: 4, activeStride: 10),
-            maximumEntityCount: 20_000
+            configuration: ComputeConfiguration(workerCount: 4),
+            maximumReadCount: 2_000
         )
+        var batch = AssetReadBatch(capacity: 2_000)
 
         let options = XCTMeasureOptions()
         options.iterationCount = 10
         measure(metrics: [XCTClockMetric(), XCTCPUMetric(), XCTMemoryMetric()], options: options) {
             let done = expectation(description: "tick")
             Task {
-                var snapshot: AssetReadSnapshot? = env.assets.snapshot()
-                let revision = snapshot!.revision
-                let output = await computer.compute(snapshot: snapshot!)
-                snapshot = nil
-                let result = env.assets.commit(AssetTransactionPlan(revision: revision, deltas: output.deltas))
+                env.assets.fillReadBatch(selectionStride: 10, into: &batch)
+                let output = await computer.compute(batch: batch)
+                let result = env.assets.commit(AssetTransactionPlan(revision: batch.revision, deltas: output.deltas))
                 guard case .committed = result else {
                     XCTFail("Commit failed: \(result)")
                     done.fulfill()

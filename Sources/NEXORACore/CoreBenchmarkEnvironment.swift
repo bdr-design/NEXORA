@@ -1,14 +1,19 @@
 import NEXORADiagnostics
 
-/// Test/benchmark composition helper only. This is not the production cross-domain transaction coordinator.
+/// Test/benchmark composition helper only. This is not a gameplay environment.
 public final class CoreBenchmarkEnvironment: Sendable {
+    public let gate: TransactionGate
+    public let coordinator: TransactionCoordinator
     public let registry: EntityRegistry
     public let assets: AssetDomain
 
     public init(capacity: Int, traceSink: any TraceSink = NullTraceSink()) {
         let ids = TraceIDSource()
+        let gate = TransactionGate()
+        self.gate = gate
+        self.coordinator = TransactionCoordinator(gate: gate)
         self.registry = EntityRegistry(capacity: capacity, traceSink: traceSink, traceIDs: ids)
-        self.assets = AssetDomain(capacity: capacity, traceSink: traceSink, traceIDs: ids)
+        self.assets = AssetDomain(capacity: capacity, gate: gate, traceSink: traceSink, traceIDs: ids)
     }
 
     public func seedAssets(count: Int) -> [EntityID] {

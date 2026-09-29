@@ -92,14 +92,22 @@ public struct PackedAssetStorage: Sendable {
         values[dense] += delta.valueChange
     }
 
-    func snapshot(revision: UInt64) -> AssetReadSnapshot {
-        AssetReadSnapshot(
-            revision: revision,
-            ids: denseIDs,
-            values: values,
-            statuses: statuses,
-            nextEventTimes: nextEventTimes
-        )
+    func fillReadBatch(revision: UInt64, selectionStride: Int, into batch: inout AssetReadBatch) {
+        precondition(selectionStride > 0)
+        batch.reset(revision: revision)
+        guard !denseIDs.isEmpty else { return }
+
+        var denseIndex = 0
+        while denseIndex < denseIDs.count {
+            batch.append(
+                id: denseIDs[denseIndex],
+                value: values[denseIndex],
+                status: statuses[denseIndex],
+                nextEventTime: nextEventTimes[denseIndex]
+            )
+            denseIndex += selectionStride
+        }
+        assert(batch.invariantHolds())
     }
 
     func value(for id: EntityID) -> Double? {
