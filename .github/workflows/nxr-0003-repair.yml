@@ -1,0 +1,33 @@
+name: NXR-0003 Contract Repair
+
+on:
+  push:
+    branches: ["fix/nxr-0003-contract-repair-20260930"]
+
+permissions:
+  contents: read
+
+jobs:
+  review-source:
+    runs-on: macos-15
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Archive immutable review inputs
+        run: |
+          mkdir -p review-inputs
+          git archive --format=zip 8b8c73bb70777ffe62931c5ef7b4d14ee49726a4 -o review-inputs/nxr-0001.zip
+          git archive --format=zip 2012cfd45f5187ace7641d88d3c973763554f0a9 -o review-inputs/nxr-0002.zip
+          git archive --format=zip 9913d741a9b7aeec1e5a7f3b7bcfcc3cb226519d -o review-inputs/nxr-0003-before.zip
+          git archive --format=zip 35736cf41abff55fd5323559786ae4908e667f88 -o review-inputs/nxr-0003-adversarial.zip
+          git rev-list --max-parents=0 HEAD > review-inputs/root-commits.txt
+          swift --version > review-inputs/toolchain.txt
+          shasum -a 256 review-inputs/*.zip > review-inputs/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nxr-0003-immutable-review-inputs
+          path: review-inputs/
+          if-no-files-found: error
