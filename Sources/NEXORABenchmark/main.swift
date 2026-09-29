@@ -18,16 +18,19 @@ struct Percentiles: Codable {
 
 struct BenchmarkRecord: Codable {
     let size: Int
+    let selectedPerTick: Int
     let workers: Int
     let iterations: Int
     let warmup: Int
     let deltasPerTick: Int
+    let gather: Percentiles
     let compute: Percentiles
     let merge: Percentiles
     let commit: Percentiles
     let endToEnd: Percentiles
     let rssBeforeBytes: UInt64?
     let rssAfterBytes: UInt64?
+    let gatherRawNanoseconds: [UInt64]
     let computeRawNanoseconds: [UInt64]
     let mergeRawNanoseconds: [UInt64]
     let commitRawNanoseconds: [UInt64]
@@ -80,6 +83,7 @@ struct Arguments {
     var iterations = 500
     var warmup = 20
     var workers = max(1, min(8, ProcessInfo.processInfo.activeProcessorCount))
+    var selectionStride = 10
     var diagnosticsEnabled = true
     var jsonOutputPath: String?
 
@@ -97,6 +101,8 @@ struct Arguments {
                 if let value = iterator.next(), let n = Int(value), n >= 0 { warmup = n }
             case "--workers":
                 if let value = iterator.next(), let n = Int(value), n > 0 { workers = n }
+            case "--selection-stride":
+                if let value = iterator.next(), let n = Int(value), n > 0 { selectionStride = n }
             case "--diagnostics":
                 if let value = iterator.next() { diagnosticsEnabled = value.lowercased() != "off" }
             case "--json":
@@ -113,7 +119,7 @@ struct NEXORABenchmarkMain {
     static func main() async throws {
         let args = Arguments()
         print("NEXORA Core Benchmark")
-        print("workers=\(args.workers) iterations=\(args.iterations) warmup=\(args.warmup) diagnostics=\(args.diagnosticsEnabled ? "on" : "off")")
+        print("workers=\(args.workers) selectionStride=\(args.selectionStride) iterations=\(args.iterations) warmup=\(args.warmup) diagnostics=\(args.diagnosticsEnabled ? "on" : "off")")
         var records: [BenchmarkRecord] = []
         records.reserveCapacity(args.sizes.count)
 
@@ -122,61 +128,71 @@ struct NEXORABenchmarkMain {
             let sink: any TraceSink = args.diagnosticsEnabled ? ring : NullTraceSink()
             let env = CoreBenchmarkEnvironment(capacity: size, traceSink: sink)
             _ = env.seedAssets(count: size)
+
+            let selectedCapacity = max(1, (size + args.selectionStride - 1) / args.selectionStride)
+            var batch = AssetReadBatch(capacity: selectedCapacity)
             let computer = ParallelAssetComputer(
-                configuration: ComputeConfiguration(workerCount: args.workers, activeStride: 10),
-                maximumEntityCount: size,
+                configuration: ComputeConfiguration(workerCount: args.workers),
+                maximumReadCount: selectedCapacity,
                 traceSink: sink
             )
 
             for _ in 0..<args.warmup {
-                var snapshot: AssetReadSnapshot? = env.assets.snapshot()
-                let revision = snapshot!.revision
-                let output = await computer.compute(snapshot: snapshot!)
-                snapshot = nil
-                _ = env.assets.commit(AssetTransactionPlan(revision: revision, deltas: output.deltas))
+                env.assets.fillReadBatch(selectionStride: args.selectionStride, into: &batch)
+                let output = await computer.compute(batch: batch)
+                _ = env.assets.commit(AssetTransactionPlan(revision: batch.revision, deltas: output.deltas))
             }
 
+            var gatherSamples: [UInt64] = []
             var computeSamples: [UInt64] = []
             var mergeSamples: [UInt64] = []
             var commitSamples: [UInt64] = []
             var endToEndSamples: [UInt64] = []
+            gatherSamples.reserveCapacity(args.iterations)
             computeSamples.reserveCapacity(args.iterations)
             mergeSamples.reserveCapacity(args.iterations)
             commitSamples.reserveCapacity(args.iterations)
             endToEndSamples.reserveCapacity(args.iterations)
-            var generated = 0
 
+            var generated = 0
+            var selected = 0
             let rssBefore = residentMemoryBytes()
+
             for _ in 0..<args.iterations {
                 let iterationStart = MonotonicClock.nowNanoseconds()
-                var snapshot: AssetReadSnapshot? = env.assets.snapshot()
-                let revision = snapshot!.revision
 
-                let output = await computer.compute(snapshot: snapshot!)
+                let gatherStart = MonotonicClock.nowNanoseconds()
+                env.assets.fillReadBatch(selectionStride: args.selectionStride, into: &batch)
+                let gatherEnd = MonotonicClock.nowNanoseconds()
+                selected = batch.count
+
+                let output = await computer.compute(batch: batch)
                 generated = output.deltas.count
-                computeSamples.append(output.computeNanoseconds)
-                mergeSamples.append(output.mergeNanoseconds)
-
-                snapshot = nil
 
                 let commitStart = MonotonicClock.nowNanoseconds()
-                let result = env.assets.commit(AssetTransactionPlan(revision: revision, deltas: output.deltas))
+                let result = env.assets.commit(AssetTransactionPlan(revision: batch.revision, deltas: output.deltas))
                 let commitEnd = MonotonicClock.nowNanoseconds()
                 guard case .committed = result else {
                     fatalError("Benchmark commit failed: \(result)")
                 }
                 let iterationEnd = MonotonicClock.nowNanoseconds()
 
+                gatherSamples.append(gatherEnd &- gatherStart)
+                computeSamples.append(output.computeNanoseconds)
+                mergeSamples.append(output.mergeNanoseconds)
                 commitSamples.append(commitEnd &- commitStart)
                 endToEndSamples.append(iterationEnd &- iterationStart)
             }
             let rssAfter = residentMemoryBytes()
 
+            let g = percentiles(gatherSamples)
             let c = percentiles(computeSamples)
             let m = percentiles(mergeSamples)
             let k = percentiles(commitSamples)
             let e = percentiles(endToEndSamples)
-            print("\nsize=\(size) deltas/tick=\(generated)")
+
+            print("\nsize=\(size) selected/tick=\(selected) deltas/tick=\(generated)")
+            print(String(format: "gather   p50=%7.3f p95=%7.3f p99=%7.3f max=%7.3f ms", g.p50, g.p95, g.p99, g.max))
             print(String(format: "compute  p50=%7.3f p95=%7.3f p99=%7.3f max=%7.3f ms", c.p50, c.p95, c.p99, c.max))
             print(String(format: "merge    p50=%7.3f p95=%7.3f p99=%7.3f max=%7.3f ms", m.p50, m.p95, m.p99, m.max))
             print(String(format: "commit   p50=%7.3f p95=%7.3f p99=%7.3f max=%7.3f ms", k.p50, k.p95, k.p99, k.max))
@@ -188,16 +204,19 @@ struct NEXORABenchmarkMain {
 
             records.append(BenchmarkRecord(
                 size: size,
+                selectedPerTick: selected,
                 workers: args.workers,
                 iterations: args.iterations,
                 warmup: args.warmup,
                 deltasPerTick: generated,
+                gather: g,
                 compute: c,
                 merge: m,
                 commit: k,
                 endToEnd: e,
                 rssBeforeBytes: rssBefore,
                 rssAfterBytes: rssAfter,
+                gatherRawNanoseconds: gatherSamples,
                 computeRawNanoseconds: computeSamples,
                 mergeRawNanoseconds: mergeSamples,
                 commitRawNanoseconds: commitSamples,
