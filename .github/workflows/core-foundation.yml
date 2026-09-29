@@ -1,0 +1,25 @@
+name: NEXORA Core Foundation
+
+on:
+  push:
+    branches: ["foundation/clean-core"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  core-tests:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: swift --version
+      - name: Release tests (warnings are errors)
+        run: swift test -c release -Xswiftc -warnings-as-errors
+      - name: 100k core benchmark
+        run: swift run -c release nexora-benchmark --sizes 1000,5000,20000,50000,100000 --warmup 20 --iterations 500 --json benchmark-results.json
+      - name: Upload benchmark evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: nxr-0002-core-benchmark
+          path: benchmark-results.json
