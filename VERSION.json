@@ -1,13 +1,14 @@
 {
   "project": "NEXORA",
-  "version": "0.1.0-dev.2",
-  "build": 2,
-  "update_id": "NXR-0002",
-  "phase": "core-foundation-benchmark",
-  "status": "implemented-macos-ci-verified-pre-iphone",
+  "version": "0.1.0-dev.3",
+  "build": 3,
+  "update_id": "NXR-0003",
+  "phase": "core-hardening",
+  "status": "implemented-ci-verified-pre-scheduler",
   "date": "2026-09-30",
   "minimum_scale_acceptance_assets": 20000,
   "architecture_design_target_assets": 100000,
-  "source_commit": "2012cfd45f5187ace7641d88d3c973763554f0a9",
-  "ci_run": 36638640053
+  "verified_implementation_commit": "1b0bfe7ce49f70a11d5ccb5c6aba731352902b43",
+  "verified_implementation_tree": "7e0ad5d3524e09f08908b8669c31d8fd1217c381",
+  "ci_run": 36641949755
 }

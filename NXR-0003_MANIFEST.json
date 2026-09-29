@@ -1,0 +1,46 @@
+{
+  "project": "NEXORA",
+  "update_id": "NXR-0003",
+  "version": "0.1.0-dev.3",
+  "build": 3,
+  "date": "2026-09-30",
+  "branch": "foundation/clean-core",
+  "implementation_commit": "1b0bfe7ce49f70a11d5ccb5c6aba731352902b43",
+  "implementation_tree": "7e0ad5d3524e09f08908b8669c31d8fd1217c381",
+  "ci": {
+    "run_id": 36641949755,
+    "conclusion": "success",
+    "release_tests": "14/14 PASS",
+    "thread_sanitizer": "14/14 PASS",
+    "ios_release_compile": "PASS",
+    "artifact_id": 11066353467,
+    "artifact_sha256": "b88aa31bf39ee2268d7fae79fe6dea34fd8065d4512abf8b7ca480a39a07c1d2"
+  },
+  "benchmark_100k": {
+    "stored_entities": 100000,
+    "selected_per_tick": 10000,
+    "iterations": 500,
+    "gather_p99_ms": 0.291,
+    "compute_p99_ms": 0.129,
+    "merge_p99_ms": 0.022,
+    "commit_p99_ms": 0.234,
+    "end_to_end_p99_ms": 0.661,
+    "end_to_end_max_ms": 0.930,
+    "rss_before_mib": 14.91,
+    "rss_after_mib": 14.91
+  },
+  "source_git_blob_sha": {
+    ".github/workflows/core-foundation.yml": "966814198ca43d4a7454b2cf41fb7f4b7dce23c2",
+    "Package.swift": "2aee64ad20dfdadfeaa042b59cbc3d4270d22c46",
+    "Sources/NEXORABenchmark/main.swift": "1ea551d34d81b5edcf9fd75e5a7d4e5b91f67880",
+    "Sources/NEXORACore/AssetDomain.swift": "31a71ce3e3fd084509a110d3c2b96717ec320d63",
+    "Sources/NEXORACore/AssetTypes.swift": "0fe096f564f948d836924dbd8c668531fd689e77",
+    "Sources/NEXORACore/CoreBenchmarkEnvironment.swift": "e6dc8e0fac06ddde8dd6c9fec91ae990fc508c09",
+    "Sources/NEXORACore/PackedAssetStorage.swift": "79eca3422b0987323d2776e9613120d64f11d102",
+    "Sources/NEXORACore/ParallelAssetComputer.swift": "13c40faddcaa0c22e5ffe56d69308de7a69e013c",
+    "Sources/NEXORACore/TransactionCoordinator.swift": "3ea58a7171ac0067e9f1695426c7bdfe830b4162",
+    "Sources/NEXORADiagnostics/TraceTypes.swift": "1a5303e6b0751af1f6ceae72b3e2399a3d5c0a04",
+    "Tests/NEXORACoreTests/TransactionCoordinatorTests.swift": "a17a4d6ad7dfe4343d36acf99ebf2b624ca67564",
+    "Tests/NEXORAPerformanceTests/CorePerformanceTests.swift": "14117d28fc90b587e08b8e77e2fd89e2c788c2b0"
+  }
+}
