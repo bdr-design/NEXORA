@@ -1,0 +1,16 @@
+name: NXR-0003 Adversarial Audit
+
+on:
+  push:
+    branches: ["audit/nxr-0003-20260930"]
+
+jobs:
+  lifecycle-audit:
+    runs-on: macos-15
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Swift
+        run: swift --version
+      - name: Adversarial lifecycle tests
+        run: swift test -c release -Xswiftc -warnings-as-errors --filter NXR0003AdversarialLifecycleTests
