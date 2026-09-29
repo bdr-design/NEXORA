@@ -1,20 +1,12 @@
 {
   "project": "NEXORA",
-  "version": "0.1.0-dev.3",
-  "build": 3,
-  "update_id": "NXR-0003",
-  "phase": "core-hardening",
-  "status": "reopened-adversarial-correctness-blockers",
-  "date": "2026-09-30",
-  "minimum_scale_acceptance_assets": 20000,
-  "architecture_design_target_assets": 100000,
-  "verified_implementation_commit": "1b0bfe7ce49f70a11d5ccb5c6aba731352902b43",
-  "verified_implementation_tree": "7e0ad5d3524e09f08908b8669c31d8fd1217c381",
-  "ci_run": 36641949755,
-  "scheduler_authorized": false,
-  "audit_branch": "audit/nxr-0003-20260930",
-  "audit_runs": [
-    36642880284,
-    36643024182
-  ]
+  "lineage": "restart-20260930",
+  "update_id": "NXR-R001",
+  "development_version": "0.0.1",
+  "app_build": null,
+  "status": "non-production-foundation",
+  "full_gameplay_assets_proven": false,
+  "device_performance_certified": false,
+  "scheduler_implemented": false,
+  "retired_updates": ["NXR-0001", "NXR-0002", "NXR-0003"]
 }

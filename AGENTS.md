@@ -1,44 +1,43 @@
-# NEXORA — Mandatory Agent Operating Contract
+# NEXORA execution contract
 
-This file is binding for any coding/research agent working on NEXORA.
+The owner's explicit current instructions take precedence over older project
+notes. On 2026-09-30 the owner authorized a radical deletion and fresh start.
 
-## Capability / effort gate
-Sensitive implementation may proceed only when the active model/agent is operating at the project's required very-high reasoning/effort level or an equivalently verified high-capability mode. If that cannot be verified, or context quality degrades, STOP sensitive code changes and continue only safe reading, analysis, documentation, or handoff preparation.
+## Effort and continuity
+Sensitive implementation requires the owner's very-high reasoning/effort gate.
+Never claim a model setting that is not exposed or verifiable. If the gate cannot
+be verified, stop sensitive work and limit work to safe inspection, isolated
+non-production scaffolding, tests, documentation and handoff. No release may be
+approved on an invented setting. Do not weaken this rule to pass a gate.
 
-No agent may claim an effort/capability setting it cannot actually verify.
+Keep work bounded. At any loss of source identity or context reliability, stop
+sensitive changes and record the exact commit, files, test commands and results,
+known failures, and next safe action in PROJECT_CONTINUITY.md. Do not promise
+background continuation. Chat is not durable project storage.
 
-## Clean-room wall
-The previous Global Holdings game is an idea/feature reference only. Forbidden technical reuse includes code, engines, data models, schemas, persistence layout, transaction logic, route algorithms, runtime files, performance fixes, WebApp structure, or technical assumptions derived from legacy behavior.
+## Clean start
+Do not import code, schemas, runtime files, or patches from Global Holdings,
+retired NEXORA NXR-0001/2/3, or the abandoned repair workspace. Product ideas and
+user requirements survive; technical implementations do not. Public language and
+platform documentation may inform newly written code.
 
-## No patch-first work
-Before modifying a sensitive path, trace and document: functional owner, callers, callees, state reads, state writes, side effects, transaction/commit boundaries, persistence effects, rendering/UI effects, dependent engines, rollback/error path, and diagnostic evidence proving root cause.
+## Work discipline
+Before a change: identify the state owner, public entry points, caller/callee
+path, side effects, failure behavior, dependencies and test evidence. Use primary
+sources for uncertain platform facts. Do not broaden a fix into unrelated work.
 
-## Research-before-design
-For architecture, performance, concurrency, persistence, Metal, thermal behavior, Swift performance, or other high-impact decisions, consult current authoritative sources first and record the engineering conclusion.
+Verify public misuse, exceptional inputs, concurrency and lifecycle, not just the
+happy path. Run both Debug and Release. Compiler and sanitizer success do not
+prove logical correctness. Do not disable checks to obtain a green result.
 
-## State ownership wall
-- Every mutable domain has one declared owner.
-- No engine writes directly into another engine's mutable state.
-- Cross-domain change uses commands/events/contracts.
-- Kernel coordinates state; it does not contain business logic.
-- Visual interpolation never mutates simulation truth.
+## Performance and evidence
+Keep synchronous work off the future UI critical path. No task, actor, or lock per
+entity; no normal-save full-world JSON; no visual-motion writes to economic truth.
+Measure before selecting an optimization or adding parallel shared workspaces.
+Never equate record count, element stride or a smoke test with complete gameplay,
+physical memory, zero allocations, frame stability, or thermal certification.
 
-## Main-thread wall
-No synchronous disk I/O, full-world scans, large serialization/allocation bursts, route planning, business batches, save checkpoints, or mass entity mutation loops on the main/render-critical path.
-
-## Performance proof wall
-Performance-motivated changes require before/after measurements under the same scenario, including p50/p95/p99/max where meaningful, main-thread impact, memory/allocation impact, persistence/I/O impact, and thermal observation where applicable.
-
-## Diagnostic completeness gate
-A core engine is incomplete unless bounded diagnostics can answer what ran, who triggered it, timing by stage, executor/thread, state reads/writes, work count, failure, and causal/root chain.
-
-## Scale gates
-`1k -> 5k -> 20k -> 50k -> 100k`
-
-20k full-feature assets is the minimum acceptance gate. 100k is the architecture design target.
-
-## Conversation/context continuity
-When a working conversation becomes heavy or unstable: stop sensitive edits, preserve work, update `PROJECT_CONTINUITY.md`, update the daily log, record branch/commit/files/tests/measurements/decisions/risks/next action, then continue in a new session.
-
-## Documentation is part of the product
-Every material change updates the relevant contracts and history records.
+Document each update, including failures and limits. A new domain is not complete
+without diagnostic evidence and end-to-end acceptance. No force push, destructive
+history rewrite, repository deletion, or change to another repository is implied
+by this restart. Preserve an explicit recovery point before replacing a tree.

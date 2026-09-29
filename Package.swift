@@ -3,38 +3,17 @@ import PackageDescription
 
 let package = Package(
     name: "NEXORA",
-    platforms: [
-        .iOS(.v18),
-        .macOS(.v15)
-    ],
+    platforms: [.iOS(.v18), .macOS(.v15)],
     products: [
-        .library(name: "NEXORADiagnostics", targets: ["NEXORADiagnostics"]),
-        .library(name: "NEXORAAppleDiagnostics", targets: ["NEXORAAppleDiagnostics"]),
-        .library(name: "NEXORACore", targets: ["NEXORACore"]),
-        .executable(name: "nexora-benchmark", targets: ["NEXORABenchmark"])
+        .library(name: "NexoraIdentity", targets: ["NexoraIdentity"]),
+        .library(name: "NexoraObservability", targets: ["NexoraObservability"]),
+        .executable(name: "nexora-check", targets: ["NexoraCheck"])
     ],
     targets: [
-        .target(name: "NEXORADiagnostics"),
-        .target(
-            name: "NEXORAAppleDiagnostics",
-            dependencies: ["NEXORADiagnostics"]
-        ),
-        .target(
-            name: "NEXORACore",
-            dependencies: ["NEXORADiagnostics"]
-        ),
-        .executableTarget(
-            name: "NEXORABenchmark",
-            dependencies: ["NEXORACore", "NEXORADiagnostics"]
-        ),
-        .testTarget(
-            name: "NEXORACoreTests",
-            dependencies: ["NEXORACore", "NEXORADiagnostics"]
-        ),
-        .testTarget(
-            name: "NEXORAPerformanceTests",
-            dependencies: ["NEXORACore", "NEXORADiagnostics"]
-        )
+        .target(name: "NexoraIdentity"),
+        .target(name: "NexoraObservability"),
+        .executableTarget(name: "NexoraCheck", dependencies: ["NexoraIdentity", "NexoraObservability"]),
+        .testTarget(name: "NexoraFoundationTests", dependencies: ["NexoraIdentity", "NexoraObservability"])
     ],
     swiftLanguageModes: [.v6]
 )
