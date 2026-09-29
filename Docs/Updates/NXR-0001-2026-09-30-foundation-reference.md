@@ -35,3 +35,9 @@ No gameplay engine/runtime performance claim is made by this update.
 
 ## Next authorized milestone
 Implement and benchmark the minimal core in isolated steps: State Kernel, Simulation Clock, Scheduler, Job System, Persistence, Diagnostics, Performance/Thermal Governor.
+
+## Verified foundation snapshot
+- Content commit: `e83ceb843548f196c8bd37d64d7c3285bd43b77e`
+- Content tree: `5d6fb1068eeb4228429168fcbe9a3811fe24496e`
+- Verified repository file count: 47
+- Verification source: GitHub recursive tree read after commit.

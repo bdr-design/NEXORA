@@ -39,3 +39,8 @@ Every meaningful change updates its `NXR-####` record and the current `Docs/Dail
 
 ## Next safe action
 Verify publication of NXR-0001, then begin the minimal measured core implementation.
+
+## Verified NXR-0001 content snapshot
+- Commit: `e83ceb843548f196c8bd37d64d7c3285bd43b77e`
+- Tree: `5d6fb1068eeb4228429168fcbe9a3811fe24496e`
+- Files: 47
