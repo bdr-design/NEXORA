@@ -1,4 +1,5 @@
 import Synchronization
+import NEXORADiagnostics
 
 /// Serializes short authoritative mutation windows across domains that participate
 /// in one coordinated in-memory transaction.
@@ -60,33 +61,88 @@ public struct TransactionStep: Sendable {
 /// Durable crash atomicity is NOT claimed here; that belongs to Persistence/WAL.
 public final class TransactionCoordinator: Sendable {
     public let gate: TransactionGate
+    private let traceSink: any TraceSink
+    private let traceIDs: TraceIDSource
 
-    public init(gate: TransactionGate = TransactionGate()) {
+    public init(
+        gate: TransactionGate = TransactionGate(),
+        traceSink: any TraceSink = NullTraceSink(),
+        traceIDs: TraceIDSource = TraceIDSource()
+    ) {
         self.gate = gate
+        self.traceSink = traceSink
+        self.traceIDs = traceIDs
     }
 
     public func commit(_ steps: [TransactionStep]) -> CoordinatedTransactionResult {
-        gate.withPermit {
+        let rootTraceID = traceIDs.next()
+        let prepareStart = MonotonicClock.nowNanoseconds()
+
+        let measured = gate.withPermit { () -> (CoordinatedTransactionResult, UInt64, UInt64, UInt64) in
             for index in steps.indices {
                 guard steps[index].gate === gate else {
-                    return .rejectedGateMismatch(stepIndex: index)
+                    let now = MonotonicClock.nowNanoseconds()
+                    return (.rejectedGateMismatch(stepIndex: index), now &- prepareStart, 0, now)
                 }
                 for prior in 0..<index where steps[prior].participantID == steps[index].participantID {
-                    return .rejectedDuplicateParticipant(stepIndex: index)
+                    let now = MonotonicClock.nowNanoseconds()
+                    return (.rejectedDuplicateParticipant(stepIndex: index), now &- prepareStart, 0, now)
                 }
             }
 
             for (index, step) in steps.enumerated() {
-                let result = step.validate()
-                guard result == .ready else {
-                    return .rejected(stepIndex: index, reason: result)
+                let validation = step.validate()
+                guard validation == .ready else {
+                    let now = MonotonicClock.nowNanoseconds()
+                    return (.rejected(stepIndex: index, reason: validation), now &- prepareStart, 0, now)
                 }
             }
 
+            let commitStart = MonotonicClock.nowNanoseconds()
             for step in steps {
                 step.applyPrepared()
             }
-            return .committed(stepCount: steps.count)
+            let commitEnd = MonotonicClock.nowNanoseconds()
+            return (.committed(stepCount: steps.count), commitStart &- prepareStart, commitEnd &- commitStart, commitStart)
+        }
+
+        let result = measured.0
+        let traceResult = Self.traceResult(for: result)
+        traceSink.record(TraceRecord(
+            traceID: rootTraceID,
+            domain: .transactionCoordinator,
+            operation: .transactionPrepare,
+            startedNanoseconds: prepareStart,
+            durationNanoseconds: measured.1,
+            workCount: UInt32(clamping: steps.count),
+            result: traceResult
+        ))
+
+        if measured.2 > 0 {
+            traceSink.record(TraceRecord(
+                traceID: traceIDs.next(),
+                parentTraceID: rootTraceID,
+                domain: .transactionCoordinator,
+                operation: .transactionCommit,
+                startedNanoseconds: measured.3,
+                durationNanoseconds: measured.2,
+                workCount: UInt32(clamping: steps.count),
+                result: traceResult
+            ))
+        }
+        return result
+    }
+
+    private static func traceResult(for result: CoordinatedTransactionResult) -> TraceResultCode {
+        switch result {
+        case .committed:
+            return .success
+        case .rejectedGateMismatch:
+            return .rejectedGate
+        case .rejectedDuplicateParticipant:
+            return .rejectedParticipant
+        case .rejected:
+            return .rejectedTransactionStep
         }
     }
 }

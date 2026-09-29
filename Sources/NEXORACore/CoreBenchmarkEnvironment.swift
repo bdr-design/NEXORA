@@ -11,7 +11,7 @@ public final class CoreBenchmarkEnvironment: Sendable {
         let ids = TraceIDSource()
         let gate = TransactionGate()
         self.gate = gate
-        self.coordinator = TransactionCoordinator(gate: gate)
+        self.coordinator = TransactionCoordinator(gate: gate, traceSink: traceSink, traceIDs: ids)
         self.registry = EntityRegistry(capacity: capacity, traceSink: traceSink, traceIDs: ids)
         self.assets = AssetDomain(capacity: capacity, gate: gate, traceSink: traceSink, traceIDs: ids)
     }

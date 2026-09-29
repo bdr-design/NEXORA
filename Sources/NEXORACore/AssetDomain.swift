@@ -68,6 +68,7 @@ public final class AssetDomain: Sendable {
     /// Gathers only selected rows into caller-owned detached buffers.
     /// This removes the old full-Array snapshot aliasing/CoW boundary.
     public func fillReadBatch(selectionStride: Int, into batch: inout AssetReadBatch) {
+        let start = MonotonicClock.nowNanoseconds()
         gate.withPermit {
             state.withLock { state in
                 state.storage.fillReadBatch(
@@ -77,6 +78,16 @@ public final class AssetDomain: Sendable {
                 )
             }
         }
+        let end = MonotonicClock.nowNanoseconds()
+        traceSink.record(TraceRecord(
+            traceID: traceIDs.next(),
+            domain: .assetDomain,
+            operation: .readGather,
+            startedNanoseconds: start,
+            durationNanoseconds: end &- start,
+            workCount: UInt32(clamping: batch.count),
+            revision: batch.revision
+        ))
     }
 
     public func commit(_ plan: AssetTransactionPlan) -> AssetCommitResult {

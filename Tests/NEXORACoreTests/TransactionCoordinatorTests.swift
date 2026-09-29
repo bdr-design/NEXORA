@@ -1,4 +1,5 @@
 import XCTest
+import NEXORADiagnostics
 @testable import NEXORACore
 
 final class TransactionCoordinatorTests: XCTestCase {
@@ -75,5 +76,29 @@ final class TransactionCoordinatorTests: XCTestCase {
         XCTAssertEqual(coordinator.commit([step, step]), .rejectedDuplicateParticipant(stepIndex: 1))
         XCTAssertEqual(domain.value(for: id), 10)
         XCTAssertEqual(domain.revision, revision)
+    }
+
+    func testCoordinatorEmitsPrepareAndCommitTrace() {
+        let ring = TraceRingBuffer(capacity: 16)
+        let gate = TransactionGate()
+        let coordinator = TransactionCoordinator(gate: gate, traceSink: ring)
+        let domain = AssetDomain(capacity: 1, gate: gate)
+        let id = EntityID(slot: 0, generation: 0)
+        _ = domain.attach(id: id, initial: AssetInitialState(value: 10))
+
+        let result = coordinator.commit([
+            domain.transactionStep(for: AssetTransactionPlan(
+                revision: domain.revision,
+                deltas: [AssetDelta(id: id, valueChange: 1)]
+            ))
+        ])
+        XCTAssertEqual(result, .committed(stepCount: 1))
+
+        let records = ring.snapshot()
+        XCTAssertEqual(records.count, 2)
+        XCTAssertEqual(records[0].domain, .transactionCoordinator)
+        XCTAssertEqual(records[0].operation, .transactionPrepare)
+        XCTAssertEqual(records[1].operation, .transactionCommit)
+        XCTAssertEqual(records[1].parentTraceID, records[0].traceID)
     }
 }
