@@ -9,17 +9,29 @@ on:
 jobs:
   core-tests:
     runs-on: macos-15
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+
       - name: Toolchain
-        run: swift --version
+        run: |
+          swift --version
+          xcodebuild -version
+
       - name: Release tests (warnings are errors)
         run: swift test -c release -Xswiftc -warnings-as-errors
+
+      - name: Thread Sanitizer tests
+        run: swift test --sanitize=thread -Xswiftc -warnings-as-errors
+
+      - name: iOS compile gate
+        run: xcodebuild -scheme NEXORACore -destination 'generic/platform=iOS' -configuration Release CODE_SIGNING_ALLOWED=NO build
+
       - name: 100k core benchmark
         run: swift run -c release nexora-benchmark --sizes 1000,5000,20000,50000,100000 --warmup 20 --iterations 500 --json benchmark-results.json
+
       - name: Upload benchmark evidence
         uses: actions/upload-artifact@v4
         with:
-          name: nxr-0002-core-benchmark
+          name: nxr-0003-core-hardening-benchmark
           path: benchmark-results.json
