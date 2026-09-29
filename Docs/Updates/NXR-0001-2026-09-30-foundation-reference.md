@@ -44,3 +44,6 @@ Implement and benchmark the minimal core in isolated steps: State Kernel, Simula
 
 ## Continuity protection added
 NXR-0001 now includes a formal chat/session continuity protocol so implementation cannot silently depend on a long or unstable conversation. The protocol defines warning signs, stop conditions, required handoff contents, new-session startup verification, source-of-truth order and a sensitive-work freeze when context reliability degrades.
+
+## Core concurrency/benchmark refinements
+NXR-0001 now records the adopted rules for global generational entity identity, sparse↔dense domain storage, deterministic compute/merge/commit, non-suspending commit sections, explicit cross-domain transaction coordination, Copy-on-Write-safe benchmark views, and evidence-based bottleneck discovery.

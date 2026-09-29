@@ -47,3 +47,6 @@ Verify publication of NXR-0001, then begin the minimal measured core implementat
 
 ## Chat continuity rule
 `Docs/CHAT_CONTINUITY_PROTOCOL.md` is mandatory. If a session becomes heavy, unstable or ambiguous, stop sensitive changes, checkpoint repository state, and continue only after a new session verifies the authoritative repository context.
+
+## Latest architecture refinements
+See `Docs/16_CORE_CONCURRENCY_AND_BENCHMARK_RULES.md` and `Docs/ADR/ADR-0005-stable-registry-compute-commit.md`. These are mandatory before implementing the first core benchmark harness.

@@ -85,3 +85,16 @@ Stable frame pacing is more important than a nominal FPS number. 60 is the basel
 10. Synthetic scale harness
 
 Only after these are measured does deep industry gameplay begin.
+
+
+## Core concurrency refinements adopted on 2026-09-30
+- Entity identity uses a global generational registry; domain component storage must not own global entity lifetime.
+- Packed domain storage requires sparse↔dense mapping so swap-and-pop can remain O(1) without invalidating stable handles.
+- Removing a domain component is distinct from destroying the global entity.
+- Parallel work follows compute-outside/commit-inside: bounded pure chunk computation may run concurrently, then a short deterministic single-writer commit applies validated deltas.
+- Critical commit sections are non-suspending; no `await` inside authoritative commit.
+- Cross-domain atomic operations require an explicit coordinator/plan; single-domain serialization alone is not cross-domain atomicity.
+- Benchmark snapshots must not accidentally trigger large Swift Array Copy-on-Write copies during commit.
+- Parallel task results must be merged in a deterministic order; TaskGroup completion order is not treated as stable ordering.
+- Hot-loop zero-allocation claims apply only to a measured steady-state section after preallocation.
+- Bottlenecks such as memory bandwidth/cache misses remain hypotheses until measured.
