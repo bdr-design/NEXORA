@@ -12,5 +12,5 @@ jobs:
       - uses: actions/checkout@v4
       - name: Swift
         run: swift --version
-      - name: Adversarial lifecycle tests
-        run: swift test -c release -Xswiftc -warnings-as-errors --filter NXR0003AdversarialLifecycleTests
+      - name: Adversarial lifecycle and compute tests
+        run: swift test -c release -Xswiftc -warnings-as-errors --filter NXR0003Adversarial
