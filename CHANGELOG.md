@@ -59,7 +59,7 @@ Detailed record: `Docs/Updates/NXR-0002-2026-09-30-core-foundation-benchmark.md`
 
 
 ## NXR-0003 — 2026-09-30 — Core Hardening
-Status: Implemented / CI-verified / pre-Scheduler
+Status: **REOPENED — adversarial correctness blockers confirmed**
 Version: `0.1.0-dev.3`
 Build: `3`
 
@@ -93,3 +93,7 @@ Build: `3`
 This is still a synthetic core benchmark, not proof of full 100k gameplay or real-device thermal performance. Durable crash atomicity, Scheduler, Persistence/WAL, full iOS app shell and industry gameplay remain unimplemented.
 
 Detailed record: `Docs/Updates/NXR-0003-2026-09-30-core-hardening.md`
+
+
+### Post-validation adversarial review
+A second review found three blocking correctness gaps: Registry/domain lifecycle divergence, forged EntityID attachment, and logical result corruption when one ParallelAssetComputer is used concurrently. Scheduler is blocked pending correction. See `Docs/Audits/NXR-0003-adversarial-review-2026-09-30.md`.

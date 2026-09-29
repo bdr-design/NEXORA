@@ -1,6 +1,6 @@
 # NEXORA — Project Continuity
 
-**Status:** NXR-0003 core hardening implemented and CI verified
+**Status:** NXR-0003 REOPENED — adversarial correctness blockers confirmed
 **Official repository:** `bdr-design/NEXORA`
 **Default branch:** `main`
 **Foundation work branch:** `foundation/clean-core`
@@ -57,19 +57,16 @@ Artifact SHA-256: `b88aa31bf39ee2268d7fae79fe6dea34fd8065d4512abf8b7ca480a39a07c
 - 100k full-game claim.
 - Instruments allocation-free proof.
 
-## Next safe action
-Begin the next update with Scheduler/Simulation Clock architecture and benchmark only after re-reading the current contracts.
+## Blocking adversarial findings
+- Global Registry destruction does not currently invalidate domain mutability.
+- AssetDomain accepts EntityIDs never created by the Registry.
+- Concurrent calls to one ParallelAssetComputer can mix reusable worker-buffer results.
+- Global TransactionGate contention and deterministic step ordering remain unproven.
 
-Mandatory Scheduler requirements already identified:
-- integer simulation ticks;
-- deterministic total order;
-- stable generational EventHandle;
-- cancel/reschedule without linear search;
-- same-tick phase law;
-- transaction-integrated scheduler intents;
-- 30x backpressure without dropping/changing simulation results;
-- replay hash;
-- benchmark Heap baseline before considering Hybrid/Timing Wheel.
+Audit evidence: `Docs/Audits/NXR-0003-adversarial-review-2026-09-30.md`.
+
+## Next safe action
+Do NOT begin Scheduler. Correct NXR-0003, rerun original Release/TSan/iOS/benchmark gates, then pass the new adversarial lifecycle/concurrent-compute gates.
 
 ## Mandatory startup
 Read `AGENTS.md`, this file, `VERSION.json`, `Docs/Updates/NXR-0003-2026-09-30-core-hardening.md`, the latest Daily log, and verify branch/HEAD before sensitive edits.

@@ -90,7 +90,14 @@ NXR-0003 is intentionally slower than the narrow NXR-0002 benchmark in some meas
 - Metal map/rendering;
 - Finance/HR/Aviation gameplay.
 
-## Exit decision
-NXR-0003 passes the pre-Scheduler core-hardening gate.
+## Exit decision — REOPENED AFTER ADVERSARIAL AUDIT
+The original normal suite passed, but a second adversarial review found correctness gaps not covered by that suite.
 
-The next update may begin Scheduler/Simulation Clock design and benchmark work, but only with deterministic ordering, cancel/reschedule, backpressure, scheduler intents inside transaction plans, and replay-hash testing.
+Confirmed blockers:
+- globally destroyed EntityIDs remain writable in AssetDomain;
+- never-created EntityIDs can be attached to AssetDomain;
+- overlapping compute calls on one ParallelAssetComputer can mix shared reusable-buffer results.
+
+Evidence: `Docs/Audits/NXR-0003-adversarial-review-2026-09-30.md`.
+
+Scheduler/Simulation Clock work is blocked until the NXR-0003 correction passes both the original gates and the adversarial gates.
