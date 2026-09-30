@@ -31,17 +31,34 @@ unsupported/null policy with an explicit caveat that this is not hardware proof.
 A physical Apple Silicon fallback has not been performed here. Missing hardware
 attribution cannot become a fabricated successful causal closure.
 
-R005 ADR: Docs/ADR/R005-MILLION-ASSET-DESIGN.md, PROPOSED / approval required before
+R005 ADR: Docs/ADR/R005-MILLION-ASSET-DESIGN.md plus mandatory R005-BUDGET-ADDENDUM.md, PROPOSED / approval required before
 production changes. Prototype: Experiments/R005; row/storage update kernel only,
 not a full scheduler, financial engine, save system or iPhone app. Local12cases
 per Debug/Release include1M/2M; owner allocation counters are not global heap proof.
-New Apple gates/acquisition are pending at this source commit. Do not call a pushed
-commit a successful run. Record actual outputs and failures after completion.
+Tested corrected code357dcd4e0658d84b821b3fcd9360b7fc29255225: Apple run36754835103
+all three jobs SUCCESS. Original142 tests/11suites each Debug/Release/TSan, existing
+Python92,new12,diagnostic/marker/writer paths inclTSan,29 compiler rejections,
+5valid clients,12fail-stops and5iOS library compiles passed. Layout12cases/build
+passed,1M requested owned122.658024B/asset; this is only the measured row kernel.
+The full proposed reservation127.352328B/asset includes unmeasured future fixed
+pools/ContractID mapping; see the mandatory budget addendum.
+
+One bounded acquisition ran on b097ae64ab539c60fc82f08ec4c60a79cb65c124,
+run36754290347/diagnostic job110020462756 SUCCESS. That run's layout compiler job
+failed before measurement; the corrected run above is separate. Raw artifact
+11115497993 SHA2566eb273848b9e37eb074dac106e6bf86269cbbfe4afb1337a1d2d8f286dd9354e:
+359640 measured batches; all V4 instructions/cycles unavailable;510000 event starts.
+Bounded iteration ended INCONCLUSIVE; physical Mac fallback is NOT performed.
+Do not repeat hosted acquisitions or claim the historical causes are resolved.
+Docs/R004-BOUNDED-DIAGNOSTIC-VERDICT.md and Docs/VALIDATION-R005-PREPARATION.md
+contain actual results/failures. A documentation-only publication may follow the
+tested code; re-read live HEAD and CI instead of treating it as the acquisition SHA.
 
 Design approval must resolve fixed total storage for arbitrary campaign length
 versus no deletion/loss of financial records. Default remains no deletion plus
 explicit capacity backpressure; external archive or lossy summarization requires
 approval. Periodic invoicing is a proposed semantic change, not implemented.
 No new HR/maintenance/delivery domain. No R005 production code before approval.
-Next: inspect the bounded Apple outputs, preserve honest inconclusive outcomes,
-publish the verdict and measured layout budget, and present the ADR for approval.
+Next: owner review/approval of the ADR and retention interpretation; a single physical
+Mac fallback may be performed using Experiments/R005/PHYSICAL-FALLBACK.md. No
+production identity/representation/billing/storage replacement before approval.
