@@ -1,0 +1,32 @@
+name: R004 source export only - not test evidence
+on:
+  push:
+    branches: ["review/r004-source-20260930"]
+permissions:
+  contents: read
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 53cb86222f1529f8f48be4d00993c4ef03900311
+          persist-credentials: false
+      - name: Verify and export the exact candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "53cb86222f1529f8f48be4d00993c4ef03900311"
+          test "$(git rev-parse HEAD^{tree})" = "69a9dceedcf973c02bd0d59d091f399095558ee1"
+          mkdir -p source-export
+          git rev-parse HEAD > source-export/source-commit.txt
+          git rev-parse HEAD^{tree} > source-export/source-tree.txt
+          git archive --format=zip --output=source-export/NEXORA_R004_CANDIDATE_SOURCE.zip HEAD
+          sha256sum source-export/NEXORA_R004_CANDIDATE_SOURCE.zip > source-export/sha256.txt
+          printf '%s\n' 'Source export only. No build, tests, sanitizer or performance claim.' > source-export/LIMITS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nexora-r004-candidate-source-only
+          path: source-export/
+          if-no-files-found: error
