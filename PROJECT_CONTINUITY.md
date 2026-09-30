@@ -31,17 +31,22 @@ unsupported/null policy with an explicit caveat that this is not hardware proof.
 A physical Apple Silicon fallback has not been performed here. Missing hardware
 attribution cannot become a fabricated successful causal closure.
 
-R005 ADR: Docs/ADR/R005-MILLION-ASSET-DESIGN.md plus mandatory R005-BUDGET-ADDENDUM.md, PROPOSED / approval required before
-production changes. Prototype: Experiments/R005; row/storage update kernel only,
-not a full scheduler, financial engine, save system or iPhone app. Local12cases
-per Debug/Release include1M/2M; owner allocation counters are not global heap proof.
+R005 ADR: Docs/ADR/R005-MILLION-ASSET-DESIGN.md with required companions
+R005-BUDGET-ADDENDUM.md and R005-REVIEW-2-BUDGET-RETENTION.md. All remain PROPOSED;
+owner approval is required before production changes. Review2 supersedes the8GiB
+default recommendation and narrows readiness, not the measured historical numbers.
+Prototype: Experiments/R005; C row/storage update kernel only, not a full scheduler,
+financial engine, Swift integration, save system or iPhone app.
 Tested corrected code357dcd4e0658d84b821b3fcd9360b7fc29255225: Apple run36754835103
 all three jobs SUCCESS. Original142 tests/11suites each Debug/Release/TSan, existing
 Python92,new12,diagnostic/marker/writer paths inclTSan,29 compiler rejections,
 5valid clients,12fail-stops and5iOS library compiles passed. Layout12cases/build
 passed,1M requested owned122.658024B/asset; this is only the measured row kernel.
-The full proposed reservation127.352328B/asset includes unmeasured future fixed
-pools/ContractID mapping; see the mandatory budget addendum.
+Publication40b593b43bb921dbd477abffa8a6ae001495b2ef also passed run36756867307;
+it must not be mislabeled as the acquisition source. Re-read the latest live tip.
+The full proposed reservation127.352328B/asset includes unmeasured future pools/map.
+Only647672 bytes remain to target128B at1M. The current commutative C fixture does
+not prove deterministic scheduler order or full Swift allocator/CPU costs.
 
 One bounded acquisition ran on b097ae64ab539c60fc82f08ec4c60a79cb65c124,
 run36754290347/diagnostic job110020462756 SUCCESS. That run's layout compiler job
@@ -51,14 +56,28 @@ failed before measurement; the corrected run above is separate. Raw artifact
 Bounded iteration ended INCONCLUSIVE; physical Mac fallback is NOT performed.
 Do not repeat hosted acquisitions or claim the historical causes are resolved.
 Docs/R004-BOUNDED-DIAGNOSTIC-VERDICT.md and Docs/VALIDATION-R005-PREPARATION.md
-contain actual results/failures. A documentation-only publication may follow the
-tested code; re-read live HEAD and CI instead of treating it as the acquisition SHA.
+contain actual results/failures. Review2 rechecked the same raw files, not new runs:
+13 V4>5ms spikes,11 with threadCPU<1ms; runnable includes running/task aggregation,
+not waiting alone, and no captured timebase was guessed. In event mode,20k/sample3/
+batch67 has3536625ns next-start gap within3760750ns wall, allocation250ns and
+threadCPU244750ns. This localizes one observation, not every historical cause.
 
-Design approval must resolve fixed total storage for arbitrary campaign length
-versus no deletion/loss of financial records. Default remains no deletion plus
-explicit capacity backpressure; external archive or lossy summarization requires
-approval. Periodic invoicing is a proposed semantic change, not implemented.
-No new HR/maintenance/delivery domain. No R005 production code before approval.
-Next: owner review/approval of the ADR and retention interpretation; a single physical
-Mac fallback may be performed using Experiments/R005/PHYSICAL-FALLBACK.md. No
-production identity/representation/billing/storage replacement before approval.
+Latest work: documentation-only consultant-review follow-up based on40b593b.
+See Docs/Daily/2026-09-30-R005-REVIEW-2.md. No code/workflow/test changes or new
+benchmark. New documentation-commit CI must be checked independently.
+Before design approval: matching Swift representation, order-sensitive scheduler
+oracle (including deliberately reversed equal-time events), and disposable encoded
+retention growth/compaction measurements. Removing8E sort scratch is an untested
+candidate, not an achieved119B complete engine. Do not narrow64-bit IDs/times or
+remove captured fare without explicit semantic/overflow proof and budget accounting.
+
+Consultant recommendation for summarization is NOT owner approval of deletion.
+Proposed retention keeps exact money but permits coarser OLD CLOSED period granularity
+and bounded parent/root commitments; every original period/hash forever is unbounded.
+Open obligations stay detailed on disk, not all resident; unlimited open backlog
+requires quota/exposure admission or honest backpressure on new credit operations.
+256/512/1024MiB are trial quotas, not a selected default. Optional export is not a
+mandatory player workflow. Until owner approval, do not delete/condense financial
+detail or change periodic-billing semantics. No new HR/maintenance/delivery domain.
+No R005 production code before approval. A single physical Mac fallback remains
+possible using Experiments/R005/PHYSICAL-FALLBACK.md, not required to reopen VM loops.
