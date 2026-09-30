@@ -13,10 +13,16 @@ public struct CurrencySpec: Equatable, Sendable {
     public let minorDigits: UInt8
     public static var sar: CurrencySpec { CurrencySpec(validatedCode: "SAR", minorDigits: 2) }
     public init(code: String, minorDigits: UInt8) throws {
-        let bytes = Array(code.utf8)
-        guard bytes.count == 3, bytes.allSatisfy({ (65...90).contains($0) }), minorDigits <= 6 else {
-            throw FinanceFailure.invalidCurrency
+        guard minorDigits <= 6 else { throw FinanceFailure.invalidCurrency }
+        // Inspect only the required three bytes and a terminator. An invalid,
+        // arbitrarily long input must not be copied into a temporary byte array.
+        var bytes = code.utf8.makeIterator()
+        for _ in 0..<3 {
+            guard let byte = bytes.next(), (65...90).contains(byte) else {
+                throw FinanceFailure.invalidCurrency
+            }
         }
+        guard bytes.next() == nil else { throw FinanceFailure.invalidCurrency }
         self.code = code
         self.minorDigits = minorDigits
     }
