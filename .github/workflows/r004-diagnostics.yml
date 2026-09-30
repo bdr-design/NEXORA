@@ -1,0 +1,98 @@
+name: NEXORA R004 Batch Diagnostics
+
+on:
+  push:
+    branches: ["diagnostic/r004-batch-counters-20260930"]
+    paths:
+      - "Sources/NexoraFinancialCheck/**"
+      - "Checks/financial-diagnostics.py"
+      - ".github/workflows/r004-diagnostics.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  core:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Source and toolchain identity
+        run: |
+          mkdir -p local-evidence
+          git rev-parse HEAD > local-evidence/source-commit.txt
+          git rev-parse HEAD^{tree} > local-evidence/source-tree.txt
+          git ls-tree HEAD Sources Tests Checks Package.swift > local-evidence/source-subtrees.txt
+          uname -a > local-evidence/kernel.txt
+          sw_vers >> local-evidence/kernel.txt
+          sysctl hw.model hw.memsize hw.ncpu hw.pagesize >> local-evidence/kernel.txt
+          swift --version > local-evidence/toolchain.txt
+          xcodebuild -version >> local-evidence/toolchain.txt
+          git archive --format=zip --output=local-evidence/NEXORA_R004_DIAGNOSTIC_SOURCE.zip HEAD
+          shasum -a 256 local-evidence/NEXORA_R004_DIAGNOSTIC_SOURCE.zip > local-evidence/source-archive-sha256.txt
+      - name: Bounded source contracts
+        run: |
+          set -o pipefail
+          python3 Checks/financial-diagnostics.py --guard --selftest 2>&1 | tee local-evidence/diagnostic-source.txt
+          python3 Checks/review-r002.py 2>&1 | tee local-evidence/source-r002.txt
+          python3 Checks/review-r003.py 2>&1 | tee local-evidence/source-r003.txt
+          python3 Checks/review-r004.py 2>&1 | tee local-evidence/source-r004.txt
+      - name: Debug contracts
+        run: |
+          set -o pipefail
+          swift test -Xswiftc -warnings-as-errors 2>&1 | tee local-evidence/debug.txt
+      - name: Release contracts
+        run: |
+          set -o pipefail
+          swift test -c release -Xswiftc -warnings-as-errors 2>&1 | tee local-evidence/release.txt
+      - name: All external compiler ownership boundaries
+        run: |
+          set -o pipefail
+          bash Checks/verify.sh 2>&1 | tee local-evidence/compiler-r001.txt
+          bash Checks/verify-r002.sh 2>&1 | tee local-evidence/compiler-r002.txt
+          bash Checks/verify-r003.sh 2>&1 | tee local-evidence/compiler-r003.txt
+          bash Checks/verify-r004.sh 2>&1 | tee local-evidence/compiler-r004.txt
+      - name: Isolated Debug and Release fail-stop probes
+        run: |
+          set -o pipefail
+          bash Checks/verify-failstop.sh 2>&1 | tee local-evidence/failstop-r002.txt
+          bash Checks/verify-trip-failstop.sh 2>&1 | tee local-evidence/failstop-r003.txt
+          bash Checks/verify-finance-failstop.sh 2>&1 | tee local-evidence/failstop-r004.txt
+      - name: Thread Sanitizer
+        run: |
+          set -o pipefail
+          swift test --sanitize=thread -Xswiftc -warnings-as-errors 2>&1 | tee local-evidence/tsan.txt
+      - name: Five iOS library compile gates
+        run: |
+          set -o pipefail
+          for scheme in NexoraIdentity NexoraObservability NexoraAviation NexoraFinance NexoraSimulation; do
+            xcodebuild -scheme "$scheme" -destination 'generic/platform=iOS' -configuration Release CODE_SIGNING_ALLOWED=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES build 2>&1 | tee "local-evidence/ios-$scheme.txt"
+          done
+      - name: Separate Debug and Release diagnostic transcript gates
+        run: |
+          set -euo pipefail
+          swift build --scratch-path .build/measurement-debug --product nexora-financial-check -Xswiftc -warnings-as-errors 2>&1 | tee local-evidence/diagnostic-build-debug.txt
+          .build/measurement-debug/debug/nexora-financial-check --diagnostic-selftest 2>&1 | tee local-evidence/diagnostic-debug.txt
+          swift build -c release --scratch-path .build/measurement --product nexora-financial-check -Xswiftc -warnings-as-errors 2>&1 | tee local-evidence/diagnostic-build-release.txt
+          .build/measurement/release/nexora-financial-check --diagnostic-selftest 2>&1 | tee local-evidence/diagnostic-release.txt
+      - name: Three sequential processes with alternating same-source modes
+        run: |
+          set -euo pipefail
+          export NEXORA_SOURCE_COMMIT="$GITHUB_SHA"
+          for run in 1 2 3; do
+            .build/measurement/release/nexora-financial-check --diagnostics "local-evidence/batches-$run.ndjson" --run-id "$run" 2>&1 | tee "local-evidence/batches-$run.txt"
+          done
+          python3 Checks/financial-diagnostics.py --output local-evidence/batch-summary.json local-evidence/batches-{1,2,3}.ndjson 2>&1 | tee local-evidence/analysis.txt
+          .build/measurement/release/nexora-financial-check --json local-evidence/legacy-cli-quick.json --quick 2>&1 | tee local-evidence/legacy-cli-quick.txt
+          git diff --exit-code
+      - name: Preserve evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexora-r004-batch-diagnostics
+          path: local-evidence/
+          if-no-files-found: error
+          compression-level: 6

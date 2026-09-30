@@ -107,6 +107,7 @@ func sample(_ count: Int) throws -> FinancialSample {
 @main enum FinancialCheck {
     static func main() throws {
         let args = Array(CommandLine.arguments.dropFirst())
+        if try FinancialDiagnostics.dispatch(args) { return }
         guard (args.count == 2 || (args.count == 3 && args[2] == "--quick")), args[0] == "--json" else {
             throw FixtureFailure.arguments
         }
@@ -130,5 +131,523 @@ func sample(_ count: Int) throws -> FinancialSample {
                           "Maximum observed batches are not p99 certification or hard latency limits."])
         let encoder = JSONEncoder(); encoder.outputFormatting = [.prettyPrinted,.sortedKeys]
         try encoder.encode(report).write(to: URL(fileURLWithPath: args[1]))
+    }
+}
+
+// BEGIN R004 MEASUREMENT-ONLY EXTENSION
+// Check-executable instrumentation only. No dependency from a production library.
+import Foundation
+#if canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#endif
+
+enum CounterStatus: String, Codable {
+    case ok, syscallFailure, invalidValue, unsupported
+}
+
+/// Raw endpoints, not silently clamped deltas. getrusage is PROCESS-wide.
+/// These reads enclose a wider, non-atomic interval than the wall-clock bracket.
+struct CounterSnapshot: Codable {
+    let beginOffsetNS: UInt64
+    let endOffsetNS: UInt64
+    let threadStatus: CounterStatus
+    let threadErrno: Int32?
+    let threadCPUNS: UInt64?
+    let processStatus: CounterStatus
+    let processErrno: Int32?
+    let processUserNS: UInt64?
+    let processSystemNS: UInt64?
+    let processMinorFaults: UInt64?
+    let processMajorFaults: UInt64?
+    let processVoluntarySwitches: UInt64?
+    let processInvoluntarySwitches: UInt64?
+}
+
+func checkedNanoseconds(seconds: Int64, fraction: Int64, unitsPerSecond: Int64) -> UInt64? {
+    guard seconds >= 0, fraction >= 0, fraction < unitsPerSecond,
+          unitsPerSecond == 1_000_000 || unitsPerSecond == 1_000_000_000 else { return nil }
+    let (whole, overflow) = UInt64(seconds).multipliedReportingOverflow(by: 1_000_000_000)
+    guard !overflow else { return nil }
+    let (value, additionOverflow) = whole.addingReportingOverflow(
+        UInt64(fraction) * UInt64(1_000_000_000 / unitsPerSecond))
+    return additionOverflow ? nil : value
+}
+
+func readCounters(origin: ContinuousClock.Instant) -> CounterSnapshot {
+    let clock = ContinuousClock()
+    let begin = elapsed(origin, clock.now)
+    #if canImport(Darwin) || canImport(Glibc)
+    var cpu = timespec()
+    errno = 0
+    let cpuResult = clock_gettime(CLOCK_THREAD_CPUTIME_ID, &cpu)
+    let cpuError: Int32? = cpuResult == 0 ? nil : errno
+    let cpuNS = cpuResult == 0 ? checkedNanoseconds(seconds: Int64(cpu.tv_sec),
+        fraction: Int64(cpu.tv_nsec), unitsPerSecond: 1_000_000_000) : nil
+    let cpuStatus: CounterStatus = cpuResult != 0 ? .syscallFailure : (cpuNS == nil ? .invalidValue : .ok)
+    var usage = rusage()
+    errno = 0
+    #if canImport(Darwin)
+    let usageResult = getrusage(RUSAGE_SELF, &usage)
+    #else
+    let usageResult = getrusage(Int32(RUSAGE_SELF.rawValue), &usage)
+    #endif
+    let usageError: Int32? = usageResult == 0 ? nil : errno
+    let user = checkedNanoseconds(seconds: Int64(usage.ru_utime.tv_sec),
+        fraction: Int64(usage.ru_utime.tv_usec), unitsPerSecond: 1_000_000)
+    let system = checkedNanoseconds(seconds: Int64(usage.ru_stime.tv_sec),
+        fraction: Int64(usage.ru_stime.tv_usec), unitsPerSecond: 1_000_000)
+    let valid = user != nil && system != nil && usage.ru_minflt >= 0 && usage.ru_majflt >= 0
+        && usage.ru_nvcsw >= 0 && usage.ru_nivcsw >= 0
+    let status: CounterStatus = usageResult != 0 ? .syscallFailure : (valid ? .ok : .invalidValue)
+    return CounterSnapshot(beginOffsetNS: begin, endOffsetNS: elapsed(origin, clock.now),
+        threadStatus: cpuStatus, threadErrno: cpuError, threadCPUNS: cpuNS,
+        processStatus: status, processErrno: usageError,
+        processUserNS: status == .ok ? user : nil, processSystemNS: status == .ok ? system : nil,
+        processMinorFaults: status == .ok ? UInt64(usage.ru_minflt) : nil,
+        processMajorFaults: status == .ok ? UInt64(usage.ru_majflt) : nil,
+        processVoluntarySwitches: status == .ok ? UInt64(usage.ru_nvcsw) : nil,
+        processInvoluntarySwitches: status == .ok ? UInt64(usage.ru_nivcsw) : nil)
+    #else
+    return CounterSnapshot(beginOffsetNS: begin, endOffsetNS: elapsed(origin, clock.now),
+        threadStatus: .unsupported, threadErrno: nil, threadCPUNS: nil,
+        processStatus: .unsupported, processErrno: nil, processUserNS: nil, processSystemNS: nil,
+        processMinorFaults: nil, processMajorFaults: nil,
+        processVoluntarySwitches: nil, processInvoluntarySwitches: nil)
+    #endif
+}
+
+func checkedCounterDelta(_ before: UInt64?, _ after: UInt64?) -> UInt64? {
+    guard let before, let after, after >= before else { return nil }
+    return after - before
+}
+
+import Foundation
+import NexoraSimulation
+import NexoraFinance
+import NexoraIdentity
+
+enum ProbeMode: String, Codable { case wall, counters }
+enum ProbePhase: String, Codable { case depart, advance, collect, empty }
+struct BatchRecord: Codable {
+    let aircraft: Int
+    let sample: Int // 1-based, separate from 0-based batch
+    let phase: ProbePhase
+    let batch: Int
+    let operations: Int
+    let startOffsetNS: UInt64
+    let wallNS: UInt64
+    let before: CounterSnapshot?
+    let after: CounterSnapshot?
+}
+struct PhaseRecord: Codable {
+    let phase: ProbePhase
+    let startOffsetNS: UInt64
+    let totalNS: UInt64
+    let sumBatchWallNS: UInt64
+    let outsideBatchWallNS: UInt64 // arithmetic difference, NOT a causal label
+}
+struct DiagnosticResult: Encodable {
+    let kind = "sample"
+    let aircraft: Int
+    let sample: Int
+    let warmup: Bool
+    let mode: String
+    let runID: Int
+    let executionOrder: Int
+    let aggregate: FinancialSample
+    let bufferPreparationNS: UInt64?
+    let seedAndHandlePreparationNS: UInt64?
+    let finalAuditNS: UInt64?
+    let explicitWorldReleaseNS: UInt64?
+    let workloadNS: UInt64?
+    let phases: [PhaseRecord]
+    let records: [BatchRecord]
+}
+struct MeasuredFixture {
+    let aggregate: FinancialSample
+    let bufferPreparationNS: UInt64
+    let seedAndHandlePreparationNS: UInt64
+    let finalAuditNS: UInt64
+    let explicitWorldReleaseNS: UInt64
+    let workloadNS: UInt64
+    let phases: [PhaseRecord]
+    let records: [BatchRecord]
+    let truth: [UInt64] // Only requested by the separate correctness run.
+}
+
+// Consuming parameter guarantees that this call owns the world's destruction.
+// Detached handles/views can still retain identity stamps; this is not all ARC work.
+@inline(never) func releaseDiagnosticWorld(_ world: consuming TripSimulation) {}
+
+func sameEconomics(_ a: FinancialSample, _ b: FinancialSample) -> Bool {
+    a.invoiceCount == b.invoiceCount && a.journalCount == b.journalCount
+        && a.revenueMinor == b.revenueMinor && a.cashMinor == b.cashMinor
+        && a.advanceBatches == b.advanceBatches
+}
+func invoiceTruth(_ row: InvoiceView) -> [UInt64] {
+    [row.handle.number, UInt64(row.origin.aircraft.slot), UInt64(row.origin.aircraft.generation),
+     row.origin.operationID, row.issuedAt, UInt64(bitPattern: row.amountMinor),
+     UInt64(bitPattern: row.paidMinor), UInt64(row.currency.minorDigits)] + row.currency.code.utf8.map(UInt64.init)
+}
+func journalTruth(_ row: JournalEntry) -> [UInt64] {
+    let kind: UInt64
+    switch row.kind {
+    case .capitalContribution: kind = 0
+    case .invoiceIssued: kind = 1
+    case .invoiceCollected: kind = 2
+    case .cashExpense(let expense): kind = 3 + UInt64(expense.rawValue)
+    }
+    return [row.number, row.at, kind, UInt64(row.debit.rawValue), UInt64(row.credit.rawValue),
+            UInt64(bitPattern: row.amountMinor), row.invoice?.number ?? 0]
+}
+
+/// All allocations for the trace slots occur BEFORE initialization/phase timing.
+/// No library code, workload order, fare formula, budget or page size is changed.
+func measuredFixture(_ count: Int, sampleIndex: Int, mode: ProbeMode,
+                     captureTruth: Bool = false) throws -> MeasuredFixture {
+    guard (64...100_000).contains(count), sampleIndex > 0 else { throw FixtureFailure.arguments }
+    let clock = ContinuousClock()
+    let preparing = clock.now
+    let batchCapacity = (count + 255) / 256
+    var records = [BatchRecord?](repeating: nil, count: batchCapacity * 3)
+    var cursor = 0
+    var phases: [PhaseRecord] = []; phases.reserveCapacity(3)
+    var truth: [UInt64] = []
+    // These diagnostic-only normalized values are never built in performance runs.
+    if captureTruth { truth.reserveCapacity(count * 50 + batchCapacity * 6 + 41) }
+    let initializing = clock.now
+    var world = try TripSimulation(capacity: count, eventCapacity: count,
+        financeLimits: FinanceLimits(invoices: count, journalEntries: count * 2 + 4))
+    let initialized = clock.now
+    _ = try world.applyFinance(.contributeCapital(amountMinor: 1_000), expected: world.inputToken)
+    var handles: [EntityHandle] = []; handles.reserveCapacity(count)
+    let registering = clock.now
+    for _ in 0..<count { handles.append(try world.apply(.registerAircraft(at: 1), expected: world.inputToken).handle) }
+    let registered = clock.now
+    var revenue: Int64 = 0
+    var sum: UInt64 = 0
+    for batch in 0..<batchCapacity {
+        let lower = batch * 256, upper = min(count, lower + 256)
+        let before = mode == .counters ? readCounters(origin: initializing) : nil
+        let started = clock.now
+        for index in lower..<upper {
+            let fare = Int64(index % 97 + 101)
+            revenue += fare
+            _ = try world.departPriced(handles[index], destination: 2,
+                durationSeconds: UInt64(index % 600 + 1), fareMinor: fare, expected: world.inputToken)
+        }
+        let finished = clock.now
+        let after = mode == .counters ? readCounters(origin: initializing) : nil
+        let wall = elapsed(started, finished); sum += wall
+        records[cursor] = BatchRecord(aircraft: count, sample: sampleIndex, phase: .depart,
+            batch: batch, operations: upper - lower, startOffsetNS: elapsed(initializing, started),
+            wallNS: wall, before: before, after: after)
+        cursor += 1
+    }
+    let departed = clock.now
+    let departTotal = elapsed(registered, departed)
+    guard sum <= departTotal else { throw FixtureFailure.correctness }
+    phases.append(PhaseRecord(phase: .depart, startOffsetNS: elapsed(initializing, registered),
+        totalNS: departTotal, sumBatchWallNS: sum, outsideBatchWallNS: departTotal - sum))
+    var batches = 0, arrivals = 0
+    var maximumAdvance: UInt64 = 0; sum = 0
+    // Includes phase-bookkeeping since `departed`; preserve the legacy outer boundary.
+    while world.pendingArrivals > 0 {
+        guard batches < batchCapacity else { throw FixtureFailure.correctness }
+        let before = mode == .counters ? readCounters(origin: initializing) : nil
+        let started = clock.now
+        let progress = try world.advance(to: 600, eventBudget: 256)
+        let finished = clock.now
+        let after = mode == .counters ? readCounters(origin: initializing) : nil
+        let wall = elapsed(started, finished); sum += wall
+        maximumAdvance = max(maximumAdvance, wall)
+        records[cursor] = BatchRecord(aircraft: count, sample: sampleIndex, phase: .advance,
+            batch: batches, operations: progress.processedEvents, startOffsetNS: elapsed(initializing, started),
+            wallNS: wall, before: before, after: after)
+        cursor += 1
+        guard progress.stop == .eventBudgetReached || progress.stop == .reachedTarget,
+              progress.processedEvents > 0 else { throw FixtureFailure.blocked }
+        if captureTruth {
+            truth += [progress.fromTime, progress.requestedTime, progress.reachedTime,
+                      progress.nextDueTime ?? UInt64.max, UInt64(progress.processedEvents),
+                      progress.stop == .reachedTarget ? 0 : 1]
+        }
+        for completed in progress.completions {
+            guard let issued = completed.invoice, issued.amountMinor == completed.trip.fareMinor,
+                  issued.origin.operationID == completed.trip.operationID,
+                  issued.origin.aircraft == completed.trip.handle else { throw FixtureFailure.correctness }
+            if captureTruth {
+                let t = completed.trip
+                truth += [UInt64(t.handle.slot), UInt64(t.handle.generation), t.operationID,
+                          UInt64(t.origin), UInt64(t.destination), t.departedAt, t.arrivesAt,
+                          UInt64(bitPattern: t.fareMinor), completed.completedTrips]
+                truth += invoiceTruth(issued)
+            }
+        }
+        batches += 1; arrivals += progress.processedEvents
+    }
+    let advanced = clock.now
+    let advanceTotal = elapsed(departed, advanced)
+    guard sum <= advanceTotal else { throw FixtureFailure.correctness }
+    phases.append(PhaseRecord(phase: .advance, startOffsetNS: elapsed(initializing, departed),
+        totalNS: advanceTotal, sumBatchWallNS: sum, outsideBatchWallNS: advanceTotal - sum))
+    guard arrivals == count, world.financialSummary.revenueMinor == revenue,
+          world.financialSummary.receivablesMinor == revenue, world.financialSummary.cashMinor == 1_000 else {
+        throw FixtureFailure.correctness
+    }
+    var offset = 0, pageIndex = 0
+    var maximumPage: UInt64 = 0; sum = 0
+    let collecting = clock.now
+    while offset < count {
+        guard pageIndex < batchCapacity else { throw FixtureFailure.correctness }
+        let before = mode == .counters ? readCounters(origin: initializing) : nil
+        let started = clock.now
+        let page = try world.invoicePage(offset: offset, limit: 256)
+        for invoice in page {
+            _ = try world.applyFinance(.collectInvoice(invoice.handle, amountMinor: invoice.amountMinor),
+                                       expected: world.inputToken)
+        }
+        offset += page.count // Intentionally inside the legacy collection bracket.
+        let finished = clock.now
+        let after = mode == .counters ? readCounters(origin: initializing) : nil
+        let wall = elapsed(started, finished); sum += wall
+        maximumPage = max(maximumPage, wall)
+        records[cursor] = BatchRecord(aircraft: count, sample: sampleIndex, phase: .collect,
+            batch: pageIndex, operations: page.count, startOffsetNS: elapsed(initializing, started),
+            wallNS: wall, before: before, after: after)
+        cursor += 1; pageIndex += 1
+        guard !page.isEmpty else { throw FixtureFailure.correctness }
+    }
+    let collected = clock.now
+    let collectTotal = elapsed(collecting, collected)
+    guard sum <= collectTotal else { throw FixtureFailure.correctness }
+    phases.append(PhaseRecord(phase: .collect, startOffsetNS: elapsed(initializing, collecting),
+        totalNS: collectTotal, sumBatchWallNS: sum, outsideBatchWallNS: collectTotal - sum))
+    _ = try world.applyFinance(.payExpense(.payroll, amountMinor: 1_000), expected: world.inputToken)
+    _ = try world.applyFinance(.payExpense(.maintenance, amountMinor: 2_000), expected: world.inputToken)
+    _ = try world.applyFinance(.payExpense(.operating, amountMinor: 3_000), expected: world.inputToken)
+    let expensed = clock.now
+    let closing = world.financialSummary
+    guard closing.revenueMinor == revenue, closing.cashMinor == revenue - 5_000,
+          closing.receivablesMinor == 0, closing.invoiceCount == count, closing.journalCount == count * 2 + 4,
+          closing.payrollExpenseMinor == 1_000, closing.maintenanceExpenseMinor == 2_000,
+          closing.operatingExpenseMinor == 3_000, world.checkInvariants(), cursor == records.count else {
+        throw FixtureFailure.correctness
+    }
+    if captureTruth {
+        // Final normalized public state; identity pointer addresses are deliberately excluded.
+        for handle in handles {
+            let row = try world.read(handle)
+            guard row.activeTrip == nil else { throw FixtureFailure.correctness }
+            truth += [UInt64(handle.slot), UInt64(handle.generation), UInt64(row.currentAirport),
+                      row.completedTrips, row.inputToken.sequence]
+        }
+        for start in stride(from: 0, to: closing.invoiceCount, by: 256) {
+            for row in try world.invoicePage(offset: start, limit: 256) { truth += invoiceTruth(row) }
+        }
+        for start in stride(from: 0, to: closing.journalCount, by: 256) {
+            for row in try world.journalPage(offset: start, limit: 256) { truth += journalTruth(row) }
+        }
+        truth += [world.now, UInt64(world.pendingArrivals), world.inputToken.sequence,
+                  UInt64(closing.invoiceCount), UInt64(closing.journalCount), closing.token.revision,
+                  UInt64(bitPattern: closing.revenueMinor), UInt64(bitPattern: closing.cashMinor),
+                  UInt64(bitPattern: closing.receivablesMinor), UInt64(bitPattern: closing.contributedCapitalMinor),
+                  UInt64(bitPattern: closing.payrollExpenseMinor), UInt64(bitPattern: closing.maintenanceExpenseMinor),
+                  UInt64(bitPattern: closing.operatingExpenseMinor)]
+    }
+    let audited = clock.now
+    releaseDiagnosticWorld(consume world)
+    let released = clock.now
+    let aggregate = FinancialSample(initializationNS: elapsed(initializing, initialized),
+        registerAllNS: elapsed(registering, registered), departAllNS: departTotal,
+        advanceAllNS: advanceTotal, maximumAdvanceNS: maximumAdvance, collectAllNS: collectTotal,
+        maximumCollectionPageNS: maximumPage, expensePostsNS: elapsed(collected, expensed),
+        advanceBatches: batches, invoiceCount: closing.invoiceCount, journalCount: closing.journalCount,
+        revenueMinor: revenue, cashMinor: closing.cashMinor)
+    // Compact/export only after all measured phases and the explicit world release.
+    return MeasuredFixture(aggregate: aggregate, bufferPreparationNS: elapsed(preparing, initializing),
+        seedAndHandlePreparationNS: elapsed(initialized, registering), finalAuditNS: elapsed(expensed, audited),
+        explicitWorldReleaseNS: elapsed(audited, released), workloadNS: elapsed(initializing, released),
+        phases: phases, records: records.compactMap { $0 }, truth: truth)
+}
+
+struct Calibration: Encodable {
+    let kind = "calibration"
+    let mode: ProbeMode
+    let iterations: Int
+    let loopNS: UInt64 // Includes recording/loop costs, unlike each inner wall bracket.
+    let records: [BatchRecord]
+}
+func calibrate(_ mode: ProbeMode, iterations: Int) -> Calibration {
+    let clock = ContinuousClock()
+    var records = [BatchRecord?](repeating: nil, count: iterations)
+    let origin = clock.now
+    for index in 0..<iterations {
+        let before = mode == .counters ? readCounters(origin: origin) : nil
+        let start = clock.now
+        let end = clock.now
+        let after = mode == .counters ? readCounters(origin: origin) : nil
+        records[index] = BatchRecord(aircraft: 0, sample: 0, phase: .empty, batch: index, operations: 0,
+            startOffsetNS: elapsed(origin, start), wallNS: elapsed(start, end), before: before, after: after)
+    }
+    let loop = elapsed(origin, clock.now)
+    return Calibration(mode: mode, iterations: iterations, loopNS: loop, records: records.compactMap { $0 })
+}
+
+/// One complete JSON object per line. A failed run retains previous complete lines.
+/// No formatting, encoding, I/O, console output or output-buffer growth is in a workload phase.
+final class DiagnosticWriter {
+    private let handle: FileHandle
+    private let encoder: JSONEncoder
+    init(path: String) throws {
+        guard FileManager.default.createFile(atPath: path, contents: nil) else { throw FixtureFailure.arguments }
+        handle = try FileHandle(forWritingTo: URL(fileURLWithPath: path))
+        encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
+    }
+    func write<T: Encodable>(_ value: T) throws {
+        let data = try encoder.encode(value)
+        try handle.write(contentsOf: data)
+        try handle.write(contentsOf: Data([10]))
+    }
+    func close() throws { try handle.close() }
+    deinit { try? handle.close() }
+}
+
+struct DiagnosticMetadata: Encodable {
+    let kind = "metadata"
+    let schema = "NXR-R004-BATCH-DIAGNOSTICS-1"
+    let runID: Int
+    let repetitions: Int
+    let warmups: Int
+    let sizes = [1_000, 5_000, 20_000, 50_000, 100_000]
+    let modes = ["baseline", "wall", "counters"]
+    let batchSize = 256
+    let sampleIndexing = "1-based within warmup or measured stratum; batch is 0-based; calibration uses sample=0"
+    let sourceBase = "5b5599895fa1bdbf00e951104e0cd55dc00f9a56"
+    let sourceCommit: String
+    let os = ProcessInfo.processInfo.operatingSystemVersionString
+    let processID = ProcessInfo.processInfo.processIdentifier
+    let mainThread = Thread.isMainThread
+    let counterDefinitions = [
+        "threadCPUNS": "ns; calling thread user+system; clock_gettime(CLOCK_THREAD_CPUTIME_ID); no mach conversion",
+        "processUserNS": "ns converted from timeval microseconds; all process threads; getrusage(RUSAGE_SELF)",
+        "processSystemNS": "ns converted from timeval microseconds; all process threads; getrusage(RUSAGE_SELF)",
+        "processMinorFaults": "count; process; ru_minflt; Apple faults minus pageins, not necessarily allocations",
+        "processMajorFaults": "count; process; ru_majflt; Apple task pageins",
+        "processVoluntarySwitches": "count; process; ru_nvcsw",
+        "processInvoluntarySwitches": "count; process; ru_nivcsw; Apple derives csw minus voluntary, clamps below zero"
+    ]
+    let notCollected = ["proc_pid_rusage V4 runnable time, instructions and cycles: not implemented in this first probe; not reported as zero or unsupported hardware",
+        "thread-local page faults/context switches, physical footprint, allocations, scheduler trace, frequency, thermal/energy: not measured"]
+    let limitations = [
+        "Counter endpoints surround wider non-atomic intervals than wall brackets and include diagnostic reads; process metrics are not thread/event attribution.",
+        "All endpoints, zeros, read failures and spikes are retained. Missing/error readings have status and no numeric value. A decreasing counter has no valid delta.",
+        "baseline calls the untouched legacy sample. wall adds departure grouping/timing/recording. counters adds resource reads to the same diagnostic loop.",
+        "Order alternates baseline-wall-counters / counters-wall-baseline by sample and run. Separate worlds have randomized identity/hash placement; this is not bit-identical address layout.",
+        "Warmup worlds are saved separately. Data is streamed after each completed world, not retained across worlds; serialization can affect the following allocator/cache state.",
+        "outsideBatchWallNS includes checks, logging, counter reads, return-value destruction and loop work; it is not automatically external scheduling.",
+        "Explicit world-release timing excludes some detached handle/stamp/trace destruction; initialization, audit, trace preparation and workload totals are separate.",
+        "Mac/Linux core diagnostic only, no cause certified, no iPhone/FPS/thermal/full-game/under-5ms acceptance."]
+}
+
+enum FinancialDiagnostics {
+    static func dispatch(_ args: [String]) throws -> Bool {
+        guard let first = args.first else { return false }
+        if first == "--diagnostic-selftest" {
+            guard args.count == 1 else { throw FixtureFailure.arguments }
+            try selfTest(); return true
+        }
+        guard first == "--diagnostics" else { return false }
+        guard args.count == 2 || args.count == 3 || args.count == 4 || args.count == 5 else {
+            throw FixtureFailure.arguments
+        }
+        var quick = false, runID = 1, index = 2
+        while index < args.count {
+            if args[index] == "--quick", !quick { quick = true; index += 1 }
+            else if args[index] == "--run-id", index + 1 < args.count,
+                    let value = Int(args[index + 1]), (1...100).contains(value) {
+                runID = value; index += 2
+            } else { throw FixtureFailure.arguments }
+        }
+        let repetitions = quick ? 1 : 30, warmups = quick ? 0 : 3
+        let writer = try DiagnosticWriter(path: args[1])
+        do {
+            try writer.write(DiagnosticMetadata(runID: runID, repetitions: repetitions, warmups: warmups,
+                sourceCommit: ProcessInfo.processInfo.environment["NEXORA_SOURCE_COMMIT"] ?? "unrecorded-local-snapshot"))
+            // Both empty-window modes are saved; never subtract calibration from raw values.
+            for mode in [ProbeMode.wall, .counters] { try writer.write(calibrate(mode, iterations: 2_000)) }
+            for count in [1_000, 5_000, 20_000, 50_000, 100_000] {
+                for round in 0..<(warmups + repetitions) {
+                    let warmup = round < warmups
+                    let sampleIndex = warmup ? round + 1 : round - warmups + 1
+                    let order = (round + runID) % 2 == 0 ? ["baseline", "wall", "counters"] : ["counters", "wall", "baseline"]
+                    var economics: FinancialSample?
+                    for (position, mode) in order.enumerated() {
+                        let aggregate: FinancialSample
+                        if mode == "baseline" {
+                            aggregate = try sample(count)
+                            try writer.write(DiagnosticResult(aircraft: count, sample: sampleIndex, warmup: warmup,
+                                mode: mode, runID: runID, executionOrder: position, aggregate: aggregate,
+                                bufferPreparationNS: nil, seedAndHandlePreparationNS: nil, finalAuditNS: nil,
+                                explicitWorldReleaseNS: nil, workloadNS: nil, phases: [], records: []))
+                        } else {
+                            let result = try measuredFixture(count, sampleIndex: sampleIndex,
+                                mode: mode == "wall" ? .wall : .counters)
+                            aggregate = result.aggregate
+                            try writer.write(DiagnosticResult(aircraft: count, sample: sampleIndex, warmup: warmup,
+                                mode: mode, runID: runID, executionOrder: position, aggregate: aggregate,
+                                bufferPreparationNS: result.bufferPreparationNS,
+                                seedAndHandlePreparationNS: result.seedAndHandlePreparationNS,
+                                finalAuditNS: result.finalAuditNS, explicitWorldReleaseNS: result.explicitWorldReleaseNS,
+                                workloadNS: result.workloadNS, phases: result.phases, records: result.records))
+                        }
+                        if let old = economics, !sameEconomics(old, aggregate) { throw FixtureFailure.correctness }
+                        economics = aggregate
+                    }
+                }
+                print("R004 measurement only: \(count) aircraft, \(repetitions) alternating triples; raw warmups retained")
+            }
+            try writer.write(["kind": "complete", "status": "all-fixture-checks-passed"])
+            try writer.close()
+        } catch {
+            try? writer.write(["kind": "failure", "error": String(describing: error)])
+            try? writer.close()
+            throw error
+        }
+        return true
+    }
+
+    static func selfTest() throws {
+        func require(_ condition: Bool) throws { if !condition { throw FixtureFailure.correctness } }
+        try require(checkedNanoseconds(seconds: 1, fraction: 23, unitsPerSecond: 1_000_000) == 1_000_023_000)
+        try require(checkedNanoseconds(seconds: 1, fraction: 23, unitsPerSecond: 1_000_000_000) == 1_000_000_023)
+        try require(checkedNanoseconds(seconds: -1, fraction: 0, unitsPerSecond: 1_000_000) == nil)
+        try require(checkedNanoseconds(seconds: 0, fraction: 1_000_000, unitsPerSecond: 1_000_000) == nil)
+        try require(checkedNanoseconds(seconds: Int64.max, fraction: 0, unitsPerSecond: 1_000_000) == nil)
+        try require(checkedCounterDelta(4, 3) == nil && checkedCounterDelta(nil, 3) == nil)
+        try require(checkedCounterDelta(0, 0) == 0 && checkedCounterDelta(4, 9) == 5)
+        print("PASS diagnostic conversions: time units, bounds, overflow, missing/decreasing/zero counters")
+        for count in [64, 255, 256, 257, 1_000, 5_000, 20_000, 50_000, 100_000] {
+            let wall = try measuredFixture(count, sampleIndex: 1, mode: .wall, captureTruth: true)
+            let counters = try measuredFixture(count, sampleIndex: 1, mode: .counters, captureTruth: true)
+            let baseline = try sample(count)
+            try require(wall.truth == counters.truth && !wall.truth.isEmpty)
+            try require(sameEconomics(wall.aggregate, counters.aggregate) && sameEconomics(wall.aggregate, baseline))
+            try require(wall.records.count == 3 * ((count + 255) / 256))
+            for phase in [ProbePhase.depart, .advance, .collect] {
+                let rows = counters.records.filter { $0.phase == phase }
+                try require(rows.reduce(0) { $0 + $1.operations } == count)
+                for (i, row) in rows.enumerated() {
+                    try require(row.batch == i && row.operations > 0 && row.operations <= 256)
+                    guard let before = row.before, let after = row.after else { throw FixtureFailure.correctness }
+                    try require(before.beginOffsetNS <= before.endOffsetNS && before.endOffsetNS <= row.startOffsetNS)
+                    try require(row.startOffsetNS + row.wallNS <= after.beginOffsetNS && after.beginOffsetNS <= after.endOffsetNS)
+                }
+            }
+            print("PASS full normalized public transcript wall/counters and legacy economics: \(count) aircraft, \(wall.truth.count) words")
+        }
+        print("PASS diagnostic selftests; separate from 142 library tests; no performance acceptance")
     }
 }

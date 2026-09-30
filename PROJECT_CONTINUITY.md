@@ -71,7 +71,29 @@ review/r004-source-20260930 only exported that exact candidate when local direct
 retrieval failed. Its run 36678040118 is not test evidence or a development branch.
 Do not build future work from that export-only tip.
 
-## Exact next engineering boundary — R005 not implemented
+## Immediate diagnostic boundary — newer owner handoff, 2026-09-30
+
+The handoff explicitly prioritizes measurement before R005 or any FinanceStore
+optimization. Work branch: diagnostic/r004-batch-counters-20260930, based on the
+published 5b5599895fa1bdbf00e951104e0cd55dc00f9a56 (98 files). Re-read its live tip;
+this paragraph cannot contain its own future commit hash.
+
+The measurement-only candidate extends Sources/NexoraFinancialCheck/main.swift.
+The original sample and CLI are unchanged except a new diagnostic dispatch.
+Checks/financial-diagnostics.py rebuilds original source/test/check/Package/AGENTS
+and original workflow object hashes. No origin-index or business code change.
+New .github/workflows/r004-diagnostics.yml runs independent Apple gates and three
+sequential A/A processes; an uploaded candidate or a started run is NOT a pass.
+See Docs/Design/R004-BATCH-DIAGNOSTICS.md and today's measurement ledger for actual
+results/failures. Original R004 evidence above remains separate and unchanged.
+
+Next safe action: validate the candidate on Apple, inspect complete raw per-batch
+records, first batches, counters and calibration, then decide whether a targeted
+causal experiment is warranted. No cause or deadline is certified by this patch.
+Do not switch the invoice index or begin R005 until this diagnostic boundary has
+been reviewed. Do not discard spikes, unsupported/failed reads or wrapper failures.
+
+## Later engineering boundary — R005 not implemented
 First design/implement permanent world/entity/operation/invoice identity distinct
 from process-local handles. Preserve old invoice origins after aircraft retirement
 or slot reuse, with explicit mapping and invalid-input/restart tests. Then define
