@@ -136,4 +136,29 @@ public struct EntitySpace: ~Copyable, Sendable {
         }
         return live == liveCount && retired == retiredCount && free + live + retired == capacity
     }
+
+    /// Package-only, detached read-only evidence. Never called by apply or per-frame work.
+    package func auditIdentity() -> IdentityAudit {
+        IdentityAudit(spaceID: ObjectIdentifier(stamp), epochs: epochs.map { $0 },
+                      flags: flags.map { $0 }, nextFree: nextFree.map { $0 },
+                      freeHead: freeHead, liveCount: liveCount, retiredCount: retiredCount)
+    }
+
+    /// Constructs a new test fixture; cannot alter an existing identity space.
+    package init(testingCapacity: Int, initialGeneration: UInt32) throws {
+        try self.init(capacity: testingCapacity, initialGeneration: initialGeneration)
+    }
+
+}
+
+
+/// Exact diagnostic state, not a serialization format or a mutable storage view.
+package struct IdentityAudit: Equatable, Sendable {
+    package let spaceID: ObjectIdentifier
+    package let epochs: [UInt32]
+    package let flags: [UInt8]
+    package let nextFree: [UInt32]
+    package let freeHead: UInt32
+    package let liveCount: Int
+    package let retiredCount: Int
 }

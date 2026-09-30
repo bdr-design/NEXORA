@@ -1,18 +1,12 @@
 {
   "project": "NEXORA",
-  "lineage": "restart-20260930",
-  "update_id": "NXR-R001",
-  "development_version": "0.0.1",
+  "update_id": "NXR-R002",
+  "development_version": "0.0.2",
   "app_build": null,
-  "status": "scaffold-ci-verified-not-gameplay",
+  "status": "aircraft-store-local-verified-apple-pending",
+  "base_commit": "cf305b5a13cad67555dd18f129f23ffdecfd68d2",
   "full_gameplay_assets_proven": false,
   "device_performance_certified": false,
   "scheduler_implemented": false,
-  "retired_updates": [
-    "NXR-0001",
-    "NXR-0002",
-    "NXR-0003"
-  ],
-  "verified_code_commit": "c45d24e0445219fc0db4df5efd0e920b5e129c16",
-  "ci_run": 36646039605
+  "persistence_implemented": false
 }

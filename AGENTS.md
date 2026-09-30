@@ -16,49 +16,56 @@
 
 ### مراجعة إلزامية في كل يوم عمل وعند كل انتقال للدردشة
 
-قبل أي تعديل: اقرأ هذا التنبيه، وتحقق من فرع العمل وHEAD الفعليين، وأكد أن مصدر العمل هو R001 المصرح به وليس أحد الفروع المحظورة. سجّل التاريخ والفرع وHEAD ونتيجة المراجعة في Docs/Daily/YYYY-MM-DD.md، مع أحدث نقطة استمرارية في PROJECT_CONTINUITY.md. عند الشك في المصدر توقف عن التغييرات الحساسة. هذه قاعدة مراجعة موثقة وليست مهمة آلية مجدولة أو حماية GitHub تقنية.
+قبل أي تعديل: اقرأ هذا التنبيه، وتحقق من فرع العمل وHEAD الفعليين، وأكد أن مصدر العمل هو R001 المصرح به وتحديثاته وليس أحد الفروع المحظورة. سجّل التاريخ والفرع وHEAD ونتيجة المراجعة في سجل اليوم، مع أحدث نقطة استمرارية في PROJECT_CONTINUITY.md. عند الشك في المصدر توقف عن التغييرات الحساسة. هذه قاعدة مراجعة موثقة وليست مهمة آلية مجدولة أو حماية GitHub تقنية.
 
-Permanent exclusion: these three branches and their implementation content must never be used as development, build, repair, reference, recovery, test, schema, or benchmark sources. Their names appear solely as a denylist. This notice supersedes all earlier recovery-use language; it does not claim repository/history erasure. Check and record the allowed R001 source at every working-day/session handoff.
+Permanent exclusion: these three branches and their implementation content must never be used as development, build, repair, reference, recovery, test, schema, or benchmark sources. Their names appear solely as a denylist. This notice supersedes all earlier recovery-use language; it does not claim repository/history erasure.
 
-The owner's explicit current instructions take precedence over older project
-notes. On 2026-09-30 the owner authorized a radical deletion and fresh start.
+## Execution authorization — latest owner decision, 2026-09-30
+
+After being asked explicitly whether implementation/testing could proceed on an
+isolated R001-derived branch without assistant-side proof of an internal effort
+selector, the owner replied: "الجهد الداخلي الان pro كمل لاتشيل همه".
+This is the owner's authorization to proceed with actual implementation and
+staged tests. It supersedes the earlier stop pending that setting's verification
+for this work. The assistant has NOT independently inspected or verified the
+internal setting and must never claim to have done so. High-care review,
+source isolation, concrete evidence and separate production/device acceptance
+remain mandatory. Do not keep stopping at documentation because of the
+superseded setting-proof blocker, and do not treat authorization as test evidence.
 
 ## Effort and continuity
-Sensitive implementation requires the owner's very-high reasoning/effort gate.
-Never claim a model setting that is not exposed or verifiable. If the gate cannot
-be verified, stop sensitive work and limit work to safe inspection, documentation
-and handoff. No release may be approved on an invented setting. Do not weaken
-this rule to pass a gate.
 
-Keep work bounded. At any loss of source identity or context reliability, stop
-sensitive changes and record the exact commit, files, test commands and results,
-known failures, and next safe action in PROJECT_CONTINUITY.md. Do not promise
-background continuation. Chat is not durable project storage.
+Keep work bounded and review failures before moving to the next stage. At any
+loss of source identity or context reliability, stop sensitive changes and
+record the exact commit, files, test commands and results, known failures, and
+next safe action in PROJECT_CONTINUITY.md. Do not promise background continuation.
+Chat is not durable project storage.
 
 ## Clean start
-Do not import code, schemas, runtime files, or patches from Global Holdings,
-retired NEXORA NXR-0001/2/3, or the abandoned repair workspace. Product ideas and
-user requirements survive; technical implementations do not. Public language and
-platform documentation may inform newly written code.
+
+Do not import code, schemas, runtime files, or patches from other projects or
+excluded implementations. Product ideas and user requirements survive; technical
+implementations do not. Public language and platform documentation may inform
+newly written code. Only the permitted R001 line and its authorized successors
+are implementation sources.
 
 ## Work discipline
+
 Before a change: identify the state owner, public entry points, caller/callee
 path, side effects, failure behavior, dependencies and test evidence. Use primary
 sources for uncertain platform facts. Do not broaden a fix into unrelated work.
-
 Verify public misuse, exceptional inputs, concurrency and lifecycle, not just the
 happy path. Run both Debug and Release. Compiler and sanitizer success do not
 prove logical correctness. Do not disable checks to obtain a green result.
 
 ## Performance and evidence
+
 Keep synchronous work off the future UI critical path. No task, actor, or lock per
 entity; no normal-save full-world JSON; no visual-motion writes to economic truth.
 Measure before selecting an optimization or adding parallel shared workspaces.
 Never equate record count, element stride or a smoke test with complete gameplay,
 physical memory, zero allocations, frame stability, or thermal certification.
-
 Document each update, including failures and limits. A new domain is not complete
-without diagnostic evidence and end-to-end acceptance. This notice authorizes
-no force push, destructive history rewrite, repository deletion, or change to
-another repository. It does not permit creating or retaining a recovery copy of
-the disqualified implementation for future use.
+without diagnostic evidence and end-to-end acceptance. No force push, destructive
+history rewrite, repository deletion, or change to another repository is authorized
+by this implementation update. Do not create a recovery copy of excluded code.

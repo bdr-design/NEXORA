@@ -1,39 +1,37 @@
 # NEXORA
 
-## Restart: NXR-R001 — 30 September 2026
+## NXR-R002 — Executable aircraft lifecycle
 
-The previous NXR-0001/0002/0003 implementation and unfinished repair work are
-retired. This tree is newly written, not a patch, port, overlay, or continuation
-of those implementations. Historical Git objects are retained only as a recovery
-record. See `Docs/RESET-RECORD.md`.
+Development version 0.0.2. This is a tested core candidate, not a playable game.
+Read AGENTS.md's permanent source exclusion and current authorization first.
 
-**What exists:** a small Swift 6 package with a uniquely owned identity store,
-a bounded diagnostic timeline, a lifecycle smoke executable, and tests.
+Implemented: R001 identity ownership and bounded timeline, plus AircraftStore
+with owned identity/rows, create/start/complete/retire, revision and operation
+contracts, independent serial-model tests, compiler misuse gates and isolated
+invariant fail-stop checks. Five raw scale fixtures extend to 100,000 records.
 
-**What does not exist:** a playable game, domain engines, scheduler, transaction
-coordinator, persistence, iOS app, renderer, or completed diagnosis center.
+Not implemented here: real routes/trips, scheduler, financial engines, save/load,
+document storage, iOS app or map. No IPA. 20,000 fully functional assets is future
+acceptance; 100,000 is an architectural goal, not certified gameplay capacity.
 
-The 20,000 fully functional asset acceptance target and 100,000 design target
-remain requirements. Tests of 100,000 identity handles DO NOT satisfy them.
-
-### Working entry points
-
-- `AGENTS.md` — operational safeguards.
-- `PROJECT_CONTINUITY.md` — current work and next bounded milestone.
-- `Docs/REQUIREMENTS.md` — product requirements retained, not old technology.
-- `Docs/DESIGN-R001.md` — ownership model, costs, limits and paths.
-- `Docs/VALIDATION-R001.md` — exactly what has and has not been tested.
-- `CHANGELOG.md` and `VERSION.json` — restart-scoped update identity.
-
-### Commands
+Current implementation branch: feature/r002-aircraft-lifecycle-20260930.
+Exact current state and remaining stages: PROJECT_CONTINUITY.md.
+Implementation evidence and limitations: Docs/Updates/NXR-R002.md.
+Product requirements: Docs/REQUIREMENTS.md.
 
 ```sh
 swift test -Xswiftc -warnings-as-errors
 swift test -c release -Xswiftc -warnings-as-errors
 bash Checks/verify.sh
+bash Checks/verify-r002.sh
+bash Checks/verify-failstop.sh
 swift test --sanitize=thread -Xswiftc -warnings-as-errors
-swift run -c release nexora-check --json local-evidence/identity-smoke.json
+python3 Checks/review-r002.py
+swift run -c release nexora-aircraft-check --json local-evidence/aircraft-samples.json
 ```
 
-`Checks/verify.sh` creates `local-evidence/`. Raw timing reports measure identity
-creation, validation and destruction only. They are not frame-time benchmarks.
+The crash gate intentionally launches four invalid test-fixture processes and
+requires a failure plus the specific invariant marker. It is not a gameplay crash
+report. Deep audits/exports and fixture controls are not the per-command hot path.
+Local and Apple CI evidence are separate. Check the exact remote run before
+assuming Apple success; local Linux timings do not certify iPhone performance.

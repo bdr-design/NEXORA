@@ -1,8 +1,8 @@
-name: NEXORA Restart Gates
+name: NEXORA R002 Core Gates
 
 on:
   push:
-    branches: ["rebuild/native-r001", "foundation/clean-core"]
+    branches: ["feature/r002-aircraft-lifecycle-20260930", "main", "foundation/clean-core"]
   pull_request:
     branches: ["main", "foundation/clean-core"]
 
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  foundation:
+  core:
     runs-on: macos-15
     timeout-minutes: 20
     steps:
@@ -24,6 +24,10 @@ jobs:
           git rev-parse HEAD^{tree} > local-evidence/source-tree.txt
           swift --version > local-evidence/toolchain.txt
           xcodebuild -version >> local-evidence/toolchain.txt
+      - name: Source contracts and scenario mapping
+        run: |
+          set -o pipefail
+          python3 Checks/review-r002.py 2>&1 | tee local-evidence/source-review.txt
       - name: Debug contracts
         run: |
           set -o pipefail
@@ -32,29 +36,35 @@ jobs:
         run: |
           set -o pipefail
           swift test -c release -Xswiftc -warnings-as-errors 2>&1 | tee local-evidence/release.txt
-      - name: Compiler ownership boundaries
+      - name: External compiler ownership boundaries
         run: |
           set -o pipefail
-          bash Checks/verify.sh 2>&1 | tee local-evidence/compiler-gates.txt
+          bash Checks/verify.sh 2>&1 | tee local-evidence/r001-compiler.txt
+          bash Checks/verify-r002.sh 2>&1 | tee local-evidence/r002-compiler.txt
+      - name: Isolated Debug and Release fail-stop probes
+        run: |
+          set -o pipefail
+          bash Checks/verify-failstop.sh 2>&1 | tee local-evidence/failstop.txt
       - name: Thread Sanitizer
         run: |
           set -o pipefail
           swift test --sanitize=thread -Xswiftc -warnings-as-errors 2>&1 | tee local-evidence/tsan.txt
-      - name: iOS identity and observability compile gates
+      - name: Three iOS library compile gates
         run: |
           set -o pipefail
-          for scheme in NexoraIdentity NexoraObservability; do
+          for scheme in NexoraIdentity NexoraObservability NexoraAviation; do
             xcodebuild -scheme "$scheme" -destination 'generic/platform=iOS' -configuration Release CODE_SIGNING_ALLOWED=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES build 2>&1 | tee "local-evidence/ios-$scheme.txt"
           done
-      - name: Identity lifecycle smoke, not gameplay benchmark
+      - name: Raw lifecycle samples, not full gameplay
         run: |
           set -o pipefail
-          swift run -c release nexora-check --json local-evidence/identity-smoke.json 2>&1 | tee local-evidence/smoke.txt
+          swift run -c release nexora-check --json local-evidence/identity-smoke.json 2>&1 | tee local-evidence/identity-smoke.txt
+          swift run -c release nexora-aircraft-check --json local-evidence/aircraft-samples.json 2>&1 | tee local-evidence/aircraft-smoke.txt
           git diff --exit-code
       - name: Preserve evidence even on failure
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: nexora-r001-evidence
+          name: nexora-r002-evidence
           path: local-evidence/
           if-no-files-found: error

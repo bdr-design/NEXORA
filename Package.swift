@@ -7,13 +7,18 @@ let package = Package(
     products: [
         .library(name: "NexoraIdentity", targets: ["NexoraIdentity"]),
         .library(name: "NexoraObservability", targets: ["NexoraObservability"]),
-        .executable(name: "nexora-check", targets: ["NexoraCheck"])
+        .library(name: "NexoraAviation", targets: ["NexoraAviation"]),
+        .executable(name: "nexora-check", targets: ["NexoraCheck"]),
+        .executable(name: "nexora-aircraft-check", targets: ["NexoraAviationCheck"])
     ],
     targets: [
         .target(name: "NexoraIdentity"),
         .target(name: "NexoraObservability"),
+        .target(name: "NexoraAviation", dependencies: ["NexoraIdentity"]),
         .executableTarget(name: "NexoraCheck", dependencies: ["NexoraIdentity", "NexoraObservability"]),
-        .testTarget(name: "NexoraFoundationTests", dependencies: ["NexoraIdentity", "NexoraObservability"])
+        .executableTarget(name: "NexoraAviationCheck", dependencies: ["NexoraAviation", "NexoraIdentity"]),
+        .testTarget(name: "NexoraFoundationTests", dependencies: ["NexoraIdentity", "NexoraObservability"]),
+        .testTarget(name: "NexoraAviationTests", dependencies: ["NexoraAviation", "NexoraIdentity", "NexoraObservability"])
     ],
     swiftLanguageModes: [.v6]
 )
