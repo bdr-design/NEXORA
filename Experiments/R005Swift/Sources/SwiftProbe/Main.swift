@@ -1,0 +1,55 @@
+import Foundation
+#if canImport(Darwin)
+import Darwin
+#else
+import Glibc
+#endif
+@main enum Main {
+    static func main() {
+        do {try run()} catch {
+            FileHandle.standardError.write(Data((String(describing:error)+"\n").utf8)); exit(1)
+        }
+    }
+    static func run() throws {
+        let args=Array(CommandLine.arguments.dropFirst())
+        let result: Any
+        switch args.first {
+        case "selftest": result=["boundaries":try boundaryChecks(),"mutations":try mutationChecks()]
+        case "order":
+            guard args.count==2,let n=Int(args[1]) else {throw ProbeError.invalid("order N")}
+            result=try orderChecks(n)
+        case "storage":
+            guard args.count==3, let n=Int(args[2]) else {throw ProbeError.invalid("storage directory N")}
+            result=try storageCheck(args[1],count:n)
+        case "retention-multi":
+            guard args.count==3, let n=Int(args[2]) else {throw ProbeError.invalid("retention-multi directory N")}
+            result=try retentionCheck(args[1],count:n,days:3)
+        case "retention":
+            guard args.count==3, let n=Int(args[2]) else {throw ProbeError.invalid("retention directory N")}
+            result=try retentionCheck(args[1],count:n)
+        case "bootstrap":
+            guard args.count==3, let n=Int(args[2]) else {throw ProbeError.invalid("bootstrap directory N")}
+            try bootstrap(args[1],count:n);result=["status":"pass"]
+        case "crash-action":
+            guard args.count==3 else {throw ProbeError.invalid("crash-action directory wal|snapshot")}
+            try crashAction(args[1],checkpointAction:args[2]=="snapshot");result=["status":"pass"]
+        case "recover":
+            guard args.count==2 else {throw ProbeError.invalid("recover directory")};result=try recoverySummary(args[1])
+        case "make-ledger":
+            guard args.count==3,let n=Int(args[2]) else {throw ProbeError.invalid("make-ledger directory N")}
+            result=try makeLedger(args[1],count:n)
+        case "compact-ledger":
+            guard args.count==3,let n=Int(args[2]) else {throw ProbeError.invalid("compact-ledger directory N")}
+            result=try compactLedger(args[1],count:n)
+        case "recover-ledger":
+            guard args.count==3,let n=Int(args[2]) else {throw ProbeError.invalid("recover-ledger directory N")}
+            result=try validateRetentionGeneration(args[1],count:n)
+        case "bench":
+            guard args.count>=3,let n=Int(args[1]),let b=Int(args[2]) else {throw ProbeError.invalid("bench N budget [legacy|deadline]")}
+            result=try benchmark(n,budget:b,legacy:args.contains("legacy"),deadline:args.contains("deadline"))
+        default: throw ProbeError.invalid("selftest | order N | bench N budget")
+        }
+        let data=try JSONSerialization.data(withJSONObject:result,options:[.sortedKeys,.prettyPrinted])
+        print(String(decoding:data,as:UTF8.self))
+    }
+}

@@ -1,83 +1,59 @@
 # NEXORA — current state
 
-Date: 2026-09-30 / Asia/Riyadh. Repository: bdr-design/NEXORA only.
-AGENTS.md remains mandatory. Excluded branch names are a denylist only:
+Session date: 2026-09-30 / Asia/Riyadh. Repository bdr-design/NEXORA only.
+AGENTS.md read and remains mandatory. Excluded branch names are a denylist only:
 archive/before-radical-rebuild-20260930; audit/nxr-0003-20260930;
-fix/nxr-0003-contract-repair-20260930. Never read/use/copy their implementation.
-No destructive history changes or background promises. Preserve local work.
+fix/nxr-0003-contract-repair-20260930. No content from these branches was read.
+No destructive checkout/reset/history rewriting, force push or background promises.
 
-Main was fast-forwarded from 5b5599895fa1bdbf00e951104e0cd55dc00f9a56 to
-38ce39cf9322f47e4def5f6eddb425c5a66ea7f9 after ancestry and prior successful Apple
-run36739672424/source-tree0aaa246af5dc66008683f35754ec211da831e729 verification.
-This includes auditor0706447/publication5384b58 plus the already verified evidence
-hardening74d8a7f and causal acquisition38ce39c. No production library changed.
-Single active work branch: diagnostic/r005-design-1m-20260930. Read live HEAD.
-Other permitted branches remain historical; none was deleted or rewritten.
-Prior continuity is retained verbatim in Docs/History/2026-09-30-BEFORE-R005-CONTINUITY.md.
-Subsequent decisions/results belong in dated append-only daily entries.
+Single active branch: diagnostic/r005-design-1m-20260930.
+Session HEAD verified before work: 8d5036fb9f9294d24f11c7291ae3e07205db7166.
+Main remains 38ce39cf9322f47e4def5f6eddb425c5a66ea7f9. No new main merge.
+Latest owner instruction authorizes executable Swift/order/storage experiments and
+requires results, not another ADR. Production design/billing/retention still await
+owner decision after those results. Do not implement new HR/maintenance/delivery.
+No production Sources, Tests, Checks, root Package.swift or AGENTS change.
+Historical permitted branches remain historical. Preserve previous results/failures.
 
-Owner directive supersedes the old indefinite R004 investigation prerequisite:
-one bounded diagnostic iteration, then proposed R005 design for1M (headroom2M).
-Acceptance on iPhone17ProMax:100k,250k,1M with the agreed features. No device result.
-Budgets: target128B/hot asset, cap200B; <=0.5us/full event on device; zero heap
-allocations/event and <=1/advance; <=quarter performance core; <=2ms visible save
-stall. These are requirements, not measured achievements.
+New work is isolated in Experiments/R005Swift, a Swift 6 executable package using
+safe ContiguousArray-owned columns, an actual resumable hierarchical timing wheel,
+atomic accrual, exact ordered reference comparisons, deliberate scheduler mutants,
+canonical full checkpoint + command WAL, and disposable closed-detail compaction.
+The C shim is only allocator/clock/footprint/hash/file-descriptor instrumentation;
+no simulation state is stored through unsafe C or Swift pointers.
+New .github/workflows/r005-swift-executable.yml supplements every existing gate.
+It does not replace the old142 Swift tests, compiler, corruption or sanitizer gates.
+CI records physical footprint, calibrated allocation-entry counts and ns/event;
+wall-clock values are observations, not speed pass/fail thresholds.
 
-This branch prepares disposable V4/event instrumentation in a generated copy,
-not production Sources. The original fixture is preserved and transcript-compared.
-Equal instructions do not prove off-CPU time; zero faults do not prove index
-exoneration. No origins optimization. A zero counter follows the requested
-unsupported/null policy with an explicit caveat that this is not hardware proof.
-A physical Apple Silicon fallback has not been performed here. Missing hardware
-attribution cannot become a fabricated successful causal closure.
+Local source compiled on Swift6.2.1/Linux; exact R004 event comparisons caught and
+corrected an initial prototype generation mismatch (1 versus actual0). A nested
+map expression also required splitting for the Swift type checker. Original tests
+were not normalized or changed. Codeload failed DNS; a verified permitted artifact
+provided the identical unchanged production sources for local compilation.
+Local Release tests passed eight real injected mutants (seven classes with +/-1
+separate),nine boundary groups,exact event order through1M,23 real SIGKILL points,
+47 torn WAL tails and15 storage/arithmetic negatives. Apple results for this NEW
+source are pending at commit creation; never label upload as a passing run.
 
-R005 ADR: Docs/ADR/R005-MILLION-ASSET-DESIGN.md with required companions
-R005-BUDGET-ADDENDUM.md and R005-REVIEW-2-BUDGET-RETENTION.md. All remain PROPOSED;
-owner approval is required before production changes. Review2 supersedes the8GiB
-default recommendation and narrows readiness, not the measured historical numbers.
-Prototype: Experiments/R005; C row/storage update kernel only, not a full scheduler,
-financial engine, Swift integration, save system or iPhone app.
-Tested corrected code357dcd4e0658d84b821b3fcd9360b7fc29255225: Apple run36754835103
-all three jobs SUCCESS. Original142 tests/11suites each Debug/Release/TSan, existing
-Python92,new12,diagnostic/marker/writer paths inclTSan,29 compiler rejections,
-5valid clients,12fail-stops and5iOS library compiles passed. Layout12cases/build
-passed,1M requested owned122.658024B/asset; this is only the measured row kernel.
-Publication40b593b43bb921dbd477abffa8a6ae001495b2ef also passed run36756867307;
-it must not be mislabeled as the acquisition source. Re-read the latest live tip.
-The full proposed reservation127.352328B/asset includes unmeasured future pools/map.
-Only647672 bytes remain to target128B at1M. The current commutative C fixture does
-not prove deterministic scheduler order or full Swift allocator/CPU costs.
+Scopes that must remain explicit: the new kernel accrues and does not issue the
+same individual invoices as R004; elapsed comparisons are not full-engine speedups.
+Owned column capacity is not phys_footprint. Allocator interposition is calibrated
+on actual Swift arrays and counts covered entry calls on the measured thread,
+not kernel VM activity. The typed checkpoint is a full copy, not incremental save.
+Retention files are generated test data only; no real financial record was removed.
+A one-day five-trips/90%-settled fixture and three-period correctness case do not
+prove bounded lifetime storage with arbitrary open debt. No iPhone/device/heat/FPS,
+0.5us production-event or2ms save-visible-pause achievement is claimed.
 
-One bounded acquisition ran on b097ae64ab539c60fc82f08ec4c60a79cb65c124,
-run36754290347/diagnostic job110020462756 SUCCESS. That run's layout compiler job
-failed before measurement; the corrected run above is separate. Raw artifact
-11115497993 SHA2566eb273848b9e37eb074dac106e6bf86269cbbfe4afb1337a1d2d8f286dd9354e:
-359640 measured batches; all V4 instructions/cycles unavailable;510000 event starts.
-Bounded iteration ended INCONCLUSIVE; physical Mac fallback is NOT performed.
-Do not repeat hosted acquisitions or claim the historical causes are resolved.
-Docs/R004-BOUNDED-DIAGNOSTIC-VERDICT.md and Docs/VALIDATION-R005-PREPARATION.md
-contain actual results/failures. Review2 rechecked the same raw files, not new runs:
-13 V4>5ms spikes,11 with threadCPU<1ms; runnable includes running/task aggregation,
-not waiting alone, and no captured timebase was guessed. In event mode,20k/sample3/
-batch67 has3536625ns next-start gap within3760750ns wall, allocation250ns and
-threadCPU244750ns. This localizes one observation, not every historical cause.
+R004 bounded acquisition remains INCONCLUSIVE; no new spike acquisition.
+Artifact11115497993 SHA2566eb273848b9e37eb074dac106e6bf86269cbbfe4afb1337a1d2d8f286dd9354e
+is the only raw input for the requested cheap runnable reanalysis. XNU defines
+runnable as including running and aggregates over the task. Missing recorded
+mach timebase cannot be guessed; raw values cannot be called wait-only time.
+Physical Mac fallback is optional if actual hardware becomes available, not a
+prerequisite to this experiment. PMU instructions/cycles were unavailable on VM.
 
-Latest work: documentation-only consultant-review follow-up based on40b593b.
-See Docs/Daily/2026-09-30-R005-REVIEW-2.md. No code/workflow/test changes or new
-benchmark. New documentation-commit CI must be checked independently.
-Before design approval: matching Swift representation, order-sensitive scheduler
-oracle (including deliberately reversed equal-time events), and disposable encoded
-retention growth/compaction measurements. Removing8E sort scratch is an untested
-candidate, not an achieved119B complete engine. Do not narrow64-bit IDs/times or
-remove captured fare without explicit semantic/overflow proof and budget accounting.
-
-Consultant recommendation for summarization is NOT owner approval of deletion.
-Proposed retention keeps exact money but permits coarser OLD CLOSED period granularity
-and bounded parent/root commitments; every original period/hash forever is unbounded.
-Open obligations stay detailed on disk, not all resident; unlimited open backlog
-requires quota/exposure admission or honest backpressure on new credit operations.
-256/512/1024MiB are trial quotas, not a selected default. Optional export is not a
-mandatory player workflow. Until owner approval, do not delete/condense financial
-detail or change periodic-billing semantics. No new HR/maintenance/delivery domain.
-No R005 production code before approval. A single physical Mac fallback remains
-possible using Experiments/R005/PHYSICAL-FALLBACK.md, not required to reopen VM loops.
+One short RESULTS.md from the executed suite is the next delivery, with all
+metrics, failures, exact source and remaining scope. No new design document.
+At resume re-read this branch HEAD and workflow results before further changes.

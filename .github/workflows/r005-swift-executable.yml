@@ -1,0 +1,59 @@
+name: R005 Swift Executable Results
+on:
+  push:
+    branches: ["diagnostic/r005-design-1m-20260930"]
+permissions:
+  contents: read
+jobs:
+  swift-model:
+    runs-on: macos-15
+    timeout-minutes: 40
+    env:
+      PYTHONDONTWRITEBYTECODE: 1
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Source and environment
+        run: |
+          mkdir -p swift-results
+          git rev-parse HEAD > swift-results/commit.txt
+          git rev-parse HEAD^{tree} > swift-results/tree.txt
+          swift --version > swift-results/environment.txt
+          xcodebuild -version >> swift-results/environment.txt
+          uname -a >> swift-results/environment.txt
+          sysctl hw.model hw.memsize >> swift-results/environment.txt
+      - name: Swift 6 Debug and Release builds
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          swift build -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../swift-results/build-debug.txt
+          swift build -c release -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../swift-results/build-release.txt
+      - name: Actual Swift behavior, mutation, recovery and measured storage gates
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          python3 -B run_suite.py .build/debug/nxr-swift-probe ../../swift-results/debug 2>&1 | tee ../../swift-results/debug-run.txt
+          python3 -B run_suite.py .build/release/nxr-swift-probe ../../swift-results/release --release 2>&1 | tee ../../swift-results/release-run.txt
+      - name: Actual Swift model under Thread Sanitizer
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          swift build --scratch-path .build-tsan --sanitize=thread -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../swift-results/tsan-build.txt
+          .build-tsan/debug/nxr-swift-probe selftest > ../../swift-results/tsan-selftest.json
+          .build-tsan/debug/nxr-swift-probe order 1000 > ../../swift-results/tsan-order.json
+          python3 -B crash_tests.py .build-tsan/debug/nxr-swift-probe ../../swift-results/tsan-crashes.json
+      - name: Production unchanged and source file digests
+        run: |
+          set -euo pipefail
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > swift-results/original-source-guard.txt
+          git diff --exit-code
+          find Experiments/R005Swift/Sources -type f -exec shasum -a 256 {} \; > swift-results/new-source-sha256.txt
+      - name: Keep all results and failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r005-swift-executable-results
+          path: swift-results/
+          if-no-files-found: error
