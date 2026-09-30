@@ -58,6 +58,9 @@ jobs:
           for config in debug release; do
             bin="$(swift build -c "$config" --show-bin-path)"
             "$bin/nexora-financial-check" --diagnostic-selftest 2>&1 | tee "audit-evidence/diagnostic-$config.txt"
+            if [ "$GITHUB_REF_NAME" = "diagnostic/r004-causal-trace-20260930" ]; then
+              "$bin/nexora-financial-check" --trace-selftest 2>&1 | tee "audit-evidence/trace-selftest-$config.txt"
+            fi
             python3 ReviewTests/verify_writer.py "$bin/nexora-financial-check" 2>&1 | tee "audit-evidence/writer-$config.txt"
           done
       - name: External compiler and corruption boundaries
@@ -74,6 +77,9 @@ jobs:
           bin="$(swift build --scratch-path .build/audit-tsan --sanitize=thread --show-bin-path)"
           "$bin/nexora-financial-check" --diagnostic-selftest 2>&1 | tee audit-evidence/diagnostic-tsan.txt
           python3 ReviewTests/verify_writer.py "$bin/nexora-financial-check" 2>&1 | tee audit-evidence/writer-tsan.txt
+          if [ "$GITHUB_REF_NAME" = "diagnostic/r004-causal-trace-20260930" ]; then
+            "$bin/nexora-financial-check" --trace-selftest 2>&1 | tee audit-evidence/trace-selftest-tsan.txt
+          fi
       - name: Fresh schema and CLI smoke test, not a performance campaign
         run: |
           set -euo pipefail
@@ -101,6 +107,18 @@ jobs:
           xcrun xctrace list templates > audit-evidence/xctrace-templates.txt 2>&1
           xcrun xctrace help record > audit-evidence/xctrace-record-help.txt 2>&1
           xcrun xctrace help export > audit-evidence/xctrace-export-help.txt 2>&1
+      - name: Symbolized causal acquisition, not a speed optimization
+        if: github.ref_name == 'diagnostic/r004-causal-trace-20260930'
+        run: |
+          set -euo pipefail
+          swift build -c release --scratch-path .build/profile --product nexora-financial-check -Xswiftc -g -Xswiftc -warnings-as-errors 2>&1 | tee audit-evidence/profile-build.txt
+          bin="$(swift build -c release --scratch-path .build/profile --show-bin-path)/nexora-financial-check"
+          xcrun dsymutil "$bin" -o "$bin.dSYM"
+          xcrun dwarfdump --uuid "$bin" > audit-evidence/binary-uuid.txt
+          xcrun dwarfdump --uuid "$bin.dSYM" > audit-evidence/dsym-uuid.txt
+          cp "$bin" audit-evidence/nexora-financial-check
+          cp -R "$bin.dSYM" audit-evidence/nexora-financial-check.dSYM
+          python3 ReviewTests/acquire_trace.py "$bin" "$GITHUB_SHA" audit-evidence/causal
       - name: Preserve audit evidence, including failures
         if: always()
         uses: actions/upload-artifact@v4

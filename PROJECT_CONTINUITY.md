@@ -1,4 +1,4 @@
-# NEXORA continuity — R004 evidence hardening, not a performance fix
+# NEXORA continuity — R004 causal acquisition, not a performance fix
 
 ## Permanent exclusion / تنبيه دائم
 The following names are a denylist only. Their implementation, tests, schemas,
@@ -19,7 +19,7 @@ setting verification is claimed. The consultant supplies hypotheses, not merge
 approval or test evidence. Preserve local changes and exact evidence; no background
 promises. Trace inputs, owner, writes, callees and failure behavior before changes.
 
-## Current engineering work — 2026-09-30 / Asia/Riyadh
+## Stage A source — now verified, 2026-09-30 / Asia/Riyadh
 Working branch: fix/r004-evidence-hardening-20260930.
 Parent live HEAD verified: 5384b58d193f90859a8f0efeaec6d28d6e93b89e.
 Parent tree reconstructed from all 112 files/modes:
@@ -58,8 +58,11 @@ Actual writer: 14 tests in each Debug/Release PASS, including eight-process race
 existing files/links/FIFO, missing identity, closed writes and embedded NUL handling.
 29 compiler rejections/five valid clients and 12 corruption fail-stops passed.
 Pinned old Apple reanalysis remains byte-identical for 372600 measured batch records.
-No new local TSan, Apple gate or performance cause is claimed at this source commit.
-The new Apple workflow must finish and its complete artifacts must be checked.
+No local TSan or performance cause is claimed. Apple stage A has now completed:
+code74d8a7f1d072209aee3d8e7e964d76468890a694, run36737270689, job109962144323
+SUCCESS. All116 source bytes/modes reconstructed c1ef6e3dc1581fc125e7f7b5f34985c74f7edd74.
+Actual diagnostic transcripts and writer tests also passed under TSan. Full details:
+Docs/VALIDATION-R004-HARDENING.md. This supersedes the initial pending-Apple note.
 
 Two initial Python assertions failed because stricter schema rejection preceded
 old error-message expectations. The valid failure fixture and expected missing-field
@@ -113,3 +116,21 @@ real airports/routes, other sectors, iOS application/Metal map and physical-devi
 acceptance remain unimplemented. Expense categories are not those full systems.
 20k full-feature assets on iPhone 17 Pro Max is the acceptance target; 100k remains
 architectural. No FPS, heat, energy, physical-memory, under-1/5ms or full-game claim.
+
+## Current work: separate causal-acquisition branch
+Branch diagnostic/r004-causal-trace-20260930, parent74d8a7f1d072209aee3d8e7e964d76468890a694.
+Read live tip; it is not the main branch. StageA fixes are retained, not reimplemented.
+Sources/NexoraFinancialCheck/main.swift adds optional serial OSSignposter batch
+intervals and a distinct trace protocol. No production library/original Swift test/
+Package/index change. CI keeps the original gates and adds actual marker selftests
+under Debug/Release/TSan, then nonprivileged symbolized xctrace acquisition.
+Local Python92 (including15 trace-protocol tests) and Swift142/11 in Debug/Release
+passed. Linux explicitly lacks Apple markers; it is not Apple tracing evidence.
+A combined local command timed out during Debug; the standalone rerun passed.
+Apple tracing gates and actual acquisition are pending at this source commit.
+See Docs/Daily/2026-09-30-R004-CAUSAL.md. Do not label a trace usable before inspecting
+its raw completion, source/binary identity, exported schemas, markers and stacks.
+First world versus warmup observations do not yet establish an origins first-touch
+cause. Time/counter intervals have different boundaries and observation overhead.
+Next: inspect this branch's Apple result/artifacts, attribute actual acquired spikes
+only as evidence permits, and preserve failures/unsupported capabilities explicitly.

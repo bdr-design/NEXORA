@@ -306,8 +306,9 @@ func journalTruth(_ row: JournalEntry) -> [UInt64] {
 /// All allocations for the trace slots occur BEFORE initialization/phase timing.
 /// No library code, workload order, fare formula, budget or page size is changed.
 func measuredFixture(_ count: Int, sampleIndex: Int, mode: ProbeMode,
-                     captureTruth: Bool = false) throws -> MeasuredFixture {
+                     captureTruth: Bool = false, trace: BatchTrace? = nil) throws -> MeasuredFixture {
     guard (64...100_000).contains(count), sampleIndex > 0 else { throw FixtureFailure.arguments }
+    defer { trace?.finish() } // Close an open marker on a thrown diagnostic workload.
     let clock = ContinuousClock()
     let preparing = clock.now
     let batchCapacity = (count + 255) / 256
@@ -331,6 +332,7 @@ func measuredFixture(_ count: Int, sampleIndex: Int, mode: ProbeMode,
     for batch in 0..<batchCapacity {
         let lower = batch * 256, upper = min(count, lower + 256)
         let before = mode == .counters ? readCounters(origin: initializing) : nil
+        trace?.begin(aircraft: count, world: sampleIndex, phase: 0, batch: batch)
         let started = clock.now
         for index in lower..<upper {
             let fare = Int64(index % 97 + 101)
@@ -339,6 +341,7 @@ func measuredFixture(_ count: Int, sampleIndex: Int, mode: ProbeMode,
                 durationSeconds: UInt64(index % 600 + 1), fareMinor: fare, expected: world.inputToken)
         }
         let finished = clock.now
+        trace?.finish()
         let after = mode == .counters ? readCounters(origin: initializing) : nil
         let wall = elapsed(started, finished); sum += wall
         records[cursor] = BatchRecord(aircraft: count, sample: sampleIndex, phase: .depart,
@@ -357,9 +360,11 @@ func measuredFixture(_ count: Int, sampleIndex: Int, mode: ProbeMode,
     while world.pendingArrivals > 0 {
         guard batches < batchCapacity else { throw FixtureFailure.correctness }
         let before = mode == .counters ? readCounters(origin: initializing) : nil
+        trace?.begin(aircraft: count, world: sampleIndex, phase: 1, batch: batches)
         let started = clock.now
         let progress = try world.advance(to: 600, eventBudget: 256)
         let finished = clock.now
+        trace?.finish()
         let after = mode == .counters ? readCounters(origin: initializing) : nil
         let wall = elapsed(started, finished); sum += wall
         maximumAdvance = max(maximumAdvance, wall)
@@ -403,6 +408,7 @@ func measuredFixture(_ count: Int, sampleIndex: Int, mode: ProbeMode,
     while offset < count {
         guard pageIndex < batchCapacity else { throw FixtureFailure.correctness }
         let before = mode == .counters ? readCounters(origin: initializing) : nil
+        trace?.begin(aircraft: count, world: sampleIndex, phase: 2, batch: pageIndex)
         let started = clock.now
         let page = try world.invoicePage(offset: offset, limit: 256)
         for invoice in page {
@@ -411,6 +417,7 @@ func measuredFixture(_ count: Int, sampleIndex: Int, mode: ProbeMode,
         }
         offset += page.count // Intentionally inside the legacy collection bracket.
         let finished = clock.now
+        trace?.finish()
         let after = mode == .counters ? readCounters(origin: initializing) : nil
         let wall = elapsed(started, finished); sum += wall
         maximumPage = max(maximumPage, wall)
@@ -566,6 +573,13 @@ struct DiagnosticMetadata: Encodable {
 enum FinancialDiagnostics {
     static func dispatch(_ args: [String]) throws -> Bool {
         guard let first = args.first else { return false }
+        if first == "--causal-trace" {
+            try CausalTrace.run(args); return true
+        }
+        if first == "--trace-selftest" {
+            guard args.count == 1 else { throw FixtureFailure.arguments }
+            try CausalTrace.selfTest(); return true
+        }
         if first == "--diagnostic-writer-probe" {
             guard args.count == 2 else { throw FixtureFailure.arguments }
             let writer = try DiagnosticWriter(path: args[1])
@@ -681,5 +695,176 @@ enum FinancialDiagnostics {
             print("PASS full normalized public transcript wall/counters and legacy economics: \(count) aircraft, \(wall.truth.count) words")
         }
         print("PASS diagnostic selftests; separate from 142 library tests; no performance acceptance")
+    }
+}
+
+
+// Causal acquisition is a separate protocol; never masquerades as schema-1 benchmark data.
+#if canImport(os)
+import os
+#endif
+
+enum TraceFailure: Error { case unavailable, markerDisabled }
+
+/// Owned by the serial check executable, never by a production library or each aircraft.
+final class BatchTrace {
+    let enabled: Bool
+    private(set) var begins = 0
+    private(set) var ends = 0
+    private var active = false
+    #if canImport(os)
+    private let signposter = OSSignposter(subsystem: "com.nexora.diagnostics", category: .pointsOfInterest)
+    private var state: OSSignpostIntervalState?
+    #endif
+    static var supported: Bool {
+        #if canImport(os)
+        return true
+        #else
+        return false
+        #endif
+    }
+    init(enabled: Bool) throws {
+        self.enabled = enabled
+        guard !enabled || Self.supported else { throw TraceFailure.unavailable }
+        #if canImport(os)
+        guard !enabled || signposter.isEnabled else { throw TraceFailure.markerDisabled }
+        #endif
+    }
+    func begin(aircraft: Int, world: Int, phase: Int, batch: Int) {
+        precondition(!active, "NEXORA_TRACE_INVARIANT: overlapping serial interval")
+        guard enabled else { return }
+        active = true; begins += 1
+        #if canImport(os)
+        state = signposter.beginInterval("NEXORA batch", id: .exclusive,
+            "n=\(aircraft) world=\(world) phase=\(phase) batch=\(batch)")
+        #endif
+    }
+    func finish() {
+        guard active else { return }
+        #if canImport(os)
+        guard let state else { preconditionFailure("NEXORA_TRACE_INVARIANT: missing begin") }
+        signposter.endInterval("NEXORA batch", state)
+        self.state = nil
+        #endif
+        active = false; ends += 1
+    }
+}
+
+struct TraceMetadata: Encodable {
+    let kind = "traceMetadata"
+    let schema = "NXR-R004-CAUSAL-1"
+    let sourceCommit: String
+    let sourceBase = "74d8a7f1d072209aee3d8e7e964d76468890a694"
+    let aircraft: Int
+    let repetitions: Int
+    let warmups = 3
+    let processID = ProcessInfo.processInfo.processIdentifier
+    let os = ProcessInfo.processInfo.operatingSystemVersionString
+    let profileLabel: String
+    let counters: DiagnosticMetadata
+    let limitations = [
+        "A new acquisition protocol, not comparable to old maxima as an optimization result.",
+        "world is 1-based including three warmups; each world has alternating unmarked/marked independent instances.",
+        "phase 0=depart,1=advance,2=collect. Serial signposts enclose wall brackets; resource reads enclose wider windows including markers.",
+        "Marker calibration includes calling and bookkeeping; no subtraction from raw timings.",
+        "First warmups are preserved, not a controlled proof of cold origins memory.",
+        "profileLabel is the caller's requested acquisition, not proof that a profiler recorded usable samples.",
+        "No physical-device, universal cause, under-5ms or full-game acceptance. Source field syntax is not attestation."]
+}
+struct TraceCalibration: Encodable {
+    let kind = "traceCalibration"
+    let marked: Bool
+    let loopNS: UInt64
+    let samplesNS: [UInt64]
+    let begins: Int
+    let ends: Int
+}
+struct TraceSample: Encodable {
+    let kind = "traceSample"
+    let marked: Bool
+    let world: Int
+    let fixture: DiagnosticResult
+    let begins: Int
+    let ends: Int
+}
+
+enum CausalTrace {
+    static func calibration(marked: Bool) throws -> TraceCalibration {
+        let trace = try BatchTrace(enabled: marked)
+        let clock = ContinuousClock()
+        var windows = [UInt64](repeating: 0, count: 2_000)
+        let loop = clock.now
+        for i in windows.indices {
+            let start = clock.now
+            trace.begin(aircraft: 0, world: 0, phase: 3, batch: i)
+            trace.finish()
+            windows[i] = elapsed(start, clock.now)
+        }
+        return TraceCalibration(marked: marked, loopNS: elapsed(loop, clock.now),
+                                samplesNS: windows, begins: trace.begins, ends: trace.ends)
+    }
+    static func run(_ args: [String]) throws {
+        // --causal-trace OUTPUT SOURCE_SHA AIRCRAFT REPETITIONS PROFILE_LABEL
+        guard args.count == 6, args[2].utf8.count == 40,
+              args[2].utf8.allSatisfy({ (48...57).contains($0) || (97...102).contains($0) }),
+              let count = Int(args[3]), [20_000,50_000,100_000].contains(count),
+              let repetitions = Int(args[4]), (1...30).contains(repetitions),
+              ["unprofiled","time-profiler","system-trace"].contains(args[5]) else {
+            throw FixtureFailure.arguments
+        }
+        // Fail before creating evidence on a platform that cannot emit requested markers.
+        _ = try BatchTrace(enabled: true)
+        let writer = try DiagnosticWriter(path: args[1])
+        do {
+            try writer.write(TraceMetadata(sourceCommit: args[2], aircraft: count, repetitions: repetitions,
+                profileLabel: args[5], counters: DiagnosticMetadata(runID: 1, repetitions: repetitions,
+                    warmups: 3, sourceCommit: args[2])))
+            for marked in [false,true] { try writer.write(calibration(marked: marked)) }
+            for world in 1...(repetitions + 3) {
+                let order = world % 2 == 0 ? [false,true] : [true,false]
+                var previous: FinancialSample?
+                for (position, marked) in order.enumerated() {
+                    let trace = try BatchTrace(enabled: marked)
+                    let result = try measuredFixture(count, sampleIndex: world, mode: .counters, trace: trace)
+                    guard trace.begins == trace.ends,
+                          trace.begins == (marked ? result.records.count : 0) else { throw FixtureFailure.correctness }
+                    if let previous, !sameEconomics(previous, result.aggregate) { throw FixtureFailure.correctness }
+                    previous = result.aggregate
+                    let fixture = DiagnosticResult(aircraft: count, sample: world, warmup: world <= 3,
+                        mode: "counters", runID: 1, executionOrder: position, aggregate: result.aggregate,
+                        bufferPreparationNS: result.bufferPreparationNS, seedAndHandlePreparationNS: result.seedAndHandlePreparationNS,
+                        finalAuditNS: result.finalAuditNS, explicitWorldReleaseNS: result.explicitWorldReleaseNS,
+                        workloadNS: result.workloadNS, phases: result.phases, records: result.records)
+                    try writer.write(TraceSample(marked: marked, world: world, fixture: fixture,
+                                                begins: trace.begins, ends: trace.ends))
+                }
+            }
+            try writer.write(["kind":"traceComplete", "status":"all-fixture-checks-passed"])
+            try writer.close()
+        } catch {
+            try? writer.write(["kind":"traceFailure", "error":String(describing:error)])
+            try? writer.close()
+            throw error
+        }
+    }
+    static func selfTest() throws {
+        for n in [64,257,1_000] {
+            let base = try measuredFixture(n, sampleIndex: 1, mode: .counters, captureTruth: true)
+            let off = try BatchTrace(enabled: false)
+            let unmarked = try measuredFixture(n, sampleIndex: 1, mode: .counters, captureTruth: true, trace: off)
+            guard base.truth == unmarked.truth, sameEconomics(base.aggregate, unmarked.aggregate),
+                  off.begins == 0, off.ends == 0 else { throw FixtureFailure.correctness }
+            if BatchTrace.supported {
+                let on = try BatchTrace(enabled: true)
+                let marked = try measuredFixture(n, sampleIndex: 1, mode: .counters, captureTruth: true, trace: on)
+                guard base.truth == marked.truth, sameEconomics(base.aggregate, marked.aggregate),
+                      on.begins == marked.records.count, on.ends == on.begins else { throw FixtureFailure.correctness }
+            }
+        }
+        if !BatchTrace.supported {
+            do { _ = try BatchTrace(enabled: true); throw FixtureFailure.correctness }
+            catch TraceFailure.unavailable { }
+        }
+        print("PASS trace transcripts; markers supported=\(BatchTrace.supported); no latency claim")
     }
 }
