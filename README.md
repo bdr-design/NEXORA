@@ -1,24 +1,26 @@
 # NEXORA
 
-## NXR-R003 — bounded timed-trip core
+## NXR-R003 — verified bounded timed-trip core
 
 Development 0.0.3. No app build, IPA or playable iOS game yet.
-Read AGENTS.md's source exclusion and authorization before work.
+Read AGENTS.md's source exclusion and current execution authorization first.
 
 Implemented: uniquely owned aircraft records and identity; timed trips between
 numeric fixture airports; deterministic bounded arrival heap; explicit prefix
 progress, failed-event retention and independent manual-input sequence. Input
 errors preserve compound state, and corrupt internal invariants fail-stop.
 
-Local Debug/Release: 86 named tests. 18 compiler misuse rejections, 8 isolated
-corruption processes, two independent reference models and narrow scale fixtures.
-See Docs/Updates/NXR-R003.md for actual results and the incomplete local TSan
-invocation. Apple gates must be checked on the exact submitted source; never
-infer success from this README or prior R002 tests.
+Apple CI run36655778966 passed on code50a9fb82db7ea13f636b5c4b3e4f104d8bb7b113:
+86 named tests each Debug/Release/TSan, 18 compiler misuse rejections, 8 isolated
+corruption processes, 4 iOS library compiles, independent models and narrow scale
+fixtures. The evidence archive and complete 67-file source export were downloaded
+and their digests and exact full Git source tree independently checked.
+Read Docs/VALIDATION-R003.md for exact identities, measurements and limitations.
 
 Not implemented: real route catalog/planning, finance, payroll/maintenance/delivery,
 transactional save/load, document storage, iOS UI/map or device diagnostics.
 20k full-feature acceptance and 100k architectural scale remain unproven goals.
+This is a verified core milestone, not proof of complete gameplay or no defects.
 
 ```sh
 swift test -Xswiftc -warnings-as-errors
@@ -34,6 +36,7 @@ swift test --sanitize=thread -Xswiftc -warnings-as-errors
 swift run -c release nexora-trip-check --json local-evidence/trip-samples.json
 ```
 
-Deep audits and CLI exports allocate outside normal simulation work. The 256-event
-benchmark budget and 1,024 API maximum are event-count limits, not FPS guarantees.
-PROJECT_CONTINUITY.md records the exact current stage and remaining work.
+The earlier incomplete local sanitizer invocation is recorded, not represented as
+passed by the later Apple success. Deep audits/exports allocate outside normal
+simulation work. Benchmark budget256 and API maximum1024 are event-count bounds,
+not FPS/heat/energy guarantees. PROJECT_CONTINUITY.md is the current handoff point.

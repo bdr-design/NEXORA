@@ -1,11 +1,13 @@
 # NEXORA change log — permitted foundation line
 
-## NXR-R003 — 2026-09-30 — timed-trip candidate
+## NXR-R003 — 2026-09-30 — verified timed-trip core
 Actual bounded clock/arrival coordinator and fixed-capacity heap, separate input
 sequence, explicit prefix/block results, compound-state tests, sorted-list oracle,
-compiler/fail-stop gates and scale CLI. Local Debug/Release 86 named tests passed;
-Apple validation pending at submission, and local TSan is not confirmed. See
-Docs/Updates/NXR-R003.md and the latest validation/continuity entry before use.
+compiler/fail-stop gates and scale CLI. Apple run36655778966 on
+50a9fb82db7ea13f636b5c4b3e4f104d8bb7b113 passed 86 named tests each Debug/Release/
+TSan, all 18 compiler misuse gates, eight corruption probes and four iOS library
+compiles. Complete exported source and artifact hashes verified; see
+Docs/VALIDATION-R003.md. Not complete gameplay or device approval.
 
 ## NXR-R002 — 2026-09-30 — verified aircraft lifecycle core
 Actual AircraftStore lifecycle, revision/operation contracts, exact failure audits,
