@@ -6,6 +6,7 @@ import hashlib
 import json
 import math
 import re
+import stat
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -34,14 +35,19 @@ def source_guard():
     def object_hash(kind, content):
         return hashlib.sha1(kind.encode() + b" " + str(len(content)).encode() + b"\0" + content).digest()
     def digest(path):
+        # Do not follow links or omit names that SwiftPM may compile.
+        check(not path.is_symlink(), f"symlink in guarded source: {path.relative_to(ROOT)}")
         if path.is_dir():
             entries = []
             for child in sorted(path.iterdir(), key=lambda p: p.name + ("/" if p.is_dir() else "")):
-                if child == ROOT / "Checks/financial-diagnostics.py" or child.name == "__pycache__":
+                check(not child.is_symlink(), f"symlink in guarded source: {child.relative_to(ROOT)}")
+                if child == ROOT / "Checks/financial-diagnostics.py":
+                    check(child.is_file(), "analyzer exception is not a regular file")
                     continue
                 mode = "40000" if child.is_dir() else ("100755" if child.stat().st_mode & 0o111 else "100644")
                 entries.append(mode.encode() + b" " + child.name.encode() + b"\0" + digest(child))
             return object_hash("tree", b"".join(entries))
+        check(stat.S_ISREG(path.stat().st_mode), f"non-regular guarded source: {path}")
         content = path.read_bytes()
         if path == ROOT / "Sources/NexoraFinancialCheck/main.swift":
             text = content.decode()
@@ -57,6 +63,65 @@ def source_guard():
 UINT64_MAX = (1 << 64) - 1
 SOURCE_BASE = "5b5599895fa1bdbf00e951104e0cd55dc00f9a56"
 
+# Schema 1 is a fixed contract. New counters/units require a separate schema.
+COUNTER_DEFINITIONS = {'processInvoluntarySwitches': 'count; process; ru_nivcsw; Apple derives csw minus voluntary, clamps below zero', 'processMajorFaults': 'count; process; ru_majflt; Apple task pageins', 'processMinorFaults': 'count; process; ru_minflt; Apple faults minus pageins, not necessarily allocations', 'processSystemNS': 'ns converted from timeval microseconds; all process threads; getrusage(RUSAGE_SELF)', 'processUserNS': 'ns converted from timeval microseconds; all process threads; getrusage(RUSAGE_SELF)', 'processVoluntarySwitches': 'count; process; ru_nvcsw', 'threadCPUNS': 'ns; calling thread user+system; clock_gettime(CLOCK_THREAD_CPUTIME_ID); no mach conversion'}
+SAMPLE_INDEXING = '1-based within warmup or measured stratum; batch is 0-based; calibration uses sample=0'
+AGGREGATE_TIMES = ("initializationNS", "registerAllNS", "departAllNS", "advanceAllNS",
+                   "maximumAdvanceNS", "collectAllNS", "maximumCollectionPageNS", "expensePostsNS")
+AGGREGATE_COUNTS = ("advanceBatches", "invoiceCount", "journalCount")
+LIFECYCLE_TIMES = ("bufferPreparationNS", "seedAndHandlePreparationNS", "finalAuditNS",
+                   "explicitWorldReleaseNS", "workloadNS")
+
+
+def object_fields(value, required, optional=()):
+    check(type(value) is dict, "expected JSON object")
+    missing, unknown = set(required) - value.keys(), value.keys() - set(required) - set(optional)
+    check(not missing and not unknown, f"schema fields missing={sorted(missing)}, unknown={sorted(unknown)}")
+
+
+def unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        check(key not in result, f"duplicate JSON key: {key}")
+        result[key] = value
+    return result
+
+
+def reject_constant(value):
+    raise ValueError(f"non-finite JSON number: {value}")
+
+
+def validate_item_shape(item):
+    check(type(item) is dict and type(item.get("kind")) is str, "missing record kind")
+    kind = item["kind"]
+    if kind == "metadata":
+        object_fields(item, ("kind", "schema", "sourceBase", "sourceCommit", "runID", "processID",
+                            "os", "sizes", "modes", "batchSize", "warmups", "repetitions",
+                            "sampleIndexing", "mainThread", "counterDefinitions", "notCollected", "limitations"))
+    elif kind == "calibration":
+        object_fields(item, ("kind", "mode", "iterations", "loopNS", "records"))
+        check(type(item["records"]) is list, "records must be an array")
+    elif kind == "sample":
+        object_fields(item, ("kind", "aircraft", "sample", "warmup", "mode", "runID", "executionOrder",
+                            "aggregate", "records", "phases"),
+                      () if item.get("mode") == "baseline" else LIFECYCLE_TIMES)
+        check(type(item["records"]) is list and type(item["phases"]) is list, "records/phases must be arrays")
+        aggregate = item["aggregate"]
+        object_fields(aggregate, AGGREGATE_TIMES + AGGREGATE_COUNTS + ("revenueMinor", "cashMinor"))
+        for field in AGGREGATE_TIMES + AGGREGATE_COUNTS:
+            unsigned(aggregate[field], field)
+        for field in ("revenueMinor", "cashMinor"):
+            check(type(aggregate[field]) is int and -(1 << 63) <= aggregate[field] < (1 << 63),
+                  f"invalid Int64 {field}")
+        for phase in item["phases"]:
+            object_fields(phase, ("phase", "startOffsetNS", "totalNS", "sumBatchWallNS", "outsideBatchWallNS"))
+    elif kind == "complete":
+        object_fields(item, ("kind", "status"))
+    elif kind == "failure":
+        object_fields(item, ("kind", "error"))
+    else:
+        raise ValueError(f"unknown record kind: {kind}")
+
 
 def unsigned(value, name):
     # bool is an int subclass in Python, but is never a numeric measurement.
@@ -70,6 +135,8 @@ def endpoint(start, duration, name):
 
 
 def validate_window(row, mode):
+    object_fields(row, ("aircraft", "sample", "phase", "batch", "operations", "startOffsetNS", "wallNS"),
+                  ("before", "after"))
     start = unsigned(row["startOffsetNS"], "window start")
     end = endpoint(start, row["wallNS"], "window")
     if mode == "counters":
@@ -133,6 +200,14 @@ def validate_lifecycle(item):
 
 
 def validate_metadata(meta):
+    validate_item_shape(meta)
+    check(meta["counterDefinitions"] == COUNTER_DEFINITIONS, "changed counter definitions/units/scope")
+    check(meta["sampleIndexing"] == SAMPLE_INDEXING, "changed sample indexing")
+    check(type(meta["mainThread"]) is bool, "invalid thread identity")
+    check(type(meta["sizes"]) is list and all(type(n) is int for n in meta["sizes"]), "invalid sizes")
+    for field in ("notCollected", "limitations"):
+        check(type(meta[field]) is list and bool(meta[field])
+              and all(type(v) is str and bool(v) for v in meta[field]), f"missing or invalid {field}")
     check(meta["schema"] == "NXR-R004-BATCH-DIAGNOSTICS-1", "unknown schema")
     check(meta.get("sourceBase") == SOURCE_BASE, "wrong source base")
     check(type(meta.get("sourceCommit")) is str
@@ -172,6 +247,8 @@ def counter_delta(row, field):
 
 
 def validate_snapshot(snapshot):
+    object_fields(snapshot, ("beginOffsetNS", "endOffsetNS", "threadStatus", "processStatus"),
+                  FIELDS + ("threadErrno", "processErrno"))
     unsigned(snapshot["beginOffsetNS"], "counter begin")
     unsigned(snapshot["endOffsetNS"], "counter end")
     check(snapshot["beginOffsetNS"] <= snapshot["endOffsetNS"], "reversed counter-read envelope")
@@ -247,6 +324,7 @@ def phase_validation(item):
 def analyze(paths):
     batches, first, full, partial, counter_values, coverage = (defaultdict(list) for _ in range(6))
     first_counters, first_coverage = defaultdict(list), defaultdict(list)
+    check(bool(paths), "no input files")
     check(len({p.resolve() for p in paths}) == len(paths), "duplicate input file")
     check(len({p.name for p in paths}) == len(paths), "ambiguous duplicate input basename")
     gaps, totals, extra = defaultdict(list), defaultdict(list), defaultdict(list)
@@ -265,14 +343,15 @@ def analyze(paths):
         expected_order = []
         with path.open() as reader:
             for number, line in enumerate(reader, 1):
-                item = json.loads(line)
+                item = json.loads(line, object_pairs_hook=unique_object, parse_constant=reject_constant)
+                validate_item_shape(item)
                 kind = item["kind"]
                 check(not completed, "data after completion marker")
                 if kind == "metadata":
                     check(meta is None and number == 1, "metadata not first/unique")
                     meta = item
                     validate_metadata(meta)
-                    identity = (meta["sourceBase"], meta["sourceCommit"], meta["os"],
+                    identity = (meta["sourceBase"], meta["sourceCommit"], meta["os"], meta["mainThread"],
                                 json.dumps(meta.get("counterDefinitions"), sort_keys=True))
                     check(source_identity is None or identity == source_identity,
                           "mixed source/OS/counter definitions in one analysis")
@@ -449,7 +528,11 @@ def main():
     if args.raw:
         check(args.output is not None, "--output required with raw files")
         result = analyze(args.raw)
-        args.output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
+        # Never erase a prior result or replace a raw input through a reused path.
+        # Serialize first; a failed I/O may leave an incomplete new file, never a replaced old one.
+        text = json.dumps(result, indent=2, sort_keys=True) + "\n"
+        with args.output.open("x", encoding="utf-8") as writer:
+            writer.write(text)
         print("PASS raw records, complete triples, exact phase sums, status-aware counters; summary", args.output)
     check(args.guard or args.selftest or args.raw, "no operation requested")
 

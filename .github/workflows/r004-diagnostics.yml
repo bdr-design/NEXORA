@@ -3,13 +3,12 @@ name: NEXORA R004 Batch Diagnostics
 on:
   push:
     branches: ["diagnostic/r004-batch-counters-20260930"]
-    paths:
-      - "Sources/NexoraFinancialCheck/**"
-      - "Checks/financial-diagnostics.py"
-      - ".github/workflows/r004-diagnostics.yml"
 
 permissions:
   contents: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
 
 jobs:
   core:

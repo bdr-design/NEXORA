@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import sys
 
+sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = {
     'batches-1.ndjson': '2bbbad1b01fbbd209381f745c027f8378ee572c96780fe11622721b45e48a6ad',

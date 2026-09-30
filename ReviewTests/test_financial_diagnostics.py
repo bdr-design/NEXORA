@@ -3,10 +3,12 @@
 import copy
 import importlib.util
 import json
+import sys
 from pathlib import Path
 import tempfile
 import unittest
 
+sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location("financial_diagnostics", ROOT / "Checks/financial-diagnostics.py")
 diag = importlib.util.module_from_spec(spec)
@@ -70,7 +72,10 @@ def raw_fixture(run_id=1):
             "warmups": 0, "repetitions": 1, "sizes": [1000, 5000, 20000, 50000, 100000],
             "modes": list(diag.MODES), "batchSize": 256, "sourceBase": diag.SOURCE_BASE,
             "sourceCommit": SOURCE, "os": "SYNTHETIC UNIT-TEST FIXTURE; NOT A MEASUREMENT",
-            "counterDefinitions": {"threadCPUNS": "synthetic; ns; unit tests only"}}
+            "counterDefinitions": dict(diag.COUNTER_DEFINITIONS), "mainThread": True,
+            "sampleIndexing": diag.SAMPLE_INDEXING,
+            "notCollected": ["synthetic fixture, no real counters"],
+            "limitations": ["synthetic schema test, NOT performance evidence"]}
     rows = [meta, calibration("wall"), calibration("counters")]
     order = diag.MODES if run_id % 2 == 0 else tuple(reversed(diag.MODES))
     for count in meta["sizes"]:
@@ -157,13 +162,13 @@ class CompleteInputTests(unittest.TestCase):
         self.rejection(lambda x: x[-1].update(status="failed"), "completion status")
 
     def test_missing_completion_status(self):
-        self.rejection(lambda x: x[-1].pop("status"), "completion status")
+        self.rejection(lambda x: x[-1].pop("status"), "schema fields")
 
     def test_incomplete_stream(self):
         self.rejection(lambda x: x.pop(), "incomplete raw file")
 
     def test_failure_marker(self):
-        self.rejection(lambda x: x[-1].update(kind="failure", error="synthetic failure"), "fixture failure")
+        self.rejection(lambda x: x.__setitem__(-1, {"kind": "failure", "error": "synthetic failure"}), "fixture failure")
 
     def test_negative_calibration_wall(self):
         self.rejection(lambda x: x[1]["records"][0].update(wallNS=-1), "invalid unsigned")

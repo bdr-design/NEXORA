@@ -498,21 +498,32 @@ func calibrate(_ mode: ProbeMode, iterations: Int) -> Calibration {
 
 /// One complete JSON object per line. A failed run retains previous complete lines.
 /// No formatting, encoding, I/O, console output or output-buffer growth is in a workload phase.
+enum DiagnosticIOFailure: Error { case invalidPath, openFailed(Int32), closed }
+
 final class DiagnosticWriter {
-    private let handle: FileHandle
+    private var handle: FileHandle?
     private let encoder: JSONEncoder
     init(path: String) throws {
-        guard FileManager.default.createFile(atPath: path, contents: nil) else { throw FixtureFailure.arguments }
-        handle = try FileHandle(forWritingTo: URL(fileURLWithPath: path))
+        guard !path.isEmpty, !path.utf8.contains(0) else { throw DiagnosticIOFailure.invalidPath }
+        // One atomic exclusive create. No existence check/reopen race and no truncation.
+        // Protects the final path component; the caller still owns the parent directory.
+        let fd = path.withCString { open($0, O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC | O_NOFOLLOW, mode_t(0o600)) }
+        guard fd >= 0 else { throw DiagnosticIOFailure.openFailed(errno) }
+        handle = FileHandle(fileDescriptor: fd, closeOnDealloc: true)
         encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
     }
     func write<T: Encodable>(_ value: T) throws {
-        let data = try encoder.encode(value)
+        guard let handle else { throw DiagnosticIOFailure.closed }
+        var data = try encoder.encode(value)
+        data.append(10)
         try handle.write(contentsOf: data)
-        try handle.write(contentsOf: Data([10]))
     }
-    func close() throws { try handle.close() }
-    deinit { try? handle.close() }
+    func close() throws {
+        guard let openHandle = handle else { return }
+        handle = nil
+        try openHandle.close()
+    }
+    // FileHandle owns the descriptor and closes it on deallocation, including throws.
 }
 
 struct DiagnosticMetadata: Encodable {
@@ -555,6 +566,22 @@ struct DiagnosticMetadata: Encodable {
 enum FinancialDiagnostics {
     static func dispatch(_ args: [String]) throws -> Bool {
         guard let first = args.first else { return false }
+        if first == "--diagnostic-writer-probe" {
+            guard args.count == 2 else { throw FixtureFailure.arguments }
+            let writer = try DiagnosticWriter(path: args[1])
+            try writer.write(["kind": "writer-probe", "status": "complete"])
+            try writer.close()
+            try writer.close() // Explicit close is idempotent; deinit must not close a reused fd.
+            do {
+                _ = try DiagnosticWriter(path: args[1] + "\0suffix")
+                throw FixtureFailure.correctness
+            } catch DiagnosticIOFailure.invalidPath { }
+            do {
+                try writer.write(["must": "fail-after-close"])
+                throw FixtureFailure.correctness
+            } catch DiagnosticIOFailure.closed { }
+            return true
+        }
         if first == "--diagnostic-selftest" {
             guard args.count == 1 else { throw FixtureFailure.arguments }
             try selfTest(); return true
@@ -572,10 +599,15 @@ enum FinancialDiagnostics {
             } else { throw FixtureFailure.arguments }
         }
         let repetitions = quick ? 1 : 30, warmups = quick ? 0 : 3
+        guard let sourceCommit = ProcessInfo.processInfo.environment["NEXORA_SOURCE_COMMIT"],
+              sourceCommit.utf8.count == 40,
+              sourceCommit.utf8.allSatisfy({ (48...57).contains($0) || (97...102).contains($0) }) else {
+            throw FixtureFailure.arguments
+        }
         let writer = try DiagnosticWriter(path: args[1])
         do {
             try writer.write(DiagnosticMetadata(runID: runID, repetitions: repetitions, warmups: warmups,
-                sourceCommit: ProcessInfo.processInfo.environment["NEXORA_SOURCE_COMMIT"] ?? "unrecorded-local-snapshot"))
+                sourceCommit: sourceCommit))
             // Both empty-window modes are saved; never subtract calibration from raw values.
             for mode in [ProbeMode.wall, .counters] { try writer.write(calibrate(mode, iterations: 2_000)) }
             for count in [1_000, 5_000, 20_000, 50_000, 100_000] {

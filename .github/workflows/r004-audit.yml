@@ -2,15 +2,22 @@ name: NEXORA R004 Review Gates
 
 on:
   push:
-    branches: ["review/r004-comprehensive-audit-20260930"]
-    paths:
-      - "Checks/financial-diagnostics.py"
-      - "ReviewTests/**"
-      - ".github/workflows/r004-audit.yml"
+    branches:
+      - review/r004-comprehensive-audit-20260930
+      - fix/r004-evidence-hardening-20260930
+      - diagnostic/r004-causal-trace-20260930
+  pull_request:
+    branches:
+      - fix/r004-evidence-hardening-20260930
+      - diagnostic/r004-causal-trace-20260930
 
+# No path filter: every change on these branches must enter the gates.
 permissions:
   contents: read
   actions: read
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
 
 jobs:
   audit:
@@ -23,7 +30,8 @@ jobs:
           fetch-depth: 1
       - name: Source identity
         run: |
-          mkdir -p audit-evidence
+          set -euo pipefail
+          mkdir audit-evidence
           git rev-parse HEAD > audit-evidence/source-commit.txt
           git rev-parse HEAD^{tree} > audit-evidence/source-tree.txt
           git archive --format=zip --output=audit-evidence/NEXORA_R004_AUDIT_SOURCE.zip HEAD
@@ -44,16 +52,34 @@ jobs:
           set -euo pipefail
           swift test -Xswiftc -warnings-as-errors 2>&1 | tee audit-evidence/debug.txt
           swift test -c release -Xswiftc -warnings-as-errors 2>&1 | tee audit-evidence/release.txt
+      - name: Actual diagnostic and exclusive-writer gates
+        run: |
+          set -euo pipefail
+          for config in debug release; do
+            bin="$(swift build -c "$config" --show-bin-path)"
+            "$bin/nexora-financial-check" --diagnostic-selftest 2>&1 | tee "audit-evidence/diagnostic-$config.txt"
+            python3 ReviewTests/verify_writer.py "$bin/nexora-financial-check" 2>&1 | tee "audit-evidence/writer-$config.txt"
+          done
       - name: External compiler and corruption boundaries
         run: |
           set -euo pipefail
           for script in verify verify-r002 verify-r003 verify-r004 verify-failstop verify-trip-failstop verify-finance-failstop; do
             bash "Checks/$script.sh" 2>&1 | tee "audit-evidence/$script.txt"
           done
-      - name: Fresh Apple Thread Sanitizer
+      - name: Fresh Apple Thread Sanitizer including the diagnostic executable
         run: |
           set -euo pipefail
-          swift test --sanitize=thread -Xswiftc -warnings-as-errors 2>&1 | tee audit-evidence/tsan.txt
+          swift test --scratch-path .build/audit-tsan --sanitize=thread -Xswiftc -warnings-as-errors 2>&1 | tee audit-evidence/tsan.txt
+          swift build --scratch-path .build/audit-tsan --sanitize=thread --product nexora-financial-check -Xswiftc -warnings-as-errors 2>&1 | tee audit-evidence/diagnostic-tsan-build.txt
+          bin="$(swift build --scratch-path .build/audit-tsan --sanitize=thread --show-bin-path)"
+          "$bin/nexora-financial-check" --diagnostic-selftest 2>&1 | tee audit-evidence/diagnostic-tsan.txt
+          python3 ReviewTests/verify_writer.py "$bin/nexora-financial-check" 2>&1 | tee audit-evidence/writer-tsan.txt
+      - name: Fresh schema and CLI smoke test, not a performance campaign
+        run: |
+          set -euo pipefail
+          bin="$(swift build -c release --show-bin-path)"
+          NEXORA_SOURCE_COMMIT="$GITHUB_SHA" "$bin/nexora-financial-check" --diagnostics audit-evidence/quick.ndjson --quick 2>&1 | tee audit-evidence/quick.txt
+          python3 Checks/financial-diagnostics.py --output audit-evidence/quick-summary.json audit-evidence/quick.ndjson
       - name: Retrieve exact prior measurement artifact, not a new benchmark
         uses: actions/download-artifact@v4
         with:
@@ -67,7 +93,14 @@ jobs:
         run: |
           set -euo pipefail
           python3 ReviewTests/revalidate_apple.py prior-evidence audit-evidence/revalidated-summary.json 2>&1 | tee audit-evidence/revalidation.txt
+          python3 Checks/financial-diagnostics.py --guard
           git diff --exit-code
+      - name: Record available Apple profiling capabilities
+        run: |
+          set -euo pipefail
+          xcrun xctrace list templates > audit-evidence/xctrace-templates.txt 2>&1
+          xcrun xctrace help record > audit-evidence/xctrace-record-help.txt 2>&1
+          xcrun xctrace help export > audit-evidence/xctrace-export-help.txt 2>&1
       - name: Preserve audit evidence, including failures
         if: always()
         uses: actions/upload-artifact@v4
