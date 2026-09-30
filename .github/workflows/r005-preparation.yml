@@ -1,0 +1,143 @@
+name: NEXORA R005 Design and Bounded Diagnostic Gates
+on:
+  push:
+    branches: [main, diagnostic/r005-design-1m-20260930]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+  actions: read
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+jobs:
+  contracts:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, fetch-depth: 1}
+      - name: Identify source
+        run: |
+          set -euo pipefail
+          mkdir evidence
+          git rev-parse HEAD > evidence/commit.txt
+          git rev-parse HEAD^{tree} > evidence/tree.txt
+          swift --version > evidence/environment.txt
+          xcodebuild -version >> evidence/environment.txt
+          sw_vers >> evidence/environment.txt
+      - name: Existing and new Python contracts
+        run: |
+          set -euo pipefail
+          python3 -B -m unittest discover -s ReviewTests -p 'test_*.py' -v 2>&1 | tee evidence/python-existing.txt
+          python3 -B -m unittest discover -s Experiments/R005/tests -v 2>&1 | tee evidence/python-experiment.txt
+          python3 -B Checks/financial-diagnostics.py --guard --selftest 2>&1 | tee evidence/source-guard.txt
+          for n in 002 003 004; do python3 -B Checks/review-r$n.py; done
+      - name: Original Swift Debug and Release
+        run: |
+          set -euo pipefail
+          for config in debug release; do
+            swift test -c "$config" -Xswiftc -warnings-as-errors 2>&1 | tee "evidence/swift-$config.txt"
+            bin="$(swift build -c "$config" --show-bin-path)/nexora-financial-check"
+            "$bin" --diagnostic-selftest 2>&1 | tee "evidence/diagnostic-$config.txt"
+            "$bin" --trace-selftest 2>&1 | tee "evidence/trace-$config.txt"
+            python3 -B ReviewTests/verify_writer.py "$bin" 2>&1 | tee "evidence/writer-$config.txt"
+          done
+      - name: Compiler rejection and corruption boundaries
+        run: |
+          set -euo pipefail
+          for script in verify verify-r002 verify-r003 verify-r004 verify-failstop verify-trip-failstop verify-finance-failstop; do
+            bash "Checks/$script.sh" 2>&1 | tee "evidence/$script.txt"
+          done
+      - name: TSan including actual diagnostic paths
+        run: |
+          set -euo pipefail
+          swift test --scratch-path .build/tsan --sanitize=thread -Xswiftc -warnings-as-errors 2>&1 | tee evidence/tsan.txt
+          swift build --scratch-path .build/tsan --sanitize=thread --product nexora-financial-check -Xswiftc -warnings-as-errors
+          bin="$(swift build --scratch-path .build/tsan --sanitize=thread --show-bin-path)/nexora-financial-check"
+          "$bin" --diagnostic-selftest 2>&1 | tee evidence/diagnostic-tsan.txt
+          "$bin" --trace-selftest 2>&1 | tee evidence/trace-tsan.txt
+          python3 -B ReviewTests/verify_writer.py "$bin" 2>&1 | tee evidence/writer-tsan.txt
+      - name: iOS library compilation, not device acceptance
+        run: |
+          set -euo pipefail
+          for scheme in NexoraIdentity NexoraObservability NexoraAviation NexoraFinance NexoraSimulation; do
+            xcodebuild -scheme "$scheme" -destination 'generic/platform=iOS' -configuration Release CODE_SIGNING_ALLOWED=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES build 2>&1 | tee "evidence/ios-$scheme.txt"
+          done
+          python3 -B Checks/financial-diagnostics.py --guard
+          git diff --exit-code
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: r005-contract-logs, path: evidence/, if-no-files-found: error}
+  layout:
+    runs-on: macos-15
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, fetch-depth: 1}
+      - name: Layout, allocation-owner and partition checks at 1M and 2M
+        run: |
+          set -euo pipefail
+          mkdir layout-evidence
+          git rev-parse HEAD > layout-evidence/commit.txt
+          uname -a > layout-evidence/environment.txt
+          cc --version >> layout-evidence/environment.txt
+          python3 -B Experiments/R005/run_layout.py layout-evidence/debug --debug
+          python3 -B Experiments/R005/run_layout.py layout-evidence/release
+          cc -std=c11 -O1 -g -fsanitize=address,undefined -Wall -Wextra -Werror Experiments/R005/layout_probe.c Experiments/R005/Platform/platform.c -IExperiments/R005/Platform/include -o layout-evidence/sanitized
+          layout-evidence/sanitized --selftest > layout-evidence/sanitized-selftest.txt
+          layout-evidence/sanitized 100000 2 256 > layout-evidence/sanitized-100k.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: r005-layout-metrics, path: layout-evidence/, if-no-files-found: error}
+  diagnostics:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with: {persist-credentials: false, fetch-depth: 1}
+      - name: Generate instrumented copy without editing production sources
+        run: |
+          set -euo pipefail
+          mkdir study-evidence
+          git rev-parse HEAD > study-evidence/commit.txt
+          git rev-parse HEAD^{tree} > study-evidence/tree.txt
+          swift --version > study-evidence/environment.txt
+          uname -a >> study-evidence/environment.txt
+          sysctl hw.model hw.memsize hw.ncpu >> study-evidence/environment.txt
+          python3 -B Experiments/R005/prepare.py generated-study | tee study-evidence/generated-hash.txt
+          cp generated-study/instrumentation-manifest.json study-evidence/
+          echo "NXR_GENERATED_SHA256=$(cat study-evidence/generated-hash.txt)" >> "$GITHUB_ENV"
+          git archive --format=zip --output=study-evidence/NEXORA_R005_PREPARATION_SOURCE.zip HEAD
+      - name: Instrumentation transcript equivalence, Debug and Release
+        run: |
+          set -euo pipefail
+          for config in debug release; do
+            swift build --package-path generated-study -c "$config" --product nexora-financial-check -Xswiftc -warnings-as-errors 2>&1 | tee "study-evidence/build-$config.txt"
+            bin="$(swift build --package-path generated-study -c "$config" --show-bin-path)/nexora-financial-check"
+            "$bin" --extra-selftest 2>&1 | tee "study-evidence/transcript-$config.txt"
+          done
+      - name: Instrumented diagnostic paths under TSan
+        run: |
+          set -euo pipefail
+          swift build --package-path generated-study --scratch-path generated-study/.build/tsan --sanitize=thread --product nexora-financial-check -Xswiftc -warnings-as-errors
+          bin="$(swift build --package-path generated-study --scratch-path generated-study/.build/tsan --sanitize=thread --show-bin-path)/nexora-financial-check"
+          "$bin" --extra-selftest 2>&1 | tee study-evidence/transcript-tsan.txt
+      - name: One bounded acquisition iteration, not a regression-speed gate
+        if: contains(github.event.head_commit.message, '[bounded-study]')
+        run: |
+          set -euo pipefail
+          bin="$(swift build --package-path generated-study -c release --show-bin-path)/nexora-financial-check"
+          for run in 1 2 3; do
+            "$bin" --v4-study "study-evidence/v4-$run.ndjson" "$run" 30 "$GITHUB_SHA" 2>&1 | tee "study-evidence/v4-$run.txt"
+          done
+          "$bin" --event-study study-evidence/events.ndjson "$GITHUB_SHA" 2>&1 | tee study-evidence/events.txt
+          python3 -B Experiments/R005/analyze.py --output study-evidence/verdict.json study-evidence/v4-{1,2,3}.ndjson
+          python3 -B Experiments/R005/analyze_events.py study-evidence/events.ndjson study-evidence/event-summary.json
+      - name: Original sources still unchanged
+        run: |
+          set -euo pipefail
+          python3 -B Checks/financial-diagnostics.py --guard
+          git diff --exit-code
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: {name: r005-bounded-study, path: study-evidence/, if-no-files-found: error, compression-level: 6}
