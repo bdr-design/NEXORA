@@ -17,7 +17,7 @@ import Glibc
         case "selftest": result=["boundaries":try boundaryChecks(),"mutations":try mutationChecks()]
         case "order":
             guard args.count==2,let n=Int(args[1]) else {throw ProbeError.invalid("order N")}
-            result=try orderChecks(n)
+            result=try completeOrderChecks(n)
         case "storage":
             guard args.count==3, let n=Int(args[2]) else {throw ProbeError.invalid("storage directory N")}
             result=try storageCheck(args[1],count:n)
