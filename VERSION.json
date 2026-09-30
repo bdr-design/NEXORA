@@ -1,14 +1,13 @@
 {
   "project": "NEXORA",
-  "update_id": "NXR-R002",
-  "development_version": "0.0.2",
+  "update_id": "NXR-R003",
+  "development_version": "0.0.3",
   "app_build": null,
-  "status": "aircraft-store-apple-verified-not-gameplay",
-  "base_commit": "cf305b5a13cad67555dd18f129f23ffdecfd68d2",
-  "verified_code_commit": "4583de236d5aa25b06bbd3ed4a2492e8cb629835",
-  "ci_run": 36653271004,
+  "status": "timed-trips-local-tested-apple-pending",
+  "base_commit": "63de835eef4b24b410703507986dbf84f5d6eeea",
+  "scheduler_implemented": true,
+  "scheduler_scope": "bounded-timed-aircraft-arrivals-only",
+  "persistence_implemented": false,
   "full_gameplay_assets_proven": false,
-  "device_performance_certified": false,
-  "scheduler_implemented": false,
-  "persistence_implemented": false
+  "device_performance_certified": false
 }

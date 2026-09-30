@@ -75,7 +75,7 @@ public struct AircraftStore: ~Copyable, Sendable {
     }
 
     // Test fixture construction is internal; it does not modify an existing store.
-    init(testingCapacity: Int, initialRevision: UInt64 = 0,
+    package init(testingCapacity: Int, initialRevision: UInt64 = 0,
          initialGeneration: UInt32 = 0) throws {
         guard (0...EntitySpace.maximumCapacity).contains(testingCapacity) else {
             throw AircraftFailure.invalidCapacity
@@ -202,7 +202,7 @@ public struct AircraftStore: ~Copyable, Sendable {
 
     // MARK: Internal test evidence. Not exported to ordinary external clients.
 
-    func auditForTesting() -> AircraftAudit {
+    package func auditForTesting() -> AircraftAudit {
         AircraftAudit(identity: identities.auditIdentity(), token: token,
                       rows: rows.map { row in row.map {
                           AircraftAuditRow(handle: $0.handle, state: $0.state,
@@ -238,13 +238,13 @@ public struct AircraftStore: ~Copyable, Sendable {
 
 enum AircraftTestFault: Error, CaseIterable { case beforeValidation, afterPreparation, beforeCommit }
 enum AircraftFixture { case maximumCompletions, missingLiveRow, occupiedFreeRow }
-struct AircraftAuditRow: Equatable {
-    let handle: EntityHandle
-    let state: AircraftState
-    let completedOperations: UInt64
+package struct AircraftAuditRow: Equatable {
+    package let handle: EntityHandle
+    package let state: AircraftState
+    package let completedOperations: UInt64
 }
-struct AircraftAudit: Equatable {
-    let identity: IdentityAudit
-    let token: RevisionToken
-    let rows: [AircraftAuditRow?]
+package struct AircraftAudit: Equatable {
+    package let identity: IdentityAudit
+    package let token: RevisionToken
+    package let rows: [AircraftAuditRow?]
 }

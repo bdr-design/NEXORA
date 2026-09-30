@@ -1,21 +1,21 @@
-# NEXORA changelog — fresh restart line
+# NEXORA change log — permitted foundation line
 
-## NXR-R001 — 2026-09-30 — Fresh ownership foundation
+## NXR-R003 — 2026-09-30 — timed-trip candidate
+Actual bounded clock/arrival coordinator and fixed-capacity heap, separate input
+sequence, explicit prefix/block results, compound-state tests, sorted-list oracle,
+compiler/fail-stop gates and scale CLI. Local Debug/Release 86 named tests passed;
+Apple validation pending at submission, and local TSan is not confirmed. See
+Docs/Updates/NXR-R003.md and the latest validation/continuity entry before use.
 
-The owner authorized replacement of the complete active tree. Retired
-NXR-0001/2/3 and unfinished repair code are not carried forward.
+## NXR-R002 — 2026-09-30 — verified aircraft lifecycle core
+Actual AircraftStore lifecycle, revision/operation contracts, exact failure audits,
+independent model and compiler/corruption probes. Apple code4583de236d5aa25b06bbd3ed4a2492e8cb629835,
+run36653271004 passed 51 named tests each Debug/Release/TSan and all other core
+gates. Evidence and limits: Docs/VALIDATION-R002.md. Not complete gameplay.
 
-Added newly written identity ownership, bounded trace timeline, lifecycle CLI,
-Swift 6 tests, compiler misuse checks, and restart-specific requirements and
-handoff records. Local initializer and assertion compatibility failures were
-found and corrected before remote submission.
-
-This update is non-production scaffolding. There is no game runtime, save format,
-financial engine, scheduler, renderer, IPA or claimed full-game scale result.
-Historical Git records remain separately recoverable; see Docs/RESET-RECORD.md.
-
-### Verified initial scaffold
-Apple CI run `36646039605` passed Debug/Release/TSan (19 named tests each),
-3 compiler misuse rejections, both iOS library compile gates, and five identity
-smoke scales. Verified code: `c45d24e0445219fc0db4df5efd0e920b5e129c16`.
-No old-source benchmark or acceptance result was reused.
+## NXR-R001 — 2026-09-30 — identity and bounded timeline
+Initial permitted small identity/observability foundation, 19 named tests plus
+compiler checks and identity-only scale fixture. It did not implement aircraft
+business rows, time, finance, storage or presentation. Its measurements are not
+results for the later modules. The permanent exclusion in AGENTS.md governs all
+work; no older recovery-use wording grants permission to use excluded sources.
