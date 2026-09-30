@@ -44,7 +44,7 @@ Artifact 11080779599, NEXORA_R004_Apple_Evidence.zip, recomputed SHA-256:
 df71ac8bf51e8b8cbf0be4bb061b0b66619f2cb8ed12aff479abc385e4b7211c
 Nested NEXORA_R004_SOURCE.zip, recomputed SHA-256:
 a815f730f4a6b5d663dbfcc8763d22df5307892469048503354c8f6427fd91a1
-All 95 exported file contents and modes matched local source and rebuilt the
+All 95 exported file contents and executable modes matched local source and rebuilt the
 complete tested Git tree. Fetch artifacts or use actual attachments; never infer
 an old sandbox path in a new chat. Source/test/check/package/CI object IDs and
 complete evidence are in Docs/VALIDATION-R004.md.
@@ -142,3 +142,44 @@ Work remains on diagnostic/r004-batch-counters-20260930; re-read its actual HEAD
 Two incomplete local full-measurement runs and earlier build/wrapper failures are
 preserved separately; Apple success does not convert them into local successes.
 No iPhone execution, application/IPA, thermal or full-game acceptance is claimed.
+
+## Latest checkpoint — comprehensive review verified, 2026-09-30
+
+This section supersedes earlier next-action wording for review status. The owner
+requested an audit of earlier fast-agent work. The review does not infer or verify
+hidden effort settings. No excluded content was used, and canonical main remains
+5b5599895fa1bdbf00e951104e0cd55dc00f9a56. No business/Swift/index change or R005.
+
+Current review branch: review/r004-comprehensive-audit-20260930.
+Tested review commit: 0706447fceaca594d7dd897d98fe406dd926e352.
+Tested tree: 27a428eb9b2df227706ff9165f8c72cba748aa62 (110 files).
+A later documentation-only publication advances this review tip; re-read live HEAD.
+Apple run 36697715699 / job 109829567389 SUCCESS. Artifact 11089180650,
+nexora-r004-comprehensive-audit, SHA256:
+4fe2a49c41c14331e8706d706888129c512ec1837dec5077c6e194aeecb7723d.
+Nested tested source SHA256:
+01483c371f087c3fede04dcd713c1f45c92da24984779c2e995461629787ad06.
+All exported file bytes/modes reconstruct the exact tested tree. Debug/Release/TSan
+each 142 named tests / 11 suites passed; 43 Python tests, 29 compiler rejections,
+five valid clients, 12 corruption fail-stops and source guards passed. No new iOS
+compile/device run or new performance benchmark is claimed.
+
+The offline analyzer previously accepted seven invalid/duplicate evidence cases:
+wrong base, mixed source commits, renamed duplicate process file, failed completion
+status, negative calibration wall, negative calibration loop and negative release
+time. They are now rejected. The original 372600 measured batch records remain
+valid and produce a byte-identical report; no spike was discarded. A review-of-review
+correction preserves failed counter readings with raw errno=0 instead of rejecting
+them. Two additional tests raised the initial 41-test suite to 43. Earlier CI and
+local stages are retained separately. Two local log-parser assertions were fixed;
+these were not Swift failures. Full evidence and limitations:
+Docs/VALIDATION-R004-AUDIT.md and Docs/Daily/2026-09-30-R004-AUDIT-VERIFIED.md.
+
+No new core business-state/atomicity defect was established by this review. This is
+not exhaustive proof or full-game acceptance. Performance causality, permanent IDs,
+save/recovery, history draining, iPhone frames/heat and 20k complete gameplay remain
+OPEN. The safe next engineering boundary is still causal profiling and controlled
+cold/warm experiments, not an unproven FinanceStore index replacement or R005.
+Review branch is not merged into main/foundation/R004. Do not lose the validator
+fixes when selecting the next branch; explicitly choose/reconcile the reviewed
+source and verify its ancestry before more code changes.
