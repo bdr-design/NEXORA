@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Run the disposable layout suite. No host-latency pass/fail threshold."""
-import argparse,json,math,subprocess
+import argparse,json,math,platform,subprocess,sys
 from pathlib import Path
 HERE=Path(__file__).resolve().parent
 
@@ -9,7 +9,20 @@ def main():
     a.output.mkdir(parents=True,exist_ok=False)
     binary=a.output/'layout-probe'
     cmd=['cc','-std=c11','-D_POSIX_C_SOURCE=200809L','-O0' if a.debug else '-O2','-g','-Wall','-Wextra','-Werror',str(HERE/'layout_probe.c'),str(HERE/'Platform/platform.c'),'-I'+str(HERE/'Platform/include'),'-o',str(binary)]
-    subprocess.run(cmd,check=True,capture_output=True)
+    if platform.system() == 'Darwin':
+        # Retain an exact reproduction of the first strict-POSIX compiler failure.
+        old = subprocess.run(cmd,capture_output=True,text=True)
+        (a.output/'darwin-posix-preflight.json').write_text(json.dumps({
+            'command':cmd,'returncode':old.returncode,'stdout':old.stdout,'stderr':old.stderr,
+            'scope':'compatibility reproduction, not the accepted build'},indent=2)+'\n')
+        # This probe intentionally calls Darwin extensions, not just POSIX APIs.
+        cmd.remove('-D_POSIX_C_SOURCE=200809L')
+    build=subprocess.run(cmd,capture_output=True,text=True)
+    (a.output/'compiler.json').write_text(json.dumps({'command':cmd,'returncode':build.returncode,
+        'stdout':build.stdout,'stderr':build.stderr},indent=2)+'\n')
+    if build.returncode:
+        print(build.stdout, file=sys.stderr);print(build.stderr, file=sys.stderr)
+        raise subprocess.CalledProcessError(build.returncode,cmd)
     with (a.output/'selftest.txt').open('w') as f:subprocess.run([str(binary),'--selftest'],check=True,stdout=f,stderr=subprocess.STDOUT)
     results=[]
     cases=[(n,d,256) for n in (100_000,250_000,1_000_000,2_000_000) for d in (1,2)]
