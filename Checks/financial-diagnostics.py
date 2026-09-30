@@ -5,6 +5,7 @@ from collections import Counter, defaultdict
 import hashlib
 import json
 import math
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -52,6 +53,100 @@ def source_guard():
     print("PASS baseline Sources/Tests/Checks/Package/AGENTS/legacy-workflow objects and file modes; only diagnostic extension/dispatch")
 
 
+
+UINT64_MAX = (1 << 64) - 1
+SOURCE_BASE = "5b5599895fa1bdbf00e951104e0cd55dc00f9a56"
+
+
+def unsigned(value, name):
+    # bool is an int subclass in Python, but is never a numeric measurement.
+    check(type(value) is int and 0 <= value <= UINT64_MAX, f"invalid unsigned {name}")
+    return value
+
+
+def endpoint(start, duration, name):
+    return unsigned(unsigned(start, name + ".start") + unsigned(duration, name + ".duration"),
+                    name + ".end")
+
+
+def validate_window(row, mode):
+    start = unsigned(row["startOffsetNS"], "window start")
+    end = endpoint(start, row["wallNS"], "window")
+    if mode == "counters":
+        for side in ("before", "after"):
+            check(isinstance(row.get(side), dict), "missing requested counters")
+            validate_snapshot(row[side])
+        check(row["before"]["endOffsetNS"] <= start, "before counters enter bracket")
+        check(end <= row["after"]["beginOffsetNS"], "after counters enter bracket")
+        return row["before"]["beginOffsetNS"], row["after"]["endOffsetNS"]
+    check(mode == "wall", "unknown window mode")
+    check(row.get("before") is None and row.get("after") is None, "wall-only read counters")
+    return start, end
+
+
+def validate_calibration(item):
+    mode = item["mode"]
+    check(mode in ("wall", "counters"), "unknown calibration mode")
+    rows = item["records"]
+    check(type(item["iterations"]) is int and len(rows) == item["iterations"] == 2000,
+          "missing calibration windows")
+    loop = unsigned(item["loopNS"], "calibration loop")
+    previous_end, total = 0, 0
+    for i, row in enumerate(rows):
+        check(row["aircraft"] == 0 and type(row["aircraft"]) is int
+              and row["sample"] == 0 and type(row["sample"]) is int
+              and row["batch"] == i and type(row["batch"]) is int
+              and row["operations"] == 0 and type(row["operations"]) is int
+              and row["phase"] == "empty", "bad calibration identity")
+        begin, end = validate_window(row, mode)
+        check(previous_end <= begin <= end <= loop, "invalid calibration chronology")
+        previous_end = end
+        total += row["wallNS"]
+    check(total <= loop, "calibration windows exceed loop")
+
+
+def validate_lifecycle(item):
+    aggregate = item["aggregate"]
+    for field, value in aggregate.items():
+        if field.endswith("NS"):
+            unsigned(value, field)
+    check(aggregate["maximumAdvanceNS"] <= aggregate["advanceAllNS"], "advance max exceeds phase")
+    check(aggregate["maximumCollectionPageNS"] <= aggregate["collectAllNS"], "collection max exceeds phase")
+    fields = ("bufferPreparationNS", "seedAndHandlePreparationNS", "finalAuditNS",
+              "explicitWorldReleaseNS", "workloadNS")
+    if item["mode"] == "baseline":
+        check(all(item.get(field) is None for field in fields), "baseline unexpectedly has lifecycle probes")
+        return
+    for field in fields:
+        unsigned(item.get(field), field)
+    depart, advance, collect = item["phases"]
+    check(depart["startOffsetNS"] == aggregate["initializationNS"]
+          + item["seedAndHandlePreparationNS"] + aggregate["registerAllNS"],
+          "initialization/registration lifecycle mismatch")
+    check(depart["startOffsetNS"] + depart["totalNS"] == advance["startOffsetNS"],
+          "nonadjacent depart/advance phases")
+    check(advance["startOffsetNS"] + advance["totalNS"] <= collect["startOffsetNS"],
+          "overlapping advance/collect phases")
+    check(collect["startOffsetNS"] + collect["totalNS"] + aggregate["expensePostsNS"]
+          + item["finalAuditNS"] + item["explicitWorldReleaseNS"] == item["workloadNS"],
+          "final lifecycle/workload mismatch")
+
+
+def validate_metadata(meta):
+    check(meta["schema"] == "NXR-R004-BATCH-DIAGNOSTICS-1", "unknown schema")
+    check(meta.get("sourceBase") == SOURCE_BASE, "wrong source base")
+    check(type(meta.get("sourceCommit")) is str
+          and re.fullmatch(r"[0-9a-f]{40}", meta["sourceCommit"]) is not None,
+          "missing or invalid source commit; record NEXORA_SOURCE_COMMIT explicitly")
+    check(meta.get("modes") == list(MODES) and type(meta.get("batchSize")) is int
+          and meta["batchSize"] == 256, "changed mode/batch contract")
+    check(type(meta.get("runID")) is int and 1 <= meta["runID"] <= 100, "invalid run ID")
+    check(type(meta.get("processID")) is int and meta["processID"] > 0, "invalid process ID")
+    check(type(meta.get("os")) is str and meta["os"], "missing OS identity")
+    check(type(meta.get("warmups")) is int and type(meta.get("repetitions")) is int,
+          "invalid sample schedule type")
+
+
 def distribution(values):
     if not values:
         return {"count": 0}
@@ -77,16 +172,20 @@ def counter_delta(row, field):
 
 
 def validate_snapshot(snapshot):
+    unsigned(snapshot["beginOffsetNS"], "counter begin")
+    unsigned(snapshot["endOffsetNS"], "counter end")
     check(snapshot["beginOffsetNS"] <= snapshot["endOffsetNS"], "reversed counter-read envelope")
     for family, fields in (("thread", FIELDS[:1]), ("process", FIELDS[1:])):
         status = snapshot[family + "Status"]
         check(status in ("ok", "syscallFailure", "invalidValue", "unsupported"), "unknown reading status")
         if status == "syscallFailure":
-            check(isinstance(snapshot.get(family + "Errno"), int), "failed call lacks errno")
+            check(type(snapshot.get(family + "Errno")) is int and snapshot[family + "Errno"] > 0, "failed call lacks errno")
+        else:
+            check(snapshot.get(family + "Errno") is None, "successful/non-syscall read carries errno")
         for field in fields:
             value = snapshot.get(field)
             if status == "ok":
-                check(type(value) is int and value >= 0, f"successful {field} lacks nonnegative integer")
+                unsigned(value, field)
             else:
                 check(value is None, f"invalid {field} masquerading as measurement")
 
@@ -104,19 +203,14 @@ def validate_records(rows, *, count, sample, mode, phases=PHASES):
                   "wrong batch identity")
             check(row["batch"] == index, "duplicate, missing or reordered batch")
             check(row["operations"] == min(256, count - index * 256), "wrong operation count")
-            check(type(row["wallNS"]) is int and row["wallNS"] >= 0, "invalid wall duration")
+            for field in ("aircraft", "sample", "batch", "operations"):
+                unsigned(row[field], field)
+            begin, end = validate_window(row, mode)
             if index:
                 last = group[index - 1]
-                check(last["startOffsetNS"] + last["wallNS"] <= row["startOffsetNS"], "overlapping wall windows")
-            if mode == "counters":
-                for side in ("before", "after"):
-                    check(side in row, "missing requested counters")
-                    validate_snapshot(row[side])
-                check(row["before"]["endOffsetNS"] <= row["startOffsetNS"], "before counters enter bracket")
-                check(row["startOffsetNS"] + row["wallNS"] <= row["after"]["beginOffsetNS"],
-                      "after counters enter bracket")
-            else:
-                check(row.get("before") is None and row.get("after") is None, "wall-only read counters")
+                last_end = (last["after"]["endOffsetNS"] if mode == "counters"
+                            else last["startOffsetNS"] + last["wallNS"])
+                check(last_end <= begin, "overlapping batch/counter windows")
 
 
 def phase_validation(item):
@@ -126,7 +220,15 @@ def phase_validation(item):
         return
     check([p["phase"] for p in item["phases"]] == list(PHASES), "wrong phase list")
     for phase in item["phases"]:
+        for field in ("startOffsetNS", "totalNS", "sumBatchWallNS", "outsideBatchWallNS"):
+            unsigned(phase[field], "phase " + field)
+        end = endpoint(phase["startOffsetNS"], phase["totalNS"], "phase")
         group = [r for r in rows if r["phase"] == phase["phase"]]
+        first_begin = (group[0]["before"]["beginOffsetNS"] if item["mode"] == "counters"
+                       else group[0]["startOffsetNS"])
+        last_end = (group[-1]["after"]["endOffsetNS"] if item["mode"] == "counters"
+                    else group[-1]["startOffsetNS"] + group[-1]["wallNS"])
+        check(phase["startOffsetNS"] <= first_begin <= last_end <= end, "counter/window exceeds phase")
         total = sum(r["wallNS"] for r in group)
         check(total == phase["sumBatchWallNS"], "batch sum mismatch")
         check(phase["totalNS"] - total == phase["outsideBatchWallNS"] >= 0, "negative or incorrect phase gap")
@@ -146,7 +248,15 @@ def analyze(paths):
     check(len({p.name for p in paths}) == len(paths), "ambiguous duplicate input basename")
     gaps, totals, extra = defaultdict(list), defaultdict(list), defaultdict(list)
     maxima, spikes, files, calibrations, pairs = {}, [], [], [], {}
+    source_identity, run_ids, hashes = None, set(), set()
     for path in paths:
+        hasher = hashlib.sha256()
+        with path.open("rb") as binary:
+            for block in iter(lambda: binary.read(1 << 20), b""):
+                hasher.update(block)
+        file_hash = hasher.hexdigest()
+        check(file_hash not in hashes, "duplicate raw bytes under a different filename")
+        hashes.add(file_hash)
         meta, completed = None, False
         seen, cal_modes = set(), set()
         expected_order = []
@@ -158,6 +268,14 @@ def analyze(paths):
                 if kind == "metadata":
                     check(meta is None and number == 1, "metadata not first/unique")
                     meta = item
+                    validate_metadata(meta)
+                    identity = (meta["sourceBase"], meta["sourceCommit"], meta["os"],
+                                json.dumps(meta.get("counterDefinitions"), sort_keys=True))
+                    check(source_identity is None or identity == source_identity,
+                          "mixed source/OS/counter definitions in one analysis")
+                    source_identity = identity
+                    check(meta["runID"] not in run_ids, "duplicate run ID in one analysis")
+                    run_ids.add(meta["runID"])
                     check(item["schema"] == "NXR-R004-BATCH-DIAGNOSTICS-1", "unknown schema")
                     check(meta["sizes"] == [1000,5000,20000,50000,100000], "changed size fixture")
                     check((meta["warmups"], meta["repetitions"]) in ((0,1),(3,30)), "unknown sample schedule")
@@ -170,12 +288,9 @@ def analyze(paths):
                 elif kind == "calibration":
                     check(meta is not None and item["mode"] not in cal_modes, "calibration duplicate")
                     cal_modes.add(item["mode"])
+                    check(not seen, "calibration after sample data")
+                    validate_calibration(item)
                     rows = item["records"]
-                    check(len(rows) == item["iterations"] == 2000, "missing calibration windows")
-                    for i, row in enumerate(rows):
-                        check(row["batch"] == i and row["operations"] == 0 and row["phase"] == "empty", "bad calibration identity")
-                        if item["mode"] == "counters":
-                            validate_snapshot(row["before"]); validate_snapshot(row["after"])
                     calibrations.append({"file": path.name, "runID": meta["runID"], "mode": item["mode"],
                         "iterations": item["iterations"], "loopNS": item["loopNS"],
                         "loopMeanNSPerWindow": item["loopNS"] / item["iterations"],
@@ -198,6 +313,9 @@ def analyze(paths):
                     check(item["executionOrder"] == order.index(mode), "wrong alternating order")
                     validate_records(item["records"], count=n, sample=s, mode=mode)
                     phase_validation(item)
+                    validate_lifecycle(item)
+                    for field in ("aircraft", "sample", "runID", "executionOrder"):
+                        unsigned(item[field], field)
                     agg = item["aggregate"]
                     income = sum(i % 97 + 101 for i in range(n))
                     check((agg["invoiceCount"], agg["journalCount"], agg["revenueMinor"], agg["cashMinor"], agg["advanceBatches"])
@@ -245,6 +363,7 @@ def analyze(paths):
                         if wall > 1_000_000:
                             spikes.append(annotated)
                 elif kind == "complete":
+                    check(item.get("status") == "all-fixture-checks-passed", "invalid completion status")
                     completed = True
                 elif kind == "failure":
                     raise ValueError(f"recorded fixture failure: {item}")
@@ -255,7 +374,7 @@ def analyze(paths):
         expected = {(n, s, warmup, mode) for n in meta["sizes"] for warmup in (False, True)
                     for s in range(1, (meta["warmups"] if warmup else meta["repetitions"]) + 1) for mode in MODES}
         check(seen == expected, "missing sample triples")
-        files.append({"file": path.name, "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        files.append({"file": path.name, "sha256": file_hash,
                       "metadata": meta, "samplesIncludingWarmups": len(seen)})
     summaries = []
     for key, values in sorted(batches.items()):

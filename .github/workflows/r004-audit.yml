@@ -1,0 +1,78 @@
+name: NEXORA R004 Review Gates
+
+on:
+  push:
+    branches: ["review/r004-comprehensive-audit-20260930"]
+    paths:
+      - "Checks/financial-diagnostics.py"
+      - "ReviewTests/**"
+      - ".github/workflows/r004-audit.yml"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  audit:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Source identity
+        run: |
+          mkdir -p audit-evidence
+          git rev-parse HEAD > audit-evidence/source-commit.txt
+          git rev-parse HEAD^{tree} > audit-evidence/source-tree.txt
+          git archive --format=zip --output=audit-evidence/NEXORA_R004_AUDIT_SOURCE.zip HEAD
+          swift --version > audit-evidence/environment.txt
+          python3 --version >> audit-evidence/environment.txt
+          xcodebuild -version >> audit-evidence/environment.txt
+          sw_vers >> audit-evidence/environment.txt
+      - name: Evidence validator regressions and frozen-source guard
+        run: |
+          set -euo pipefail
+          python3 ReviewTests/test_financial_diagnostics.py 2>&1 | tee audit-evidence/validator-tests.txt
+          python3 Checks/financial-diagnostics.py --guard --selftest 2>&1 | tee audit-evidence/source-guard.txt
+          python3 Checks/review-r002.py
+          python3 Checks/review-r003.py
+          python3 Checks/review-r004.py
+      - name: Fresh Debug and Release contracts
+        run: |
+          set -euo pipefail
+          swift test -Xswiftc -warnings-as-errors 2>&1 | tee audit-evidence/debug.txt
+          swift test -c release -Xswiftc -warnings-as-errors 2>&1 | tee audit-evidence/release.txt
+      - name: External compiler and corruption boundaries
+        run: |
+          set -euo pipefail
+          for script in verify verify-r002 verify-r003 verify-r004 verify-failstop verify-trip-failstop verify-finance-failstop; do
+            bash "Checks/$script.sh" 2>&1 | tee "audit-evidence/$script.txt"
+          done
+      - name: Fresh Apple Thread Sanitizer
+        run: |
+          set -euo pipefail
+          swift test --sanitize=thread -Xswiftc -warnings-as-errors 2>&1 | tee audit-evidence/tsan.txt
+      - name: Retrieve exact prior measurement artifact, not a new benchmark
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: "11086348930"
+          run-id: "36692367500"
+          github-token: ${{ github.token }}
+          repository: bdr-design/NEXORA
+          path: prior-evidence
+          merge-multiple: true
+      - name: Revalidate pinned original raw data without changing statistics
+        run: |
+          set -euo pipefail
+          python3 ReviewTests/revalidate_apple.py prior-evidence audit-evidence/revalidated-summary.json 2>&1 | tee audit-evidence/revalidation.txt
+          git diff --exit-code
+      - name: Preserve audit evidence, including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nexora-r004-comprehensive-audit
+          path: audit-evidence/
+          if-no-files-found: error
+          compression-level: 6
