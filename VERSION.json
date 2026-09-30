@@ -3,7 +3,7 @@
   "update_id": "NXR-R004",
   "development_version": "0.0.4",
   "app_build": null,
-  "status": "atomic-finance-review-candidate-awaiting-final-apple-gates",
+  "status": "atomic-finance-apple-verified-not-full-gameplay",
   "base_commit": "ca0351757ce158c6320f962d1285c6f4aca2cf13",
   "recovered_candidate_commit": "53cb86222f1529f8f48be4d00993c4ef03900311",
   "scheduler_implemented": true,
@@ -12,5 +12,10 @@
   "finance_scope": "single-currency-in-memory-pricing-invoices-collections-cash-expenses",
   "persistence_implemented": false,
   "full_gameplay_assets_proven": false,
-  "device_performance_certified": false
+  "device_performance_certified": false,
+  "verified_code_commit": "674c94e145f24dc6c4c9addaa5aa07d1c9d4a168",
+  "verified_code_tree": "f1273cf58de998cad9256581474edbe1c8f85261",
+  "ci_run": 36679204017,
+  "artifact_id": 11080779599,
+  "artifact_sha256": "df71ac8bf51e8b8cbf0be4bb061b0b66619f2cb8ed12aff479abc385e4b7211c"
 }

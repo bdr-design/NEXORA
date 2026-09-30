@@ -1,4 +1,4 @@
-# NEXORA continuity — NXR-R003 verified timed-trip core
+# NEXORA continuity — NXR-R004 verified development core
 
 ## Permanent exclusion / تنبيه دائم
 These branch names are a denylist ONLY, never development/reference/recovery:
@@ -6,85 +6,86 @@ These branch names are a denylist ONLY, never development/reference/recovery:
 - `audit/nxr-0003-20260930`
 - `fix/nxr-0003-contract-repair-20260930`
 المصادر الثلاثة مشطوبة نهائيًا؛ لا تُقرأ أو تُنسخ أو تُدمج أو تُستخدم أو تُسترجع.
-أي إذن قديم ملغى. التنبيه لا يعني حذف تاريخ Git فعليًا. لا أرشيف بديل للتنفيذ
-المشطوب، ولا إعادة تأسيس R001 بسبب انتقال الدردشة. اقرأ AGENTS.md وتحقق من
-فرع العمل وHEAD عند بداية كل جلسة، وسجّل نقطة الاستئناف الدقيقة بعد المراجعة.
+أي إذن قديم ملغى. التنبيه ليس حذفًا لتاريخ Git؛ لا أرشيف بديل للتنفيذ المشطوب.
+اقرأ AGENTS.md وتحقق من الفرع وHEAD عند كل جلسة. لا تُعد إنشاء الأساس بسبب انتقال
+الدردشة، ولا تستخدم رقم التحديث المشابه في فرع مشطوب بوصفه مصدرًا مسموحًا.
 
-## Latest execution authorization
-The owner explicitly said "الجهد الداخلي الان pro كمل لاتشيل همه" after the
-assistant asked to proceed with code/testing on an isolated permitted branch.
-The old setting-proof blocker is superseded by that authorization. It is NOT
-independent inspection of an internal setting. Continue actual staged work;
-source isolation and evidence/production/device gates remain mandatory.
+## Authorization and work boundary
+The owner explicitly authorized implementation/testing with
+"الجهد الداخلي الان pro كمل لاتشيل همه". The old assistant-side effort-setting
+verification blocker was superseded. This is not independent proof of a hidden
+setting. Keep high-care staged review and evidence gates; do not return to a
+documentation-only loop or imply production/device acceptance from this permission.
 
-## Current implementation and exact evidence
-Repository: bdr-design/NEXORA only. NXR-R003, development 0.0.3. No app build/IPA.
-R003 implementation branch: feature/r003-bounded-trips-20260930.
-Tested code commit: 50a9fb82db7ea13f636b5c4b3e4f104d8bb7b113.
-Tested tree: 604fef333991e71bc191abd17a19bc93afbaf08d.
-R003 is based on permitted verified R002 evidence commit
-63de835eef4b24b410703507986dbf84f5d6eeea. Evidence-only publication can advance
-branch tips; re-read main/foundation/feature refs instead of inferring current HEAD.
+## Current source — read live refs before changing anything
+Repository bdr-design/NEXORA only. NXR-R004 / development 0.0.4. No app build/IPA.
+R004 working branch: feature/r004-atomic-finance-20260930.
+Canonical branches: main and foundation/clean-core after verified fast-forward.
+Tested code: 674c94e145f24dc6c4c9addaa5aa07d1c9d4a168.
+Tested root: f1273cf58de998cad9256581474edbe1c8f85261 (95 files).
+The evidence-only publication commit is a descendant. Re-read remote tips; do not
+mistake the tested code SHA or this note for the final remote HEAD.
 
-Implemented: R001 unique identity and bounded timeline; R002 owned aircraft
-lifecycle store; R003 single-owner timed-trip coordinator, fixed-capacity heap,
-checked simulation clock, numeric fixture airport locations and register/depart/
-retire commands. Advance returns actual reached time, completed prefix, next due,
-and explicit target/budget/blocked reason. Failed events remain queued. User-input
-sequence is independent of automatic arrivals. No per-aircraft task/actor/lock,
-hot world scan, normal full snapshot, I/O or presentation in this core path.
-This is not a complete enterprise platform or real route catalog.
+Implemented: unique identity and bounded timeline; owned aircraft lifecycle;
+bounded timed arrivals with separate manual-input sequence; and single-currency
+finance with invoices at priced arrival, partial/full collection, capital and
+cash-expense primitives, bounded journal and pages. Finance preparation precedes
+aircraft completion; expected failure keeps the failed event unchanged and
+explicitly returns any already-committed prefix. See Docs/Design/ATOMIC-FINANCE-R004.md.
+No normal hot full snapshot, per-aircraft task/actor/lock, I/O or UI is in this path.
 
-## R003 Apple evidence verified in full
-Read Docs/VALIDATION-R003.md and Docs/Updates/NXR-R003.md.
-Run36655778966 / job109699695428 passed all gates on the tested code above.
-Debug, Release and TSan each passed 86 named tests; no sanitizer error reported.
-18 required compiler rejections, three valid clients, eight isolated corruption
-processes, four iOS library compiles and five 30-sample trip scales passed.
-New reference: four seeds x5,000 requests; 3,213 arrivals and 248 injected blocked
-prefixes, matched against independent sorted-list state. R002's separate 20,000
-model commands also reran. Parameter expansions are not extra named tests.
-Local full TSan did not complete within its observation window; Apple success is
-a separate verified run and does not erase that local incomplete invocation.
+## Verified final R004 evidence
+Apple run 36679204017/job 109770742356 succeeded on the tested code above.
+Apple Swift 6.1.2, arm64 macOS 15, Xcode 16.4. Debug/Release/TSan each 142 named tests
+in 11 suites. 29 required compiler rejections, 5 valid clients, 12 isolated corruption
+probes and 5 iOS library compiles passed. Four raw fixture reports each contain
+five sizes and 30 samples per size. No iPhone execution is implied.
+Artifact 11080779599, NEXORA_R004_Apple_Evidence.zip, recomputed SHA-256:
+df71ac8bf51e8b8cbf0be4bb061b0b66619f2cb8ed12aff479abc385e4b7211c
+Nested NEXORA_R004_SOURCE.zip, recomputed SHA-256:
+a815f730f4a6b5d663dbfcc8763d22df5307892469048503354c8f6427fd91a1
+All 95 exported file contents and modes matched local source and rebuilt the
+complete tested Git tree. Fetch artifacts or use actual attachments; never infer
+an old sandbox path in a new chat. Source/test/check/package/CI object IDs and
+complete evidence are in Docs/VALIDATION-R004.md.
 
-Artifact11072940842, NEXORA_R003_Apple_Evidence.zip, recalculated SHA-256:
-03141936e8e14948841424a6b16b10c850eb4ffd84a685beb9baed97e865885d
-Nested NEXORA_R003_SOURCE.zip, recalculated SHA-256:
-784fe213ecacf6b65a2284c8d18a5da3338e5177e910194747b43d722b655b90
-All 67 exported source files and executable modes recomputed to the exact tested
-root tree, not merely selected files. This archive is permitted current source,
-not an excluded-source recovery archive. Do not infer old sandbox paths in a new
-chat; fetch the connector artifact or use an actually attached source export.
+The final review added CurrencySpec input-bound validation and F31/D01/D02 tests.
+Local final Debug/Release passed 142/11. Local wrapper timeouts and successful
+standalone reruns are recorded, not suppressed. Earlier incomplete local TSan is
+not a passing result; the full Apple TSan evidence is separate.
 
-Local/published tested subtrees:
-Sources ca904809dce06a62b9f8c5b1e9a657ebfcc61c2f
-Tests c9a27bbb025a03aca0e4b1ef8524378fcd16eb2a
-Checks 9edd1ccc9be83c2187a44d512eee85b663d708f4
-Package.swift 9f334c443c0e16c989eda7558adbbc0d4e18e502
-The current evidence-only documentation update does not change these code objects.
+## Performance findings — not closed
+At 20k the financial fixture recorded a 20.050916 ms arrival batch and 16.267500 ms
+collection page. Do not discard them or attribute them to CI noise without data.
+No hard under 5 ms/under 1 ms, FPS, physical-memory, energy or heat guarantee is proven.
+The 95-file source has a functioning narrow finance boundary, not 20k full-feature
+assets. 100k remains an architectural target, not whole-game acceptance.
 
-## Earlier permitted R002 checkpoint
-Code4583de236d5aa25b06bbd3ed4a2492e8cb629835, tree499ea18d3a9057f8329dce8346eb555efa697bb1.
-Apple run36653271004/job109691995765, 51 named tests each Debug/Release/TSan,
-all compiler/corruption/three-library gates passed. Artifact11070708521 hash:
-e1dfbb9c11d04421561d14dbb579a9699f7ba33b8bcf3cac69e8c7a868730509.
-D001's old implementation-blocked/not-run wording records its creation only and
-does not override actual R002/R003 implementation or the owner's new permission.
+## Earlier permitted checkpoints and auxiliary branch
+R003 publication ca0351757ce158c6320f962d1285c6f4aca2cf13 is the allowed R004 base.
+R003 code 50a9fb82db7ea13f636b5c4b3e4f104d8bb7b113/run 36655778966 passed 86 named
+tests per mode. See its retained validation record; do not reuse its numbers as R004.
+The recovered R004 candidate 53cb86222f1529f8f48be4d00993c4ef03900311/tree 69a9dceedcf973c02bd0d59d091f399095558ee1
+passed its own 139-test Apple run 36677404314 before the final revision.
+review/r004-source-20260930 only exported that exact candidate when local direct
+retrieval failed. Its run 36678040118 is not test evidence or a development branch.
+Do not build future work from that export-only tip.
 
-## Exact next engineering boundary — still unfinished
+## Exact next engineering boundary — R005 not implemented
+First design/implement permanent world/entity/operation/invoice identity distinct
+from process-local handles. Preserve old invoice origins after aircraft retirement
+or slot reuse, with explicit mapping and invalid-input/restart tests. Then define
+and implement durable transaction/recovery semantics before claiming save/load.
+Do not append fallible saving after an already-committed arrival and call it atomic.
+Keep full media in separate document/blob storage with checked references.
 
-Prepare/validate financial postings BEFORE arrival commit. Do not bolt fallible
-finance onto a consumer of completion results and call it atomic. Define a narrow
-revenue/invoice path with independent accounting/failure evidence, followed by
-payroll, maintenance and delivery obligations. Define persistent logical IDs
-before save/load; current handles/tokens remain process-local. Durable transactions
-and separate document/blob storage must preserve transfers, cheque images, proofs,
-receipts and searchable history without swelling hot simulation state.
+Fixed in-memory history currently backpressures permanently at its configured
+capacity; it cannot yet be drained to disk. This remains a long-session blocker.
+Scheduled payroll/HR, maintenance/delivery obligations, treasury/cheques/transfers,
+images/proofs/search, real route catalog, iOS app/Metal map and expanded causal
+instrumentation are unimplemented. Expense categories are not full domain engines.
+Track performance spikes with actual stage/device evidence as these systems grow.
 
-Real route data/planning, finance, payroll/maintenance/delivery, persistence,
-iOS app/map and expanded bounded causal diagnostics remain unimplemented here.
-The 20,000 full-feature acceptance and 100,000 architectural goal remain unproven.
-Mac/Linux timings are not iPhone 17 Pro Max FPS, physical RAM, energy or heat.
-Production approval is separate from this core gate. Physical excluded-history
-deletion remains unresolved. No background continuation or automatic daily job is
-implied. Preserve exact source/changes/failures/evidence at every handoff.
+For every handoff record the real branch/HEAD, files, tests, failures and next
+safe step. At source/context uncertainty stop sensitive changes and preserve a
+precise handoff. No destructive history cleanup or background continuation.

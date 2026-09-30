@@ -1,42 +1,42 @@
 # NEXORA
 
-## NXR-R003 — verified bounded timed-trip core
+## NXR-R004 — verified in-memory finance core
 
-Development 0.0.3. No app build, IPA or playable iOS game yet.
-Read AGENTS.md's source exclusion and current execution authorization first.
+NEXORA is a native Swift enterprise-simulation project under staged development.
+Version 0.0.4 is a core package, not a playable iOS application. No IPA exists.
 
-Implemented: uniquely owned aircraft records and identity; timed trips between
-numeric fixture airports; deterministic bounded arrival heap; explicit prefix
-progress, failed-event retention and independent manual-input sequence. Input
-errors preserve compound state, and corrupt internal invariants fail-stop.
+Implemented: uniquely owned identity/lifecycle stores, bounded diagnostic timeline,
+deterministic timed arrivals, priced-arrival invoicing, partial/full collection,
+capital and cash expenses, checked numeric limits and bounded history/pages.
+Arrival finance is prepared before state commit; failures retain the current event
+and return any completed prefix explicitly. This does not implement durable saves.
 
-Apple CI run36655778966 passed on code50a9fb82db7ea13f636b5c4b3e4f104d8bb7b113:
-86 named tests each Debug/Release/TSan, 18 compiler misuse rejections, 8 isolated
-corruption processes, 4 iOS library compiles, independent models and narrow scale
-fixtures. The evidence archive and complete 67-file source export were downloaded
-and their digests and exact full Git source tree independently checked.
-Read Docs/VALIDATION-R003.md for exact identities, measurements and limitations.
+Final code 674c94e145f24dc6c4c9addaa5aa07d1c9d4a168 passed Apple run 36679204017:
+142 named tests in each Debug/Release/TSan, 29 compiler misuse rejections, 12 isolated
+fail-stop probes and 5 iOS library compiles. Artifacts/source hashes and scope are
+in [the validation ledger](Docs/VALIDATION-R004.md). Parameter cases are not extra
+named tests; compilation is not iPhone execution.
 
-Not implemented: real route catalog/planning, finance, payroll/maintenance/delivery,
-transactional save/load, document storage, iOS UI/map or device diagnostics.
-20k full-feature acceptance and 100k architectural scale remain unproven goals.
-This is a verified core milestone, not proof of complete gameplay or no defects.
+A 20k narrow financial fixture had a 20.050916 ms arrival-batch spike. No hard frame,
+latency, RAM, zero-allocation, energy or thermal acceptance is claimed. 20k complete
+assets and 100k architecture remain product targets, not achieved gameplay results.
+No persistent identity/save/load, document/media storage, scheduled HR/maintenance/
+delivery, treasury workflows, real route catalog, iOS UI or Metal map is complete.
+
+Read [AGENTS.md](AGENTS.md), [continuity](PROJECT_CONTINUITY.md),
+[requirements](Docs/REQUIREMENTS.md), and [the implemented financial boundary](Docs/Design/ATOMIC-FINANCE-R004.md)
+before changing source. The permanent exclusion of retired sources remains binding.
+
+### Local commands
 
 ```sh
 swift test -Xswiftc -warnings-as-errors
 swift test -c release -Xswiftc -warnings-as-errors
-bash Checks/verify.sh
-bash Checks/verify-r002.sh
-bash Checks/verify-r003.sh
-bash Checks/verify-failstop.sh
-bash Checks/verify-trip-failstop.sh
-python3 Checks/review-r002.py
-python3 Checks/review-r003.py
 swift test --sanitize=thread -Xswiftc -warnings-as-errors
-swift run -c release nexora-trip-check --json local-evidence/trip-samples.json
+bash Checks/verify-r004.sh
+bash Checks/verify-finance-failstop.sh
 ```
 
-The earlier incomplete local sanitizer invocation is recorded, not represented as
-passed by the later Apple success. Deep audits/exports allocate outside normal
-simulation work. Benchmark budget256 and API maximum1024 are event-count bounds,
-not FPS/heat/energy guarantees. PROJECT_CONTINUITY.md is the current handoff point.
+The CI workflow also runs earlier contracts, all library builds and raw fixtures.
+Keep reports tied to their exact code commit; documentation-only publication may
+advance the branch tip without changing the tested implementation.
