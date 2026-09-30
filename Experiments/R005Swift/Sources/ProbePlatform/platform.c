@@ -36,40 +36,30 @@ NXRFootprint nx_footprint(void) {
 #endif
     return out;
 }
-static _Thread_local unsigned measuring=0;
 #ifdef __APPLE__
-static _Thread_local unsigned depth=0;
-#endif
-static _Thread_local uint64_t calls=0,requested=0;
-void nx_alloc_begin(void){ calls=0;requested=0;measuring=1; }
-NXRAlloc nx_alloc_end(void){ measuring=0; NXRAlloc r={calls,requested,0};
-#ifdef __APPLE__
-    r.available=1;
-#endif
-    return r;
+#include <dlfcn.h>
+#include <pthread.h>
+static pthread_once_t observer_once=PTHREAD_ONCE_INIT;
+static void (*observer_begin)(void)=NULL;
+static NXRAlloc (*observer_end)(void)=NULL;
+static void lookup_observer(void){
+ observer_begin=(void (*)(void))dlsym(RTLD_DEFAULT,"nx_observer_begin");
+ observer_end=(NXRAlloc (*)(void))dlsym(RTLD_DEFAULT,"nx_observer_end");
 }
-#ifdef __APPLE__
-// No polling/net-in-use proxy: count actual allocation ENTRY calls on this thread.
-// Recursive entry into another intercepted function is counted once.
-static void before(size_t n){if(measuring && depth==0){calls++; requested+=n;} depth++;}
-static void after(void){depth--;}
-static void *p_malloc(size_t n){before(n);void *p=malloc(n);after();return p;}
-static void *p_calloc(size_t n,size_t s){before(n*s);void *p=calloc(n,s);after();return p;}
-static void *p_realloc(void *p,size_t n){before(n);void *q=realloc(p,n);after();return q;}
-static void *p_valloc(size_t n){before(n);void *p=valloc(n);after();return p;}
-static int p_posix(void **p,size_t a,size_t n){before(n);int r=posix_memalign(p,a,n);after();return r;}
-static void *p_aligned(size_t a,size_t n){before(n);void *p=aligned_alloc(a,n);after();return p;}
-static void *p_zmalloc(malloc_zone_t *z,size_t n){before(n);void *p=malloc_zone_malloc(z,n);after();return p;}
-static void *p_zcalloc(malloc_zone_t *z,size_t n,size_t s){before(n*s);void *p=malloc_zone_calloc(z,n,s);after();return p;}
-static void *p_zrealloc(malloc_zone_t *z,void *p,size_t n){before(n);void *q=malloc_zone_realloc(z,p,n);after();return q;}
-static void *p_zmemalign(malloc_zone_t *z,size_t a,size_t n){before(n);void *p=malloc_zone_memalign(z,a,n);after();return p;}
-#define PAIR(replacement,original) { (const void *)(replacement), (const void *)(original) }
-__attribute__((used,section("__DATA,__interpose"))) static const struct {const void *replacement,*original;} hooks[]={
- PAIR(p_malloc,malloc),PAIR(p_calloc,calloc),PAIR(p_realloc,realloc),PAIR(p_valloc,valloc),
- PAIR(p_posix,posix_memalign),PAIR(p_aligned,aligned_alloc),PAIR(p_zmalloc,malloc_zone_malloc),
- PAIR(p_zcalloc,malloc_zone_calloc),PAIR(p_zrealloc,malloc_zone_realloc),PAIR(p_zmemalign,malloc_zone_memalign)
-};
 #endif
+void nx_alloc_begin(void){
+#ifdef __APPLE__
+ pthread_once(&observer_once,lookup_observer);
+ if(observer_begin&&observer_end)observer_begin();
+#endif
+}
+NXRAlloc nx_alloc_end(void){
+#ifdef __APPLE__
+ pthread_once(&observer_once,lookup_observer);
+ if(observer_begin&&observer_end)return observer_end();
+#endif
+ NXRAlloc absent={0,0,0};return absent;
+}
 // Called through a volatile pointer to forbid folding allocation away.
 uint64_t nx_alloc_calibrate(void) {
     void *(*volatile allocate)(size_t)=malloc;

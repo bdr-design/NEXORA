@@ -34,6 +34,8 @@ jobs:
         run: |
           set -euo pipefail
           cd Experiments/R005Swift
+          cc -dynamiclib -O2 -Wall -Wextra -Werror AllocationObserver.c -ISources/ProbePlatform/include -o ../../swift-results/AllocationObserver.dylib
+          export NXR_ALLOCATOR_DYLIB="$PWD/../../swift-results/AllocationObserver.dylib"
           python3 -B run_suite.py .build/debug/nxr-swift-probe ../../swift-results/debug 2>&1 | tee ../../swift-results/debug-run.txt
           python3 -B run_suite.py .build/release/nxr-swift-probe ../../swift-results/release --release 2>&1 | tee ../../swift-results/release-run.txt
       - name: Actual Swift model under Thread Sanitizer

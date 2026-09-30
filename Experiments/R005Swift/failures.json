@@ -1,0 +1,22 @@
+{
+  "scope": "Preserved experiment failures; no production changes",
+  "local": [
+    "Direct codeload failed DNS; used verified permitted mounted source for local compilation.",
+    "Initial nested Swift map expression exceeded type-checker complexity; rewritten as explicit loops.",
+    "Exact R004 transcript test detected prototype generation=1 versus baseline generation=0; prototype corrected, oracle unchanged.",
+    "Initial ad-hoc raw artifact inspection looked for records at the top level rather than fixture.records; read path corrected, original bytes unchanged."
+  ],
+  "apple": [
+    {
+      "commit": "47f1806609ad5c4a8330ac5074ce29140cbe9094",
+      "run": 36767779910,
+      "job": 110066186896,
+      "status": "failure",
+      "artifact": 11122666221,
+      "artifactSHA256": "cc8c2ca835a7f21198b5204ad03d3f4d84e82515633e0ca6c19feb9221a7134c",
+      "passedBeforeFailure": "Debug suite and Release ordering/mutations/recovery",
+      "failedGate": "C/Swift allocator positive controls; no benchmark data accepted",
+      "correction": "Move interposing hooks from executable into a dedicated measurement dylib and resolve its counter API before measuring. Keep positive controls and allocation limits unchanged; sanitizer runs remain independently enabled."
+    }
+  ]
+}

@@ -8,7 +8,12 @@ def main():
     p=argparse.ArgumentParser();p.add_argument('binary',type=Path);p.add_argument('output',type=Path);p.add_argument('--release',action='store_true');a=p.parse_args()
     binary=a.binary.resolve();out=a.output.resolve();out.mkdir(parents=True,exist_ok=False)
     def call(name,*arguments):
-        cp=subprocess.run([str(binary),*map(str,arguments)],capture_output=True,text=True,timeout=300)
+        environment=dict(os.environ)
+        if arguments and arguments[0]=='bench' and platform.system()=='Darwin':
+            observer=Path(os.environ['NXR_ALLOCATOR_DYLIB']).resolve()
+            assert observer.is_file(),observer
+            environment['DYLD_INSERT_LIBRARIES']=str(observer)
+        cp=subprocess.run([str(binary),*map(str,arguments)],capture_output=True,text=True,timeout=300,env=environment)
         (out/(name+'.stdout')).write_text(cp.stdout);(out/(name+'.stderr')).write_text(cp.stderr)
         if cp.returncode:raise AssertionError((name,cp.returncode,cp.stderr[-4000:]))
         result=json.loads(cp.stdout)
