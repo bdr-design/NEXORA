@@ -1,5 +1,6 @@
 import NexoraIdentity
 import NexoraAviation
+import NexoraFinance
 
 private final class InputStamp: Sendable {}
 
@@ -27,6 +28,7 @@ public enum TripFailure: Error, Sendable, Equatable {
     case foreignInputToken, inputConflict, inputSequenceExhausted, eventCapacityExhausted
     case invalidTargetTime, invalidEventBudget
     case aircraft(AircraftFailure)
+    case finance(FinanceFailure)
 }
 
 /// A tiny timed-trip fixture. Numeric airports are not a geographic catalog.
@@ -37,6 +39,15 @@ public struct ScheduledArrival: Sendable, Equatable {
     public let destination: UInt32
     public let departedAt: UInt64
     public let arrivesAt: UInt64
+    public let fareMinor: Int64
+
+    // Legacy unpriced fixtures default to zero. Priced public input requires a positive fare.
+    init(handle: EntityHandle, operationID: UInt64, origin: UInt32, destination: UInt32,
+         departedAt: UInt64, arrivesAt: UInt64, fareMinor: Int64 = 0) {
+        self.handle = handle; self.operationID = operationID
+        self.origin = origin; self.destination = destination
+        self.departedAt = departedAt; self.arrivesAt = arrivesAt; self.fareMinor = fareMinor
+    }
 }
 
 public struct TripAircraftView: Sendable, Equatable {
@@ -57,10 +68,22 @@ public struct TripInputReceipt: Sendable, Equatable {
 public struct TripCompletion: Sendable, Equatable {
     public let trip: ScheduledArrival
     public let completedTrips: UInt64
+    public let invoice: InvoiceView?
+}
+
+public enum FinancialInputCommand: Sendable, Equatable {
+    case contributeCapital(amountMinor: Int64)
+    case collectInvoice(InvoiceHandle, amountMinor: Int64)
+    case payExpense(CashExpenseKind, amountMinor: Int64)
+}
+public struct FinancialInputReceipt: Sendable, Equatable {
+    public let posting: FinanceReceipt
+    public let inputToken: TripInputToken
 }
 
 public enum AdvanceBlock: Sendable, Equatable {
     case aircraft(AircraftFailure)
+    case finance(FinanceFailure)
     /// Produced only by internal test injection, never the ordinary advance path.
     case injectedPreparationFailure
 }
@@ -93,6 +116,7 @@ public struct TripSimulation: ~Copyable, Sendable {
     public static var maximumEventsPerAdvance: Int { 1_024 }
     private let stamp: InputStamp
     private var aircraft: AircraftStore
+    private var finance: FinanceStore
     private var journeys: [JourneyRow?]
     private var arrivals: ArrivalHeap
     private var inputSequence: UInt64
@@ -105,24 +129,42 @@ public struct TripSimulation: ~Copyable, Sendable {
     public var nextArrival: ScheduledArrival? { arrivals.peek() }
     public var inputToken: TripInputToken { TripInputToken(stamp: stamp, sequence: inputSequence) }
 
-    public init(capacity: Int, eventCapacity: Int) throws {
-        try self.init(testingCapacity: capacity, eventCapacity: eventCapacity)
+    public init(capacity: Int, eventCapacity: Int, financeLimits: FinanceLimits = .disabled,
+                currency: CurrencySpec = .sar) throws {
+        try self.init(testingCapacity: capacity, eventCapacity: eventCapacity,
+                      financeLimits: financeLimits, currency: currency)
     }
 
     // New-world fixtures only. Ordinary external clients cannot access them.
     init(testingCapacity: Int, eventCapacity: Int, initialTime: UInt64 = 0,
-         initialInputSequence: UInt64 = 0, initialAircraftRevision: UInt64 = 0) throws {
+         initialInputSequence: UInt64 = 0, initialAircraftRevision: UInt64 = 0,
+         financeLimits: FinanceLimits = .disabled, currency: CurrencySpec = .sar,
+         initialFinanceRevision: UInt64 = 0) throws {
         guard (0...EntitySpace.maximumCapacity).contains(testingCapacity),
               (0...EntitySpace.maximumCapacity).contains(eventCapacity) else {
             throw TripFailure.invalidCapacity
         }
-        aircraft = try AircraftStore(testingCapacity: testingCapacity,
-                                     initialRevision: initialAircraftRevision)
+        let newFinance = try Self.makeFinance(limits: financeLimits, currency: currency,
+                                              revision: initialFinanceRevision, time: initialTime)
+        let newAircraft = try AircraftStore(testingCapacity: testingCapacity,
+                                            initialRevision: initialAircraftRevision)
+        finance = consume newFinance
+        aircraft = consume newAircraft
         arrivals = ArrivalHeap(capacity: eventCapacity)
         journeys = Array(repeating: nil, count: testingCapacity)
         stamp = InputStamp()
         inputSequence = initialInputSequence
         now = initialTime
+    }
+
+    // Keep error translation outside partial noncopyable-self initialization.
+    private static func makeFinance(limits: FinanceLimits, currency: CurrencySpec,
+                                    revision: UInt64, time: UInt64) throws -> FinanceStore {
+        do {
+            return try FinanceStore(testingLimits: limits, currency: currency,
+                                     initialRevision: revision, initialTime: time)
+        } catch let error as FinanceFailure { throw TripFailure.finance(error) }
+        catch { fatalError("NEXORA_TRIP_INVARIANT: unexpected financial initialization failure") }
     }
 
     public func read(_ handle: EntityHandle) throws -> TripAircraftView {
@@ -135,6 +177,45 @@ public struct TripSimulation: ~Copyable, Sendable {
     public mutating func apply(_ command: TripCommand,
                                expected: TripInputToken) throws -> TripInputReceipt {
         try applyCore(command, expected: expected, failBeforeCommit: false)
+    }
+
+    public mutating func departPriced(_ handle: EntityHandle, destination: UInt32,
+                                      durationSeconds: UInt64, fareMinor: Int64,
+                                      expected: TripInputToken) throws -> TripInputReceipt {
+        try applyCore(.depart(handle, destination: destination, durationSeconds: durationSeconds),
+                      expected: expected, failBeforeCommit: false, fareMinor: fareMinor)
+    }
+
+    public var financialSummary: FinanceSummary { finance.summary }
+    public func readInvoice(_ handle: InvoiceHandle) throws -> InvoiceView { try finance.readInvoice(handle) }
+    public func invoicePage(offset: Int, limit: Int) throws -> [InvoiceView] {
+        try finance.invoicePage(offset: offset, limit: limit)
+    }
+    public func journalPage(offset: Int, limit: Int) throws -> [JournalEntry] {
+        try finance.journalPage(offset: offset, limit: limit)
+    }
+
+    public mutating func applyFinance(_ command: FinancialInputCommand,
+                                      expected: TripInputToken) throws -> FinancialInputReceipt {
+        try applyFinanceCore(command, expected: expected, failBeforeCommit: false)
+    }
+    private mutating func applyFinanceCore(_ command: FinancialInputCommand, expected: TripInputToken,
+                                          failBeforeCommit: Bool) throws -> FinancialInputReceipt {
+        let next = try nextInput(expected: expected)
+        let posting: FinanceCommand
+        switch command {
+        case .contributeCapital(let amount): posting = .contributeCapital(amountMinor: amount, at: now)
+        case .collectInvoice(let handle, let amount): posting = .collectInvoice(handle, amountMinor: amount, at: now)
+        case .payExpense(let kind, let amount): posting = .payExpense(kind, amountMinor: amount, at: now)
+        }
+        let prepared: PreparedFinance
+        do { prepared = try finance.prepare(posting, expected: finance.token) }
+        catch let error as FinanceFailure { throw TripFailure.finance(error) }
+        catch { fatalError("NEXORA_TRIP_INVARIANT: unexpected financial preparation failure") }
+        if failBeforeCommit { throw TripTestFailure.beforeInputCommit }
+        let receipt = finance.commit(consume prepared)
+        inputSequence = next
+        return FinancialInputReceipt(posting: receipt, inputToken: inputToken)
     }
 
     private func nextInput(expected: TripInputToken) throws -> UInt64 {
@@ -165,7 +246,7 @@ public struct TripSimulation: ~Copyable, Sendable {
     }
 
     private mutating func applyCore(_ command: TripCommand, expected: TripInputToken,
-                                   failBeforeCommit: Bool) throws -> TripInputReceipt {
+                                   failBeforeCommit: Bool, fareMinor: Int64? = nil) throws -> TripInputReceipt {
         let next = try nextInput(expected: expected)
         switch command {
         case .registerAircraft(let airport):
@@ -190,6 +271,7 @@ public struct TripSimulation: ~Copyable, Sendable {
             guard destination > 0 else { throw TripFailure.invalidAirport }
             guard destination != old.currentAirport else { throw TripFailure.sameAirport }
             guard duration > 0 else { throw TripFailure.invalidDuration }
+            if let fareMinor, fareMinor <= 0 { throw TripFailure.finance(.invalidAmount) }
             let due = now.addingReportingOverflow(duration)
             guard !due.overflow else { throw TripFailure.timeOverflow }
             guard arrivals.count < arrivals.capacity else { throw TripFailure.eventCapacityExhausted }
@@ -200,7 +282,7 @@ public struct TripSimulation: ~Copyable, Sendable {
             catch { fatalError("NEXORA_TRIP_INVARIANT: unknown departure failure") }
             let trip = ScheduledArrival(handle: handle, operationID: result.token.revision,
                                         origin: old.currentAirport, destination: destination,
-                                        departedAt: now, arrivesAt: due.partialValue)
+                                        departedAt: now, arrivesAt: due.partialValue, fareMinor: fareMinor ?? 0)
             journeys[Int(handle.slot)] = JourneyRow(handle: handle, currentAirport: old.currentAirport,
                                                     active: trip)
             arrivals.push(trip)
@@ -250,6 +332,20 @@ public struct TripSimulation: ~Copyable, Sendable {
             guard row.active == trip, state.state == .active(operationID: trip.operationID) else {
                 fatalError("NEXORA_TRIP_INVARIANT: due event does not match active journey")
             }
+            // Prepare all fallible financial effects before touching aircraft state.
+            let preparedFinance: PreparedFinance?
+            if trip.fareMinor > 0 {
+                do {
+                    preparedFinance = try finance.prepare(
+                        .issueInvoice(origin: InvoiceOrigin(aircraft: trip.handle, operationID: trip.operationID),
+                                      amountMinor: trip.fareMinor, at: trip.arrivesAt), expected: finance.token)
+                } catch let error as FinanceFailure {
+                    return progress(from: from, target: target, completed: completed, stop: .blocked(.finance(error)))
+                } catch { fatalError("NEXORA_TRIP_INVARIANT: unexpected invoice preparation failure") }
+            } else {
+                guard trip.fareMinor == 0 else { fatalError("NEXORA_TRIP_INVARIANT: negative scheduled fare") }
+                preparedFinance = nil
+            }
             if failAtEventIndex == completed.count {
                 return progress(from: from, target: target, completed: completed,
                                 stop: .blocked(.injectedPreparationFailure))
@@ -262,12 +358,17 @@ public struct TripSimulation: ~Copyable, Sendable {
                 return progress(from: from, target: target, completed: completed,
                                 stop: .blocked(.aircraft(error)))
             } catch { fatalError("NEXORA_TRIP_INVARIANT: unknown arrival failure") }
+            let invoice: InvoiceView?
+            switch consume preparedFinance {
+            case .some(let plan): invoice = finance.commit(consume plan).invoice
+            case .none: invoice = nil
+            }
             journeys[Int(trip.handle.slot)] = JourneyRow(handle: trip.handle,
                                                          currentAirport: trip.destination, active: nil)
             let removed = arrivals.pop()
             guard removed == trip else { fatalError("NEXORA_TRIP_INVARIANT: wrong heap head removed") }
             now = trip.arrivesAt
-            completed.append(TripCompletion(trip: trip, completedTrips: result.completedOperations))
+            completed.append(TripCompletion(trip: trip, completedTrips: result.completedOperations, invoice: invoice))
         }
         if let head = arrivals.peek(), head.arrivesAt <= target {
             return progress(from: from, target: target, completed: completed, stop: .eventBudgetReached)
@@ -285,7 +386,8 @@ public struct TripSimulation: ~Copyable, Sendable {
     /// O(capacity + pending), allocating diagnostic only, never an apply/advance gate.
     public func checkInvariants() -> Bool {
         guard aircraft.capacity == journeys.count, aircraft.checkInvariants(),
-              arrivals.checkInvariants() else { return false }
+              arrivals.checkInvariants(), finance.checkInvariants(),
+              finance.lastPostedTime <= now else { return false }
         var seen = Array(repeating: false, count: journeys.count)
         var activeCount = 0, liveCount = 0
         for plan in arrivals.detachedEntries().prefix(arrivals.count) {
@@ -294,7 +396,8 @@ public struct TripSimulation: ~Copyable, Sendable {
             guard slot < journeys.count, !seen[slot], let row = journeys[slot],
                   row.active == plan, plan.handle == row.handle, row.currentAirport == plan.origin,
                   plan.origin > 0, plan.destination > 0, plan.origin != plan.destination,
-                  plan.departedAt < plan.arrivesAt, plan.departedAt <= now, plan.arrivesAt >= now else {
+                  plan.departedAt < plan.arrivesAt, plan.departedAt <= now, plan.arrivesAt >= now,
+                  plan.fareMinor >= 0 else {
                 return false
             }
             seen[slot] = true
@@ -317,7 +420,7 @@ public struct TripSimulation: ~Copyable, Sendable {
 
     // MARK: Internal, detached test evidence; no public mutable workspace.
     func auditForTesting() -> TripAudit {
-        TripAudit(aircraft: aircraft.auditForTesting(), token: inputToken, now: now,
+        TripAudit(aircraft: aircraft.auditForTesting(), finance: finance.auditForTesting(), token: inputToken, now: now,
                   rows: journeys.map { $0.map { TripAuditRow(handle: $0.handle,
                     currentAirport: $0.currentAirport, active: $0.active) } },
                   heap: arrivals.detachedEntries(), heapCount: arrivals.count)
@@ -328,6 +431,10 @@ public struct TripSimulation: ~Copyable, Sendable {
     mutating func advanceForTesting(to target: UInt64, eventBudget: Int,
                                     failAtEventIndex: Int) throws -> AdvanceResult {
         try advanceCore(to: target, eventBudget: eventBudget, failAtEventIndex: failAtEventIndex)
+    }
+    mutating func applyFinanceForTesting(_ command: FinancialInputCommand,
+                                         expected: TripInputToken) throws -> FinancialInputReceipt {
+        try applyFinanceCore(command, expected: expected, failBeforeCommit: true)
     }
     mutating func corruptJourneyForTesting(_ handle: EntityHandle) {
         guard let row = journeys[Int(handle.slot)] else { fatalError("Invalid fixture") }
@@ -344,6 +451,7 @@ struct TripAuditRow: Equatable {
 }
 struct TripAudit: Equatable {
     let aircraft: AircraftAudit
+    let finance: FinanceAudit
     let token: TripInputToken
     let now: UInt64
     let rows: [TripAuditRow?]

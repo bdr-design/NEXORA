@@ -1,8 +1,8 @@
-name: NEXORA R003 Timed Trip Gates
+name: NEXORA R004 Atomic Finance Gates
 
 on:
   push:
-    branches: ["feature/r003-bounded-trips-20260930", "main", "foundation/clean-core"]
+    branches: ["feature/r004-atomic-finance-20260930", "main", "foundation/clean-core"]
   pull_request:
     branches: ["main", "foundation/clean-core"]
 
@@ -12,7 +12,7 @@ permissions:
 jobs:
   core:
     runs-on: macos-15
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,13 +25,14 @@ jobs:
           git ls-tree HEAD Sources Tests Checks Package.swift > local-evidence/source-subtrees.txt
           swift --version > local-evidence/toolchain.txt
           xcodebuild -version >> local-evidence/toolchain.txt
-          git archive --format=zip --output=local-evidence/NEXORA_R003_SOURCE.zip HEAD
-          shasum -a 256 local-evidence/NEXORA_R003_SOURCE.zip > local-evidence/source-archive-sha256.txt
+          git archive --format=zip --output=local-evidence/NEXORA_R004_SOURCE.zip HEAD
+          shasum -a 256 local-evidence/NEXORA_R004_SOURCE.zip > local-evidence/source-archive-sha256.txt
       - name: Bounded source contracts
         run: |
           set -o pipefail
           python3 Checks/review-r002.py 2>&1 | tee local-evidence/source-r002.txt
           python3 Checks/review-r003.py 2>&1 | tee local-evidence/source-r003.txt
+          python3 Checks/review-r004.py 2>&1 | tee local-evidence/source-r004.txt
       - name: Debug contracts
         run: |
           set -o pipefail
@@ -46,19 +47,21 @@ jobs:
           bash Checks/verify.sh 2>&1 | tee local-evidence/compiler-r001.txt
           bash Checks/verify-r002.sh 2>&1 | tee local-evidence/compiler-r002.txt
           bash Checks/verify-r003.sh 2>&1 | tee local-evidence/compiler-r003.txt
+          bash Checks/verify-r004.sh 2>&1 | tee local-evidence/compiler-r004.txt
       - name: Isolated Debug and Release fail-stop probes
         run: |
           set -o pipefail
           bash Checks/verify-failstop.sh 2>&1 | tee local-evidence/failstop-r002.txt
           bash Checks/verify-trip-failstop.sh 2>&1 | tee local-evidence/failstop-r003.txt
+          bash Checks/verify-finance-failstop.sh 2>&1 | tee local-evidence/failstop-r004.txt
       - name: Thread Sanitizer
         run: |
           set -o pipefail
           swift test --sanitize=thread -Xswiftc -warnings-as-errors 2>&1 | tee local-evidence/tsan.txt
-      - name: Four iOS library compile gates
+      - name: Five iOS library compile gates
         run: |
           set -o pipefail
-          for scheme in NexoraIdentity NexoraObservability NexoraAviation NexoraSimulation; do
+          for scheme in NexoraIdentity NexoraObservability NexoraAviation NexoraFinance NexoraSimulation; do
             xcodebuild -scheme "$scheme" -destination 'generic/platform=iOS' -configuration Release CODE_SIGNING_ALLOWED=NO SWIFT_TREAT_WARNINGS_AS_ERRORS=YES build 2>&1 | tee "local-evidence/ios-$scheme.txt"
           done
       - name: Raw narrow-fixture samples, not complete gameplay
@@ -67,11 +70,12 @@ jobs:
           swift run -c release nexora-check --json local-evidence/identity-smoke.json 2>&1 | tee local-evidence/identity-smoke.txt
           swift run -c release nexora-aircraft-check --json local-evidence/aircraft-samples.json 2>&1 | tee local-evidence/aircraft-smoke.txt
           swift run -c release nexora-trip-check --json local-evidence/trip-samples.json 2>&1 | tee local-evidence/trip-smoke.txt
+          swift run -c release nexora-financial-check --json local-evidence/financial-samples.json 2>&1 | tee local-evidence/financial-smoke.txt
           git diff --exit-code
       - name: Preserve evidence even on failure
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: nexora-r003-evidence
+          name: nexora-r004-evidence
           path: local-evidence/
           if-no-files-found: error

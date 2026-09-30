@@ -8,7 +8,7 @@ for config in debug release; do
   destination="local-evidence/trip-failstop-$config"
   mkdir -p "$destination"
   objects=()
-  while IFS= read -r file; do objects+=("$file"); done < <(find "$bin/NexoraSimulation.build" "$bin/NexoraAviation.build" "$bin/NexoraIdentity.build" -name '*.o' -type f | sort)
+  while IFS= read -r file; do objects+=("$file"); done < <(find "$bin/NexoraSimulation.build" "$bin/NexoraAviation.build" "$bin/NexoraIdentity.build" "$bin/NexoraFinance.build" -name '*.o' -type f | sort)
   swiftc -swift-version 6 -I "$bin/Modules" "${objects[@]}" Checks/trip_failure_probe.swift -o "$destination/probe"
   python3 - "$destination" <<'PY'
 import pathlib, subprocess, sys
