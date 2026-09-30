@@ -111,3 +111,34 @@ Track performance spikes with actual stage/device evidence as these systems grow
 For every handoff record the real branch/HEAD, files, tests, failures and next
 safe step. At source/context uncertainty stop sensitive changes and preserve a
 precise handoff. No destructive history cleanup or background continuation.
+
+## Latest checkpoint — Apple measurement review completed, 2026-09-30
+
+This section supersedes the pending validation/next-action wording above.
+Tested diagnostic code: b7d3deb8a8599ac382b69e431addf22acd0f4e7f.
+Tested tree: 08ed6b709bc271080ee98e56927db9cce0c00bbf, 102 files.
+Apple run 36692367500 / job 109812298525 completed successfully. Artifact
+11086348930, nexora-r004-batch-diagnostics, SHA-256:
+34317f1a041179325ac93a0f9925634df3d1736c6ae4b3f68e5185f66369b9e4
+All exported bytes/modes reconstruct the tested tree. Debug/Release/TSan each
+142 tests/11 suites passed, as did 29 compiler rejections, five valid clients,
+12 fail-stops, five iOS library compiles and both diagnostic transcript modes.
+Three complete A/A processes produced 372,600 measured batch records; independent
+raw recomputation matched the Apple summary byte-for-byte. See
+Docs/VALIDATION-R004-MEASUREMENT.md and Docs/Daily/2026-09-30-R004-MEASUREMENT-VERIFIED.md.
+A subsequent publication is documentation-only; do not call its own commit tested.
+
+Performance is NOT closed: 20k counters-mode arrival max 32.748166 ms, CPU
+0.527500 ms (run 1 / sample 14 / batch 43). Three other >5ms arrivals have CPU
+near elapsed time. First-use faults occur in some warmups; measured first-batch
+faults at 20k/50k/100k are zero. Neither external pauses nor origins first-touch
+is a universal proven cause. The wall-only 100k arrival max 57.649334 ms is retained.
+
+Next safe work: symbolized execution/scheduling attribution for the three near-CPU
+arrivals and a controlled cold-versus-warm diagnostic experiment. Do not change
+FinanceStore's index without evidence; do not start R005 as if this diagnosis were
+closed. Main/foundation/feature-R004 stay at 5b5599895fa1bdbf00e951104e0cd55dc00f9a56.
+Work remains on diagnostic/r004-batch-counters-20260930; re-read its actual HEAD.
+Two incomplete local full-measurement runs and earlier build/wrapper failures are
+preserved separately; Apple success does not convert them into local successes.
+No iPhone execution, application/IPA, thermal or full-game acceptance is claimed.
