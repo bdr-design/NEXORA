@@ -34,7 +34,7 @@ jobs:
       - name: Evidence validator regressions and frozen-source guard
         run: |
           set -euo pipefail
-          python3 ReviewTests/test_financial_diagnostics.py 2>&1 | tee audit-evidence/validator-tests.txt
+          python3 -m unittest discover -s ReviewTests -p 'test_*.py' -v 2>&1 | tee audit-evidence/validator-tests.txt
           python3 Checks/financial-diagnostics.py --guard --selftest 2>&1 | tee audit-evidence/source-guard.txt
           python3 Checks/review-r002.py
           python3 Checks/review-r003.py

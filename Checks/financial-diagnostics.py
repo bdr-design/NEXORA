@@ -179,7 +179,10 @@ def validate_snapshot(snapshot):
         status = snapshot[family + "Status"]
         check(status in ("ok", "syscallFailure", "invalidValue", "unsupported"), "unknown reading status")
         if status == "syscallFailure":
-            check(type(snapshot.get(family + "Errno")) is int and snapshot[family + "Errno"] > 0, "failed call lacks errno")
+            # Preserve the raw Int32 errno, including zero when a failed clock
+            # read did not set it. Failure status never becomes a numeric reading.
+            error = snapshot.get(family + "Errno")
+            check(type(error) is int and -(1 << 31) <= error < (1 << 31), "failed call lacks Int32 errno")
         else:
             check(snapshot.get(family + "Errno") is None, "successful/non-syscall read carries errno")
         for field in fields:
