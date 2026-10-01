@@ -6,8 +6,13 @@ binary = Path(sys.argv[1]).resolve()
 out = Path(sys.argv[2]).resolve()
 
 def call(*args, timeout=900):
+    environment=os.environ.copy()
+    if args and args[0]=="stage-a-bench":
+        observer=Path(environment["NXR_ALLOCATOR_DYLIB"]).resolve()
+        assert observer.is_file(), observer
+        environment["DYLD_INSERT_LIBRARIES"]=str(observer)
     cp = subprocess.run([str(binary), *map(str,args)], capture_output=True, text=True,
-                        env=os.environ.copy(), timeout=timeout)
+                        env=environment, timeout=timeout)
     if cp.returncode:
         raise RuntimeError(f"command failed {args}: {cp.stderr[-4000:]}")
     return json.loads(cp.stdout)

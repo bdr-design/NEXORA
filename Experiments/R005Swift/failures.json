@@ -17,6 +17,17 @@
       "passedBeforeFailure": "Debug suite and Release ordering/mutations/recovery",
       "failedGate": "C/Swift allocator positive controls; no benchmark data accepted",
       "correction": "Move interposing hooks from executable into a dedicated measurement dylib and resolve its counter API before measuring. Keep positive controls and allocation limits unchanged; sanitizer runs remain independently enabled."
+    },
+    {
+      "commit": "2ce64ce0e798d99df676d5bf7f87cfa9eeb6f44e",
+      "run": 36833504981,
+      "job": 110275301686,
+      "status": "failure",
+      "artifact": 11148427856,
+      "artifactSHA256": "dbf56ebb49fcd95dae1175bdca7ad2dafe9e333b3301a75c5137b15925c42ed8",
+      "passedBeforeFailure": "Swift 6 Debug/Release builds and existing Debug/Release behavior, mutation, recovery and storage gates",
+      "failedGate": "Stage A measurement subprocess allocator positive control; stage005_a.py propagated NXR_ALLOCATOR_DYLIB but did not set DYLD_INSERT_LIBRARIES for stage-a-bench child processes",
+      "correction": "Set DYLD_INSERT_LIBRARIES from the already-built NXR_ALLOCATOR_DYLIB only for stage-a-bench subprocesses. Keep the positive controls and zero-allocation gate unchanged; do not reclassify this failed run."
     }
   ]
 }

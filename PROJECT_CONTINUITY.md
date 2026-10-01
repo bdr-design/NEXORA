@@ -1,3 +1,20 @@
+# R005 Stage A retry after preserved CI failure
+
+Run 36833504981 on commit `2ce64ce0e798d99df676d5bf7f87cfa9eeb6f44e`
+FAILED during the Stage A measurement step. Debug/Release compilation and the
+pre-existing Swift behavior/mutation/recovery/storage step had already passed.
+The failure was not a layout or oracle failure: `stage005_a.py` inherited
+`NXR_ALLOCATOR_DYLIB` but did not translate it into `DYLD_INSERT_LIBRARIES`
+for its `stage-a-bench` child processes, so the unchanged positive allocator
+gate correctly rejected the measurement. The failed run and artifact
+11148427856 / SHA-256 dbf56ebb49fcd95dae1175bdca7ad2dafe9e333b3301a75c5137b15925c42ed8
+are preserved in failures.json and must remain failed.
+
+The retry changes only subprocess environment injection for Stage A measurement.
+No threshold, oracle, mutation, allocation gate, production source, or result is
+weakened or rewritten. Stage B remains blocked until the corrected Stage A run
+finishes successfully.
+
 # R005 proof-closure execution update — Stage A candidate
 
 Updated: 2026-10-01 / Asia/Riyadh.
