@@ -1,3 +1,25 @@
+# R005 Stage A fidelity correction — supersedes the provisional A decision below
+
+A directive-compliance review after run 36834086456 found that the S benchmark
+still used the earlier thin 45-byte asset columns. The attached directive requires
+the full S layout to include five additional UInt32 columns: contract, changeEpoch,
+entity, policy, and origin, making the per-asset S fields 65 bytes before wheel,
+group, output and fixed overhead. Therefore the green run 36834086456 remains valid
+evidence for the code it measured, but it is NOT valid for the final Stage A
+S-vs-H design decision and its provisional choice must not be used.
+
+This correction adds those five columns to SwiftWorld, initializes contract/entity/
+origin deterministically, reads contract on the event hot path, writes changeEpoch
+on completion, records origin on schedule, and extends the typed full checkpoint
+and restore path by exactly those five UInt32 fields. Hybrid schedule also records
+origin for semantic parity. No adoption threshold, oracle, mutation, allocation,
+deadline, compiler or sanitizer gate is changed.
+
+Stage A must be remeasured on Apple CI before A is accepted. Stage B code may exist
+on the branch, but B/C are not accepted from any source whose A decision was based
+on the thin S layout. Any already-running B workflow for the prior commit is
+historical/superseded for final proof closure. Production remains untouched.
+
 # R005 proof closure — Stage A accepted, Stage B candidate starts
 
 Stage A completed successfully on Apple CI run 36834086456 at source

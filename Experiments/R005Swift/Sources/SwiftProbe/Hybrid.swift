@@ -386,6 +386,7 @@ final class HybridWorld {
               operation > hot[i].accruedOperation else { throw ProbeError.invalid("asset schedule") }
         _ = try wheel.schedule(Event(due: due, operation: operation, asset: UInt32(i),
                                      generation: hot[i].generation, kind: kind))
+        origin[i] = hot[i].airport
         departure[i] = now
         hot[i].fare = amount
         hot[i].active = 1

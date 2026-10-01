@@ -229,6 +229,11 @@ final class SwiftWorld {
     private(set) var completed: ContiguousArray<UInt64>
     private(set) var accruedOperations: ContiguousArray<UInt64>
     private(set) var active: ContiguousArray<UInt8>
+    private(set) var contracts: ContiguousArray<UInt32>
+    private(set) var changeEpochs: ContiguousArray<UInt32>
+    private(set) var entities: ContiguousArray<UInt32>
+    private(set) var policies: ContiguousArray<UInt32>
+    private(set) var origins: ContiguousArray<UInt32>
     private(set) var groupAmounts: ContiguousArray<Int64>
     private var outputs: ContiguousArray<Completion>
     private(set) var now: UInt64 = 0
@@ -238,6 +243,7 @@ final class SwiftWorld {
     private(set) var processed: UInt64 = 0
     private(set) var sequenceHash: UInt64 = 14695981039346656037
     private(set) var rejectedStale = 0
+    private(set) var changeEpoch: UInt32 = 1
     init(count: Int, eventCapacity: Int? = nil, mutation: Mutation = .none) throws {
         guard (1...2_000_000).contains(count) else { throw ProbeError.invalid("asset capacity") }
         self.count = count; wheel = try TimingWheel(capacity: eventCapacity ?? count, mutation: mutation)
@@ -245,11 +251,17 @@ final class SwiftWorld {
         destinations = .init(repeating: 2, count: count); departures = .init(repeating: 0, count: count)
         fares = .init(repeating: 0, count: count); completed = .init(repeating: 0, count: count)
         accruedOperations = .init(repeating: 0, count: count); active = .init(repeating: 0, count: count)
+        contracts = .init(repeating: 0, count: count); changeEpochs = .init(repeating: 0, count: count)
+        entities = .init(repeating: 0, count: count); policies = .init(repeating: 0, count: count)
+        origins = .init(repeating: 1, count: count)
         groupAmounts = .init(repeating: 0, count: (count + 15) / 16)
         outputs = .init(repeating: .empty, count: 1024)
+        for i in 0..<count { contracts[i] = UInt32(i / 16); entities[i] = UInt32(i % 32) }
     }
     var ownedBytes: Int {
-        wheel.ownedBytes + (generations.capacity + airports.capacity + destinations.capacity) * 4 +
+        wheel.ownedBytes +
+        (generations.capacity + airports.capacity + destinations.capacity + contracts.capacity +
+         changeEpochs.capacity + entities.capacity + policies.capacity + origins.capacity) * 4 +
         (departures.capacity + fares.capacity + completed.capacity + accruedOperations.capacity) * 8 +
         active.capacity + groupAmounts.capacity * 8 + outputs.capacity * MemoryLayout<Completion>.stride
     }
@@ -263,7 +275,7 @@ final class SwiftWorld {
         guard i >= 0 && i < count, active[i] == 0, due >= now, amount > 0, kind <= 2,
               operation > accruedOperations[i] else { throw ProbeError.invalid("asset schedule") }
         _ = try wheel.schedule(Event(due: due, operation: operation, asset: UInt32(i), generation: generations[i], kind: kind))
-        departures[i] = now; fares[i] = amount; active[i] = 1
+        origins[i] = airports[i]; departures[i] = now; fares[i] = amount; active[i] = 1
     }
     func invalidateGeneration(_ i: Int) throws {
         guard i >= 0 && i < count, generations[i] < UInt32.max else { throw ProbeError.invalid("generation") }
@@ -279,10 +291,15 @@ final class SwiftWorld {
         self.processed = processed; sequenceHash = hash; try wheel.restoreCursor(now)
     }
     func restoreAsset(_ i: Int, gen: UInt32, airport: UInt32, destination: UInt32, departure: UInt64,
-                      fare: Int64, trips: UInt64, last: UInt64, active: UInt8) throws {
-        guard airport > 0, destination > 0, fare >= 0, active <= 1 else { throw ProbeError.corruption("asset columns") }
+                      fare: Int64, trips: UInt64, last: UInt64, active: UInt8,
+                      contract: UInt32, assetChangeEpoch: UInt32, entity: UInt32,
+                      policy: UInt32, origin: UInt32) throws {
+        guard airport > 0, destination > 0, origin > 0, fare >= 0, active <= 1,
+              Int(contract) < groupAmounts.count, entity < 32 else { throw ProbeError.corruption("asset columns") }
         generations[i] = gen; airports[i] = airport; destinations[i] = destination; departures[i] = departure
         fares[i] = fare; completed[i] = trips; accruedOperations[i] = last; self.active[i] = active
+        contracts[i] = contract; changeEpochs[i] = assetChangeEpoch; entities[i] = entity
+        policies[i] = policy; origins[i] = origin
     }
     func restoreGroup(_ i: Int, _ amount: Int64) throws {
         guard amount >= 0 else { throw ProbeError.corruption("group amount") }; groupAmounts[i] = amount
@@ -324,7 +341,8 @@ final class SwiftWorld {
                 guard event.operation > accruedOperations[i], event.due >= now, completed[i] < UInt64.max, processed < UInt64.max else {
                     throw ProbeError.invariant("duplicate/old operation or time")
                 }
-                let amount = fares[i], g = i / 16
+                let amount = fares[i], g = Int(contracts[i])
+                guard g < groupAmounts.count else { throw ProbeError.invariant("contract group") }
                 let newRevenue = revenue.addingReportingOverflow(event.kind == 0 ? amount : 0)
                 let newDue = receivable.addingReportingOverflow(event.kind == 0 ? amount : 0)
                 let newGroup = groupAmounts[g].addingReportingOverflow(event.kind == 0 ? amount : 0)
@@ -334,7 +352,8 @@ final class SwiftWorld {
                 // All recoverable checks precede the first write. Failed event stays queued.
                 revenue = newRevenue.partialValue; receivable = newDue.partialValue; groupAmounts[g] = newGroup.partialValue
                 cash = newCash.partialValue; accruedOperations[i] = event.operation; completed[i] += 1
-                active[i] = 0; airports[i] = destinations[i]; now = event.due; processed += 1
+                active[i] = 0; airports[i] = destinations[i]; changeEpochs[i] = changeEpoch
+                now = event.due; processed += 1
                 _ = try wheel.consume(node)
                 hash(event, amount)
                 outputs[emitted] = Completion(event: event, amount: amount, completed: completed[i]); emitted += 1

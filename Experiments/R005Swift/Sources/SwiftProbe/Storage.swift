@@ -41,13 +41,14 @@ let snapshotTail:UInt64=0x44455454494d4f43
 /// Canonical little-endian encoding. No native object/padding/pointer bytes.
 /// The full-copy experiment is NOT an incremental production checkpoint implementation.
 func snapshotBytes(_ w:SwiftWorld, sequence:UInt64) throws -> [UInt8] {
-    var b=Bytes(reserve:w.count*82+2048)
+    var b=Bytes(reserve:w.count*102+2048)
     b.u64(snapshotMagic);b.u32(1);b.u32(UInt32(w.count));b.u64(sequence);b.u64(w.now)
     b.i64(w.revenue);b.i64(w.receivable);b.i64(w.cash);b.u64(w.processed);b.u64(w.sequenceHash)
     b.u32(UInt32(w.groupAmounts.count));b.u32(UInt32(w.wheel.pending))
     for i in 0..<w.count {
         b.u32(w.generations[i]);b.u32(w.airports[i]);b.u32(w.destinations[i]);b.u64(w.departures[i])
         b.i64(w.fares[i]);b.u64(w.completed[i]);b.u64(w.accruedOperations[i]);b.u8(w.active[i])
+        b.u32(w.contracts[i]);b.u32(w.changeEpochs[i]);b.u32(w.entities[i]);b.u32(w.policies[i]);b.u32(w.origins[i])
     }
     for amount in w.groupAmounts {b.i64(amount)}
     // Canonical event ordering by asset identity, independent of ephemeral node slots/sort continuation.
@@ -71,10 +72,13 @@ func restoreSnapshot(_ bytes:[UInt8]) throws -> (SwiftWorld,UInt64) {
     let n=Int(try r.u32());guard (1...2_000_000).contains(n) else {throw ProbeError.corruption("snapshot capacity")}
     let sequence=try r.u64(), now=try r.u64(),revenue=try r.i64(),receivable=try r.i64(),cash=try r.i64(),processed=try r.u64(),hash=try r.u64()
     let groups=Int(try r.u32()),events=Int(try r.u32())
-    guard groups==(n+15)/16,events<=n,bytes.count==80+45*n+8*groups+25*events+12 else {throw ProbeError.corruption("snapshot length/counts")}
+    guard groups==(n+15)/16,events<=n,bytes.count==80+65*n+8*groups+25*events+12 else {throw ProbeError.corruption("snapshot length/counts")}
     let w=try SwiftWorld(count:n);try w.restoreScalars(now:now,revenue:revenue,receivable:receivable,cash:cash,processed:processed,hash:hash)
     for i in 0..<n {
-        try w.restoreAsset(i,gen:r.u32(),airport:r.u32(),destination:r.u32(),departure:r.u64(),fare:r.i64(),trips:r.u64(),last:r.u64(),active:r.u8())
+        try w.restoreAsset(i,gen:r.u32(),airport:r.u32(),destination:r.u32(),departure:r.u64(),
+                           fare:r.i64(),trips:r.u64(),last:r.u64(),active:r.u8(),
+                           contract:r.u32(),assetChangeEpoch:r.u32(),entity:r.u32(),
+                           policy:r.u32(),origin:r.u32())
     }
     var groupTotal:Int64=0
     for i in 0..<groups {let value=try r.i64();try w.restoreGroup(i,value);let sum=groupTotal.addingReportingOverflow(value);guard !sum.overflow else {throw ProbeError.corruption("group overflow")};groupTotal=sum.partialValue}
