@@ -1,3 +1,33 @@
+# R005 C evidence scope and predeclared numeric reporting
+
+Run 36864229515 on `f70c0ea7d8efab06379b4eb07182493bf67fea6b`
+selected **S**: H/S=0.8512443132482774, S1M=109.1513935 ns/event,
+H1M=92.914503 ns/event, H owned=100.748672 B/asset. The immediately preceding
+run 36855849336 selected **H** at H/S=0.7297648494141507. Therefore hosted A
+selection is empirically not stable across these runs. Any C closure must name
+its variant explicitly; S-only evidence is not H runtime evidence.
+
+On 36864229515 the selected-layout 100k smoke passed on S, the allocation probe
+measured asset-record producer allocations=1, preallocated queue 10,000 pushes=0,
+and control-record p99=1,000 ns over 1,000 samples. K1-K10 passed at 1M in
+Debug/Release/TSan on S. Full 1M/100-save measurement then failed only at the
+unchanged overheadRatio <=1.10 gate. The old runner did not persist the exact
+failing ratio.
+
+Before the next measurement, numerical gates are explicitly predeclared:
+beginSave p99 <=100,000 ns; advance-during-save p99 <=1,100,000 ns;
+overheadRatio <=1.10; idle allocations/advance ==0; saving allocations/advance
+<= barrier chunks emitted in that advance. Control-record probe p99 uses the
+same 100,000 ns ceiling. Result JSON must include sample counts and signed margins.
+snapshotBytes, writeNS, restoreNS, peakQueuedBytes and barrier byte/time series
+are diagnostic-only measurements from the directive and are not assigned
+post-hoc acceptance thresholds.
+
+Recommendation boundary before production: because A has flipped between S and H,
+either the owner fixes one production layout and C is closed explicitly on that
+layout, or the other layout must receive equivalent C runtime proof. Do not claim
+one variant's C evidence for the other.
+
 # R005 Stage C selected-layout execution — H support candidate
 
 Run 36855849336 on source `2b09f59c55ce3005849af13a00826438bbabbba4`

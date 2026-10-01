@@ -108,6 +108,17 @@
       "passedBeforeFailure": "Debug/Release, existing behavior/storage, Stage A, TSan, Stage B, and Stage C K1-K10 all passed; the selected-layout allocation probe/smoke completed before the full C measurement",
       "failedGate": "Stage A selected H on this source (H/S=0.7297648494141507), but the Stage C measurement harness still asserted S and therefore refused to start the 1M/100-save measurement",
       "correction": "Do not force S and do not change the A decision rule. Add a full H Stage C path using the same barrier/snapshot/WAL/recovery/K1-K10/100-save gates, select C from the current Stage A artifact, and run a 100k selected-layout smoke before the long sanitizer/finance campaign."
+    },
+    {
+      "commit": "f70c0ea7d8efab06379b4eb07182493bf67fea6b",
+      "run": 36864229515,
+      "job": 110375629607,
+      "status": "failure",
+      "artifact": 11163699124,
+      "artifactSHA256": "fc13ebd5ec317bd699092257231a44c60b6b7f9dbc40552a9314ad9913480f27",
+      "passedBeforeFailure": "Debug/Release, existing behavior/storage, Stage A, selected-layout 100k allocation/snapshot smoke, TSan, Stage B, and Stage C K1-K10 all passed. The selected layout was S with H/S=0.8512443132482774. Allocation probe: asset record=1 producer allocation, 10k queue pushes=0, control-record p99=1000 ns (1000 samples).",
+      "failedGate": "The 1M/100-save Stage C measurement reached the unchanged overhead gate and failed because overheadRatio exceeded 1.10. The old runner threw before serializing the raw ratio/sample-count/margins, so the exact ratio is not recoverable from this artifact.",
+      "correction": "Keep all thresholds unchanged. Persist raw 1M metrics before applying numerical gates, include sample counts and margins for p99/overhead, and predeclare control-record p99 <=100000 ns. Diagnostic-only snapshot/write/restore/queue/barrier metrics remain recorded without post-hoc pass thresholds."
     }
   ]
 }

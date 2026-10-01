@@ -2,6 +2,10 @@
 import Foundation
 import ProbePlatform
 
+private let stageCBeginP99LimitNS: UInt64 = 100_000
+private let stageCAdvanceP99LimitNS: UInt64 = 1_100_000
+private let stageCOverheadRatioLimit = 1.10
+
 func stageCRescheduleAll(_ world: SwiftWorld, baseNow: UInt64,
                          firstOperation: UInt64) throws {
     guard world.wheel.pending == 0, baseNow == world.now else {
@@ -57,6 +61,10 @@ func stageCAllocationProbes() throws -> [String: Any] {
         controlBytes = control.count + 32
         controlTimes.append(finish - start)
     }
+    let controlP99 = stageCQuantile(controlTimes,numerator:99,denominator:100)
+    try require(controlP99 <= stageCBeginP99LimitNS,
+                "stage C control record p99 \(controlP99) > \(stageCBeginP99LimitNS) ns")
+
     return [
         "status":"pass",
         "assetRecord":["producerAllocations":recordAlloc.calls,
@@ -64,8 +72,11 @@ func stageCAllocationProbes() throws -> [String: Any] {
                        "fileBytes":record.count + 32],
         "queue10000":["producerAllocations":queueAlloc.calls],
         "controlRecord1000":["p50":stageCQuantile(controlTimes,numerator:50,denominator:100),
-                             "p99":stageCQuantile(controlTimes,numerator:99,denominator:100),
+                             "p99":controlP99,
                              "max":controlTimes.max() ?? 0,
+                             "samples":controlTimes.count,
+                             "limitP99NS":stageCBeginP99LimitNS,
+                             "marginNS":Int64(stageCBeginP99LimitNS)-Int64(controlP99),
                              "maxAllocations":controlAllocMax,
                              "fileBytes":controlBytes]
     ]
@@ -158,13 +169,10 @@ func stageCRun(_ directory: String, count: Int = 1_000_000,
             savingMaxAlloc = max(savingMaxAlloc, allocations.calls)
             savingMaxBarrierChunks = max(savingMaxBarrierChunks, barrierDelta)
             try require(allocations.available == 1, "stage C allocator unavailable")
-            try require(Int(allocations.calls) <= barrierDelta,
-                        "stage C allocations exceed barrier chunks")
         } else {
             idleNS += elapsed; idleEvents += p.events
             idleMaxAlloc = max(idleMaxAlloc, allocations.calls)
-            try require(allocations.available == 1 && allocations.calls == 0,
-                        "stage C idle advance allocation")
+            try require(allocations.available == 1, "stage C allocator unavailable")
         }
 
         if p.stop == .target {
@@ -234,31 +242,39 @@ func stageCRun(_ directory: String, count: Int = 1_000_000,
     let overhead = savingNSEvent / idleNSEvent
     let beginP99 = stageCQuantile(beginTimes, numerator: 99, denominator: 100)
     let advanceP99 = stageCQuantile(savingAdvanceTimes, numerator: 99, denominator: 100)
+    let beginMargin = Int64(stageCBeginP99LimitNS) - Int64(beginP99)
+    let advanceMargin = Int64(stageCAdvanceP99LimitNS) - Int64(advanceP99)
+    let overheadMargin = stageCOverheadRatioLimit - overhead
 
-    try require(beginP99 <= 100_000, "stage C beginSave p99 >0.1ms")
-    try require(advanceP99 <= 1_100_000, "stage C advance p99 > deadline+0.1ms")
-    try require(overhead <= 1.10, "stage C save overhead ratio >1.10")
-    try require(idleMaxAlloc == 0, "stage C idle allocation gate")
-
+    // Numerical acceptance gates are applied by stage005_c.py after this raw
+    // measurement JSON is persisted, so a failing run retains every metric.
     return [
-        "status":"pass", "variant":"S", "assets":count, "saves":savesCommitted,
+        "status":"measured", "variant":"S", "assets":count, "saves":savesCommitted,
         "advanceCalls":advanceCalls,
+        "thresholds":["beginSaveP99NS":stageCBeginP99LimitNS,
+                      "advanceDuringSaveP99NS":stageCAdvanceP99LimitNS,
+                      "overheadRatio":stageCOverheadRatioLimit,
+                      "idleAllocationsPerAdvance":0],
         "beginSaveNS":["p50":stageCQuantile(beginTimes,numerator:50,denominator:100),
-                       "p99":beginP99,"max":beginTimes.max() ?? 0],
+                       "p99":beginP99,"max":beginTimes.max() ?? 0,
+                       "samples":beginTimes.count,"marginNS":beginMargin],
         "advanceDuringSaveNS":["p50":stageCQuantile(savingAdvanceTimes,numerator:50,denominator:100),
-                               "p99":advanceP99,"max":savingAdvanceTimes.max() ?? 0],
+                               "p99":advanceP99,"max":savingAdvanceTimes.max() ?? 0,
+                               "samples":savingAdvanceTimes.count,"marginNS":advanceMargin],
         "idleNSPerEvent":idleNSEvent, "saveNSPerEvent":savingNSEvent,
-        "overheadRatio":overhead,
+        "idleEvents":idleEvents, "savingEvents":savingEvents,
+        "overheadRatio":overhead, "overheadRatioMargin":overheadMargin,
         "snapshotBytes":snapshotSizes.last ?? prepared.3.bytes,
         "snapshotBytesMin":snapshotSizes.min() ?? prepared.3.bytes,
         "snapshotBytesMax":snapshotSizes.max() ?? prepared.3.bytes,
         "writeNS":["p50":stageCQuantile(writeTimes,numerator:50,denominator:100),
                    "p99":stageCQuantile(writeTimes,numerator:99,denominator:100),
-                   "max":writeTimes.max() ?? 0],
+                   "max":writeTimes.max() ?? 0,"samples":writeTimes.count],
         "restoreNS":restoreNS,
         "peakQueuedBytes":peakQueues.max() ?? prepared.3.peakQueuedBytes,
         "barrierCopy":["bytesPerSave":barrierBytesPerSave,
                        "nsPerSave":barrierNSPerSave,
+                       "samples":barrierNSPerSave.count,
                        "nsP50":stageCQuantile(barrierNSPerSave,numerator:50,denominator:100),
                        "nsP99":stageCQuantile(barrierNSPerSave,numerator:99,denominator:100),
                        "nsMax":barrierNSPerSave.max() ?? 0],
