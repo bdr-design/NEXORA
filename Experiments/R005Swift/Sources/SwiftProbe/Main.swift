@@ -30,6 +30,18 @@ import Glibc
                 throw ProbeError.invalid("stage-a-bench S|H N 10")
             }
             result=try stageABenchmark(variant:args[1],count:n,measuredRuns:runs)
+        case "stage-b":
+            guard args.count==3 else {throw ProbeError.invalid("stage-b directory G16|G1")}
+            result=try stageBRun(args[1],caseName:args[2])
+        case "stage-b-crash-bootstrap":
+            guard args.count==2 else {throw ProbeError.invalid("stage-b-crash-bootstrap directory")}
+            result=try stageBCrashBootstrap(args[1])
+        case "stage-b-crash-action":
+            guard args.count==2 else {throw ProbeError.invalid("stage-b-crash-action directory")}
+            result=try stageBCrashAction(args[1])
+        case "stage-b-recover-crash":
+            guard args.count==2 else {throw ProbeError.invalid("stage-b-recover-crash directory")}
+            result=try stageBRecoverCrash(args[1])
         case "storage":
             guard args.count==3, let n=Int(args[2]) else {throw ProbeError.invalid("storage directory N")}
             result=try storageCheck(args[1],count:n)
@@ -60,7 +72,7 @@ import Glibc
             guard args.count>=3,let n=Int(args[1]),let b=Int(args[2]) else {throw ProbeError.invalid("bench N budget [legacy|deadline]")}
             result=try benchmark(n,budget:b,legacy:args.contains("legacy"),deadline:args.contains("deadline"))
         default:
-            throw ProbeError.invalid("selftest | order N | hybrid-selftest | hybrid-mutants | hybrid-order N | stage-a-bench S|H N 10 | bench N budget")
+            throw ProbeError.invalid("selftest | order N | hybrid-selftest | hybrid-mutants | hybrid-order N | stage-a-bench S|H N 10 | stage-b directory G16|G1 | bench N budget")
         }
         let data=try JSONSerialization.data(withJSONObject:result,options:[.sortedKeys,.prettyPrinted])
         print(String(decoding:data,as:UTF8.self))

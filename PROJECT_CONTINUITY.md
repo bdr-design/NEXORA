@@ -1,3 +1,37 @@
+# R005 proof closure — Stage A accepted, Stage B candidate starts
+
+Stage A completed successfully on Apple CI run 36834086456 at source
+`33c8ed1e0d7b72e66932839e3c8bdd1888abd7b5`; the companion existing-gates run
+36834086513 also completed successfully. The failed predecessor run 36833504981
+remains FAILED and preserved in failures.json.
+
+Measured Stage A decision under the directive's exact rule: **S is chosen**.
+At 1M, S median was 124.413588 ns/event and H median was 105.266487 ns/event,
+so H/S = 0.8461012072089746. H owned 100.748672 B/asset and all health gates
+passed, but H did not meet the required <=0.75*S speed threshold. Therefore the
+documented fallback selects S; this is a measured rule outcome, not a preference.
+At 2M the medians were S 219.5568585 ns/event and H 138.56497075 ns/event; that
+trend is recorded only as confirmation and does not alter the 1M decision.
+All Stage A measured advance allocation maxima were zero. These are Apple CI VM
+measurements, not iPhone acceptance.
+
+Stage A artifact: run 36834086456, artifact 11148603361; downloaded ZIP SHA-256
+b68b5ae47c82448f9c56ec12d5b99d0e7ccd2ae92b776cb156142327705b7bd5.
+STAGE005-A.json SHA-256:
+6dc57f1b24294c07402cd071d26df5a46093db8dd48846d593c2cdd9f03900f0.
+
+Stage B may now start. The candidate implements only generated proof data: the
+30-day G16/G1 accrual-billing fixture, seven-day detail window, open-item carry,
+40-byte summary deltas, append+fsync manifest commit point, exact per
+(entity,account,period) invariants, full final disk reread, and S1-S5 SIGKILL
+recovery. The full Release measurement must produce exactly 60 day records; the
+five kill points must pass in Debug, Release and TSan. Real financial data is
+never touched. Quota is not finalized until Stage C supplies measured Snap.
+
+This section is still a candidate notice for B. Do not claim B passed until its
+new Apple run is green and its artifact is inspected. Production integration,
+billing policy approval and iPhone acceptance remain untouched.
+
 # R005 Stage A retry after preserved CI failure
 
 Run 36833504981 on commit `2ce64ce0e798d99df676d5bf7f87cfa9eeb6f44e`
