@@ -13,7 +13,7 @@ struct LedgerRow {
     }
     static func read(_ r: inout Reader) throws -> LedgerRow {
         let value=try LedgerRow(invoice:r.u64(),operation:r.u64(),tick:r.u64(),amount:r.i64(),asset:r.u32(),generation:r.u32(),entity:r.u32(),period:r.u32(),debit:r.u32(),credit:r.u32(),flags:r.u32())
-        guard try r.u32()==0,value.amount>0,value.entity<32,(1...3).contains(value.period),value.debit<3,value.credit<3,value.debit != value.credit,value.flags<=2 else {throw ProbeError.corruption("ledger row")}
+        guard try r.u32()==0,value.amount>0,value.entity<32,(1...UInt32(bDays)).contains(value.period),value.debit<3,value.credit<3,value.debit != value.credit,value.flags<=2 else {throw ProbeError.corruption("ledger row")}
         return value
     }
 }

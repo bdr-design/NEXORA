@@ -1,3 +1,22 @@
+# R005 Stage B retry — period-bound correction and CI ordering
+
+Run 36836005603 on commit `717093a8a5ce71bb08de8f5a4fccc310e1223a90`
+FAILED in the full G16 Stage B measurement with `corruption: ledger row`.
+The five Stage B SIGKILL points had already passed in Debug and Release.
+The cause is exact and bounded: the reusable experimental LedgerRow decoder was
+created for the earlier 1-3 period retention fixture and still rejected periods
+4...30, while Stage B explicitly uses one period per day for 30 days.
+
+The correction changes only that parser bound from 3 to the Stage B 30-day horizon.
+It does not change row encoding, money, delay distribution, summary invariants,
+manifest commit semantics, retention window, or any success threshold. The failed
+run and artifact remain recorded in failures.json.
+
+The workflow is also reordered so Stage A's TSan evidence completes before the
+full Stage B measurement. Stage B kill tests still run under Debug, Release and
+TSan. The current Stage A fidelity correction remains mandatory; no A/B decision
+is accepted until the next source passes the whole ordered workflow.
+
 # R005 Stage A fidelity correction — supersedes the provisional A decision below
 
 A directive-compliance review after run 36834086456 found that the S benchmark

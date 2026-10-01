@@ -48,13 +48,6 @@ jobs:
           .build/debug/nxr-swift-probe hybrid-order 100000 > ../../swift-results/stage005-a-debug-order-100k.json
           .build/debug/nxr-swift-probe hybrid-order 1000000 > ../../swift-results/stage005-a-debug-order-1m.json
           python3 -B stage005_a.py .build/release/nxr-swift-probe ../../swift-results/STAGE005-A.json 2>&1 | tee ../../swift-results/stage005-a-run.txt
-      - name: R005 Stage B generated-finance retention and crash gates
-        run: |
-          set -euo pipefail
-          cd Experiments/R005Swift
-          python3 -B stage005_b_crash.py .build/debug/nxr-swift-probe ../../swift-results/STAGE005-B-KILLS-debug.json 2>&1 | tee ../../swift-results/stage005-b-kills-debug.txt
-          python3 -B stage005_b_crash.py .build/release/nxr-swift-probe ../../swift-results/STAGE005-B-KILLS-release.json 2>&1 | tee ../../swift-results/stage005-b-kills-release.txt
-          python3 -B stage005_b.py .build/release/nxr-swift-probe ../../swift-results/STAGE005-B.json 2>&1 | tee ../../swift-results/stage005-b-run.txt
       - name: Actual Swift model under Thread Sanitizer
         run: |
           set -euo pipefail
@@ -68,6 +61,13 @@ jobs:
           .build-tsan/debug/nxr-swift-probe hybrid-order 1000000 > ../../swift-results/stage005-a-tsan-order-1m.json
           python3 -B stage005_b_crash.py .build-tsan/debug/nxr-swift-probe ../../swift-results/STAGE005-B-KILLS-tsan.json 2>&1 | tee ../../swift-results/stage005-b-kills-tsan.txt
           python3 -B crash_tests.py .build-tsan/debug/nxr-swift-probe ../../swift-results/tsan-crashes.json
+      - name: R005 Stage B generated-finance retention and crash gates
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          python3 -B stage005_b_crash.py .build/debug/nxr-swift-probe ../../swift-results/STAGE005-B-KILLS-debug.json 2>&1 | tee ../../swift-results/stage005-b-kills-debug.txt
+          python3 -B stage005_b_crash.py .build/release/nxr-swift-probe ../../swift-results/STAGE005-B-KILLS-release.json 2>&1 | tee ../../swift-results/stage005-b-kills-release.txt
+          python3 -B stage005_b.py .build/release/nxr-swift-probe ../../swift-results/STAGE005-B.json 2>&1 | tee ../../swift-results/stage005-b-run.txt
       - name: Production unchanged and source file digests
         run: |
           set -euo pipefail
