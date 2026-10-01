@@ -438,6 +438,10 @@ final class SwiftWorld {
                 guard !newRevenue.overflow, !newDue.overflow, !newGroup.overflow, !newCash.overflow else { throw ProbeError.invalid("balance overflow") }
                 if newCash.partialValue < 0 { return SliceResult(events: emitted, units: work, reached: now, stop: .blocked) }
                 // All recoverable checks precede the first write. Failed event stays queued.
+#if STAGE_C
+                stageCState?.willWriteAsset(self, index: i)
+                stageCState?.willWriteGroup(self, index: g)
+#endif
                 revenue = newRevenue.partialValue; receivable = newDue.partialValue; groupAmounts[g] = newGroup.partialValue
                 cash = newCash.partialValue; accruedOperations[i] = event.operation; completed[i] += 1
                 active[i] = 0; airports[i] = destinations[i]; changeEpochs[i] = changeEpoch
