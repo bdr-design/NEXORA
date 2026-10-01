@@ -16,7 +16,7 @@ environment["DYLD_INSERT_LIBRARIES"]=str(observer)
 
 with tempfile.TemporaryDirectory(prefix="nxr-stage005-c-") as temp:
     store=Path(temp)/"store"
-    cp=subprocess.run([str(binary),"stage-c",str(store),1000000,100],
+    cp=subprocess.run([str(binary),"stage-c",str(store),"1000000","100"],
         capture_output=True,text=True,timeout=10800,env=environment)
     if cp.returncode:
         raise RuntimeError((cp.returncode,cp.stderr[-8000:]))

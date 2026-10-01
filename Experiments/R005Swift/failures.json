@@ -64,6 +64,28 @@
       "passedBeforeFailure": "Swift 6 Debug/Release, existing behavior/storage gates, corrected Stage A, TSan, and full Stage B all passed; Stage B still produced exactly 60 records",
       "failedGate": "Stage C conditional build failed before any C runtime gate because Stage005CWAL.swift referenced nx_kill_point without importing ProbePlatform",
       "correction": "Import ProbePlatform in Stage005CWAL.swift only. Do not change any Stage C threshold, snapshot/WAL format, kill point, A/B result, or production source; keep this run failed."
+    },
+    {
+      "commit": "f81f7cc08dc771e5dbda883a678e41e5d9584b9d",
+      "run": 36844019826,
+      "job": 110309703514,
+      "status": "failure",
+      "artifact": 11154565012,
+      "artifactSHA256": "deeba267f263bcfc2a309952b384fd68460d93d2595d13b114399782400f0420",
+      "passedBeforeFailure": "Swift 6 Debug/Release, existing behavior/storage gates, corrected Stage A, TSan, full Stage B, and Stage C K1-K10 all passed in Debug/Release/TSan",
+      "failedGate": "Stage C 1M/100-save measurement launcher failed before starting the binary because Python subprocess.run received integer argv values for 1000000 and 100",
+      "correction": "Convert only the two Stage C launcher argv values to strings. Keep all Stage C thresholds, snapshot/WAL format, crash gates, and this run's failure status unchanged."
+    },
+    {
+      "commit": "90e5503687564b6cfe23b5ea3db39cd446e155a1",
+      "run": 36844330881,
+      "job": 110310723054,
+      "status": "failure",
+      "artifact": 11153489850,
+      "artifactSHA256": "8dae5409b18a1f85835c64b18de73d18621d97daf6ccbd057dec62066a47d4be",
+      "passedBeforeFailure": "Swift 6 Debug/Release, existing behavior/storage gates, corrected Stage A, TSan, full Stage B, the advance asset/group write-barrier correction, and Stage C K1-K10 all passed in Debug/Release/TSan",
+      "failedGate": "Stage C 1M/100-save measurement launcher failed before starting the binary because Python subprocess.run received integer argv values for 1000000 and 100",
+      "correction": "Convert only the two Stage C launcher argv values to strings. Keep all Stage C thresholds, snapshot/WAL format, crash gates, and this run's failure status unchanged."
     }
   ]
 }
