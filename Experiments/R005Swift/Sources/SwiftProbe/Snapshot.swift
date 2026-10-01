@@ -70,6 +70,32 @@ enum Snapshot {
         }
     }
 
+    static func appendLE<T: FixedWidthInteger>(_ value: T, into bytes: inout [UInt8]) {
+        var little = value.littleEndian
+        withUnsafeBytes(of: &little) { raw in bytes.append(contentsOf: raw) }
+    }
+
+    static func append<T: BitwiseCopyable>(_ column: ContiguousArray<T>, _ range: Range<Int>,
+                                           into bytes: inout [UInt8]) {
+        guard !range.isEmpty else { return }
+        column.withUnsafeBufferPointer { pointer in
+            let start = pointer.baseAddress!.advanced(by: range.lowerBound)
+            let raw = UnsafeRawBufferPointer(start: start,
+                                             count: range.count * MemoryLayout<T>.stride)
+            bytes.append(contentsOf: raw)
+        }
+    }
+
+    static func appendBoolBytes(_ column: ContiguousArray<Bool>, _ range: Range<Int>,
+                                into bytes: inout [UInt8]) {
+        guard !range.isEmpty else { return }
+        column.withUnsafeBufferPointer { pointer in
+            let start = pointer.baseAddress!.advanced(by: range.lowerBound)
+            let raw = UnsafeRawBufferPointer(start: start, count: range.count)
+            bytes.append(contentsOf: raw)
+        }
+    }
+
     static func hashData(_ data: Data, range: Range<Int>? = nil) -> NXRHash {
         let selected = range ?? 0..<data.count
         precondition(selected.lowerBound >= 0 && selected.upperBound <= data.count)
@@ -77,6 +103,18 @@ enum Snapshot {
             let base = raw.bindMemory(to: UInt8.self).baseAddress
             let pointer = selected.isEmpty ? base : base?.advanced(by: selected.lowerBound)
             return nx_hash_bytes(pointer, selected.count)
+        }
+        precondition(result.status == 0)
+        return result
+    }
+
+    static func hashBytes(_ bytes: [UInt8], range: Range<Int>? = nil) -> NXRHash {
+        let selected = range ?? 0..<bytes.count
+        precondition(selected.lowerBound >= 0 && selected.upperBound <= bytes.count)
+        let result: NXRHash = bytes.withUnsafeBufferPointer { pointer in
+            let base = pointer.baseAddress
+            let selectedPointer = selected.isEmpty ? base : base?.advanced(by: selected.lowerBound)
+            return nx_hash_bytes(selectedPointer, selected.count)
         }
         precondition(result.status == 0)
         return result
@@ -112,64 +150,70 @@ enum Snapshot {
         return out
     }
 
-    static func record(kind: UInt16, index: UInt32, elements: UInt32, payloadBytes: Int,
-                       appendPayload: (inout Data) -> Void) -> Data {
-        var data = Data(capacity: 16 + payloadBytes + 32)
-        appendLE(kind, into: &data)
-        appendLE(UInt16(0), into: &data)
-        appendLE(index, into: &data)
-        appendLE(elements, into: &data)
-        appendLE(UInt32(payloadBytes), into: &data)
-        let payloadStart = data.count
-        appendPayload(&data)
-        precondition(data.count == payloadStart + payloadBytes)
-        appendDigestHash(hashData(data, range: payloadStart..<data.count), into: &data)
-        precondition(data.count == 16 + payloadBytes + 32)
-        return data
+    static func digestBytes(_ bytes: [UInt8], range: Range<Int>) -> Data {
+        var out = Data(capacity: 32)
+        appendDigestHash(hashBytes(bytes, range: range), into: &out)
+        return out
     }
 
-    static func controlRecord(_ world: SwiftWorld) -> Data {
-        record(kind: 0, index: 0, elements: 1, payloadBytes: 18_828) { data in
-            world.stageCAppendControl(into: &data)
+    static func record(kind: UInt16, index: UInt32, elements: UInt32, payloadBytes: Int,
+                       appendPayload: (inout [UInt8]) -> Void) -> [UInt8] {
+        var bytes: [UInt8] = []
+        bytes.reserveCapacity(16 + payloadBytes)
+        appendLE(kind, into: &bytes)
+        appendLE(UInt16(0), into: &bytes)
+        appendLE(index, into: &bytes)
+        appendLE(elements, into: &bytes)
+        appendLE(UInt32(payloadBytes), into: &bytes)
+        let payloadStart = bytes.count
+        appendPayload(&bytes)
+        precondition(bytes.count == payloadStart + payloadBytes)
+        precondition(bytes.count == 16 + payloadBytes)
+        return bytes
+    }
+
+    static func controlRecord(_ world: SwiftWorld) -> [UInt8] {
+        record(kind: 0, index: 0, elements: 1, payloadBytes: 18_828) { bytes in
+            world.stageCAppendControl(into: &bytes)
         }
     }
 
-    static func assetRecord(_ world: SwiftWorld, chunk: Int) -> Data {
+    static func assetRecord(_ world: SwiftWorld, chunk: Int) -> [UInt8] {
         let lo = chunk << 8
         let range = lo..<min(lo + 256, world.count)
         return record(kind: 1, index: UInt32(chunk), elements: UInt32(range.count),
-                      payloadBytes: range.count * 65) { data in
-            append(world.generations, range, into: &data)
-            append(world.airports, range, into: &data)
-            append(world.destinations, range, into: &data)
-            append(world.departures, range, into: &data)
-            append(world.fares, range, into: &data)
-            append(world.completed, range, into: &data)
-            append(world.accruedOperations, range, into: &data)
-            append(world.active, range, into: &data)
-            append(world.contracts, range, into: &data)
-            append(world.changeEpochs, range, into: &data)
-            append(world.entities, range, into: &data)
-            append(world.policies, range, into: &data)
-            append(world.origins, range, into: &data)
+                      payloadBytes: range.count * 65) { bytes in
+            append(world.generations, range, into: &bytes)
+            append(world.airports, range, into: &bytes)
+            append(world.destinations, range, into: &bytes)
+            append(world.departures, range, into: &bytes)
+            append(world.fares, range, into: &bytes)
+            append(world.completed, range, into: &bytes)
+            append(world.accruedOperations, range, into: &bytes)
+            append(world.active, range, into: &bytes)
+            append(world.contracts, range, into: &bytes)
+            append(world.changeEpochs, range, into: &bytes)
+            append(world.entities, range, into: &bytes)
+            append(world.policies, range, into: &bytes)
+            append(world.origins, range, into: &bytes)
         }
     }
 
-    static func nodeRecord(_ wheel: TimingWheel, chunk: Int) -> Data {
+    static func nodeRecord(_ wheel: TimingWheel, chunk: Int) -> [UInt8] {
         let lo = chunk << 9
         let range = lo..<min(lo + 512, wheel.capacity)
         return record(kind: 2, index: UInt32(chunk), elements: UInt32(range.count),
-                      payloadBytes: range.count * 30) { data in
-            wheel.stageCAppendNodeChunk(range, into: &data)
+                      payloadBytes: range.count * 30) { bytes in
+            wheel.stageCAppendNodeChunk(range, into: &bytes)
         }
     }
 
-    static func groupRecord(_ world: SwiftWorld, chunk: Int) -> Data {
+    static func groupRecord(_ world: SwiftWorld, chunk: Int) -> [UInt8] {
         let lo = chunk << 11
         let range = lo..<min(lo + 2048, world.groupAmounts.count)
         return record(kind: 3, index: UInt32(chunk), elements: UInt32(range.count),
-                      payloadBytes: range.count * 8) { data in
-            append(world.groupAmounts, range, into: &data)
+                      payloadBytes: range.count * 8) { bytes in
+            append(world.groupAmounts, range, into: &bytes)
         }
     }
 
@@ -178,9 +222,8 @@ enum Snapshot {
         let nodeChunks = (world.wheel.capacity + 511) >> 9
         let groupChunks = (world.groupAmounts.count + 2047) >> 11
         var canonical = Data(capacity: (1 + assetChunks + nodeChunks + groupChunks) * 38)
-        func add(kind: UInt16, index: UInt32, record: Data) {
-            let payloadBytes = record.count - 48
-            let digest = record.subdata(in: (16 + payloadBytes)..<record.count)
+        func add(kind: UInt16, index: UInt32, record: [UInt8]) {
+            let digest = digestBytes(record, range: 16..<record.count)
             appendLE(kind, into: &canonical)
             appendLE(index, into: &canonical)
             canonical.append(digest)

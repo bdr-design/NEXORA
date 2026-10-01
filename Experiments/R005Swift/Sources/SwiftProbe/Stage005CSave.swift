@@ -20,20 +20,64 @@ final class StageCWriterCounters: Sendable {
     let writeNS = Atomic<UInt64>(0)
 }
 
+struct StageCRecordQueueState: Sendable {
+    var slots: [[UInt8]?]
+    var head: Int = 0
+    var tail: Int = 0
+    var finished = false
+}
+
+final class StageCRecordQueue: Sendable {
+    private let state: Mutex<StageCRecordQueueState>
+
+    init(capacity: Int) {
+        precondition(capacity > 0)
+        state = Mutex(StageCRecordQueueState(slots: Array(repeating: nil, count: capacity)))
+    }
+
+    func push(_ record: [UInt8]) {
+        state.withLock { value in
+            precondition(!value.finished && value.tail < value.slots.count)
+            precondition(value.slots[value.tail] == nil)
+            value.slots[value.tail] = record
+            value.tail += 1
+        }
+    }
+
+    func pop() -> [UInt8]? {
+        state.withLock { value in
+            guard value.head < value.tail else { return nil }
+            let record = value.slots[value.head]
+            value.slots[value.head] = nil
+            value.head += 1
+            return record
+        }
+    }
+
+    func finish() {
+        state.withLock { $0.finished = true }
+    }
+
+    var isDrained: Bool {
+        state.withLock { $0.finished && $0.head == $0.tail }
+    }
+}
+
 final class SnapshotSink: Sendable {
     let epoch: UInt32
     let counters: StageCWriterCounters
-    private let continuation: AsyncStream<Data>.Continuation
+    private let queue: StageCRecordQueue
 
     init(directory: String, epoch: UInt32, expectedCounts: [UInt32]) {
         self.epoch = epoch
         let counters = StageCWriterCounters()
-        let pair = AsyncStream.makeStream(of: Data.self, bufferingPolicy: .unbounded)
+        let capacity = expectedCounts.reduce(0) { $0 + Int($1) }
+        let queue = StageCRecordQueue(capacity: capacity)
         self.counters = counters
-        self.continuation = pair.continuation
+        self.queue = queue
         Task.detached(priority: .utility) {
             do {
-                let result = try await StageCSnapshotWriter.run(pair.stream, counters: counters,
+                let result = try await StageCSnapshotWriter.run(queue, counters: counters,
                     directory: directory, epoch: epoch, expectedCounts: expectedCounts)
                 counters.bytes.store(result.bytes, ordering: .releasing)
                 counters.chunks.store(result.chunks, ordering: .releasing)
@@ -45,8 +89,9 @@ final class SnapshotSink: Sendable {
         }
     }
 
-    func emit(_ record: Data) {
-        let now = counters.queued.add(record.count, ordering: .relaxed).newValue
+    func emit(_ record: [UInt8]) {
+        let queuedBytes = record.count + 32
+        let now = counters.queued.add(queuedBytes, ordering: .relaxed).newValue
         var seen = counters.peak.load(ordering: .relaxed)
         while now > seen {
             let result = counters.peak.compareExchange(expected: seen, desired: now, ordering: .relaxed)
@@ -56,10 +101,10 @@ final class SnapshotSink: Sendable {
             }
             seen = result.original
         }
-        continuation.yield(record)
+        queue.push(record)
     }
 
-    func finish() { continuation.finish() }
+    func finish() { queue.finish() }
 
     func resultIfDone() throws -> StageCSnapshotFileResult? {
         guard counters.done.load(ordering: .acquiring) == 1 else { return nil }
@@ -74,24 +119,20 @@ final class SnapshotSink: Sendable {
 }
 
 enum StageCSnapshotWriter {
-    static func parseRecord(_ record: Data) throws -> (StageCRecordKey, UInt32, Data, Data) {
-        guard record.count >= 48 else { throw ProbeError.corruption("stage C short record") }
-        var r = StageCByteReader(bytes: Array(record.prefix(16)))
+    static func parseRecord(_ record: [UInt8]) throws -> (StageCRecordKey, UInt32, Data) {
+        guard record.count >= 16 else { throw ProbeError.corruption("stage C short record") }
+        var r = StageCByteReader(bytes: record)
         let kind = try r.u16(), reserved = try r.u16(), index = try r.u32()
         let elements = try r.u32(), payloadBytes = Int(try r.u32())
         guard reserved == 0, kind <= 3, payloadBytes >= 0,
-              record.count == 16 + payloadBytes + 32 else {
+              record.count == 16 + payloadBytes else {
             throw ProbeError.corruption("stage C record header")
         }
-        let payload = record.subdata(in: 16..<(16 + payloadBytes))
-        let digest = record.subdata(in: (16 + payloadBytes)..<record.count)
-        guard digest == Snapshot.digestData(payload) else {
-            throw ProbeError.corruption("stage C record payload hash")
-        }
-        return (StageCRecordKey(kind: kind, index: index), elements, payload, digest)
+        let digest = Snapshot.digestBytes(record, range: 16..<record.count)
+        return (StageCRecordKey(kind: kind, index: index), elements, digest)
     }
 
-    static func run(_ stream: AsyncStream<Data>, counters: StageCWriterCounters,
+    static func run(_ queue: StageCRecordQueue, counters: StageCWriterCounters,
                     directory: String, epoch: UInt32,
                     expectedCounts: [UInt32]) async throws -> StageCSnapshotFileResult {
         guard expectedCounts.count == 4, expectedCounts[0] == 1 else {
@@ -112,25 +153,32 @@ enum StageCSnapshotWriter {
         var digests: [StageCRecordKey: Data] = [:]
         digests.reserveCapacity(expectedCounts.reduce(0) { $0 + Int($1) })
 
-        for await record in stream {
+        while true {
+            guard let record = queue.pop() else {
+                if queue.isDrained { break }
+                await Task.yield()
+                continue
+            }
             let parsed = try parseRecord(record)
             let key = parsed.0
             guard key.kind < 4, key.index < expectedCounts[Int(key.kind)],
                   digests[key] == nil else {
                 throw ProbeError.corruption("stage C duplicate/out-of-range record")
             }
-            digests[key] = parsed.3
+            digests[key] = parsed.2
             counts[Int(key.kind)] += 1
+            let recordData = Data(record)
             if key.kind > 0 {
-                let split = max(16, record.count / 2)
-                try handle.write(contentsOf: record.prefix(split))
+                let split = max(16, recordData.count / 2)
+                try handle.write(contentsOf: recordData.prefix(split))
                 nx_kill_point("c.k3.mid_record")
-                try handle.write(contentsOf: record.suffix(record.count - split))
+                try handle.write(contentsOf: recordData.suffix(recordData.count - split))
             } else {
-                try handle.write(contentsOf: record)
+                try handle.write(contentsOf: recordData)
             }
-            bytesWritten += UInt64(record.count)
-            _ = counters.queued.subtract(record.count, ordering: .relaxed)
+            try handle.write(contentsOf: parsed.2)
+            bytesWritten += UInt64(record.count + parsed.2.count)
+            _ = counters.queued.subtract(record.count + parsed.2.count, ordering: .relaxed)
         }
 
         guard counts == expectedCounts else { throw ProbeError.corruption("stage C missing record") }
@@ -192,6 +240,8 @@ final class StageCState {
     private(set) var capturing = false
     private(set) var serviceCursor = 0
     private(set) var barrierEmits = 0
+    private(set) var barrierBytes = 0
+    private(set) var barrierNS: UInt64 = 0
     private var sink: SnapshotSink? = nil
     private(set) var lastResult: StageCSnapshotFileResult? = nil
 
@@ -219,6 +269,8 @@ final class StageCState {
         capturing = true
         serviceCursor = 0
         barrierEmits = 0
+        barrierBytes = 0
+        barrierNS = 0
         lastResult = nil
         preparedSink.emit(Snapshot.controlRecord(world))
         nx_kill_point("c.k1.after_begin")
@@ -228,7 +280,11 @@ final class StageCState {
         guard capturing, let sink else { return }
         let chunk = index >> 8
         if assetSaved[chunk] != epoch {
-            sink.emit(Snapshot.assetRecord(world, chunk: chunk))
+            let start = nx_now()
+            let record = Snapshot.assetRecord(world, chunk: chunk)
+            sink.emit(record)
+            barrierNS += nx_now() - start
+            barrierBytes += record.count + 32
             assetSaved[chunk] = epoch
             barrierEmits += 1
             if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
@@ -239,7 +295,11 @@ final class StageCState {
         guard capturing, let sink else { return }
         let chunk = index >> 9
         if nodeSaved[chunk] != epoch {
-            sink.emit(Snapshot.nodeRecord(wheel, chunk: chunk))
+            let start = nx_now()
+            let record = Snapshot.nodeRecord(wheel, chunk: chunk)
+            sink.emit(record)
+            barrierNS += nx_now() - start
+            barrierBytes += record.count + 32
             nodeSaved[chunk] = epoch
             barrierEmits += 1
             if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
@@ -250,7 +310,11 @@ final class StageCState {
         guard capturing, let sink else { return }
         let chunk = index >> 11
         if groupSaved[chunk] != epoch {
-            sink.emit(Snapshot.groupRecord(world, chunk: chunk))
+            let start = nx_now()
+            let record = Snapshot.groupRecord(world, chunk: chunk)
+            sink.emit(record)
+            barrierNS += nx_now() - start
+            barrierBytes += record.count + 32
             groupSaved[chunk] = epoch
             barrierEmits += 1
             if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }

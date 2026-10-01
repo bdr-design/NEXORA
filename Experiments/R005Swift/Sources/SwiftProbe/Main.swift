@@ -46,6 +46,8 @@ import Glibc
             guard args.count==2 else {throw ProbeError.invalid("stage-b-recover-crash directory")}
             result=try stageBRecoverCrash(args[1])
 #if STAGE_C
+        case "stage-c-allocation-probes":
+            result=try stageCAllocationProbes()
         case "stage-c":
             guard args.count==4,let n=Int(args[2]),let saves=Int(args[3]) else {
                 throw ProbeError.invalid("stage-c directory N saves")

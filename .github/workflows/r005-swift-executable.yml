@@ -75,6 +75,7 @@ jobs:
           export NXR_ALLOCATOR_DYLIB="$PWD/../../swift-results/AllocationObserver.dylib"
           swift build --scratch-path .build-stagec-debug -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../swift-results/stage005-c-build-debug.txt
           swift build --scratch-path .build-stagec-release -c release -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../swift-results/stage005-c-build-release.txt
+          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" .build-stagec-release/release/nxr-swift-probe stage-c-allocation-probes > ../../swift-results/stage005-c-allocation-probes.json
           python3 -B stage005_c_crash.py .build-stagec-debug/debug/nxr-swift-probe ../../swift-results/STAGE005-C-KILLS-debug.json 2>&1 | tee ../../swift-results/stage005-c-kills-debug.txt
           python3 -B stage005_c_crash.py .build-stagec-release/release/nxr-swift-probe ../../swift-results/STAGE005-C-KILLS-release.json 2>&1 | tee ../../swift-results/stage005-c-kills-release.txt
           swift build --scratch-path .build-stagec-tsan --sanitize=thread -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../swift-results/stage005-c-build-tsan.txt

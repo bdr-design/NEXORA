@@ -24,6 +24,53 @@ private func stageCQuantile(_ values: [UInt64], numerator: Int, denominator: Int
     return sorted[index]
 }
 
+func stageCAllocationProbes() throws -> [String: Any] {
+    let world = try SwiftWorld(count: 1_024)
+    let positive = nx_alloc_calibrate()
+#if os(macOS)
+    try require(positive > 0, "stage C allocation probe positive control")
+#endif
+    nx_alloc_begin()
+    let record = Snapshot.assetRecord(world, chunk: 0)
+    let recordAlloc = nx_alloc_end()
+    try require(recordAlloc.available == 1 && recordAlloc.calls == 1,
+                "stage C record must allocate exactly once")
+
+    let queue = StageCRecordQueue(capacity: 10_000)
+    nx_alloc_begin()
+    for _ in 0..<10_000 { queue.push(record) }
+    let queueAlloc = nx_alloc_end()
+    try require(queueAlloc.available == 1 && queueAlloc.calls == 0,
+                "stage C preallocated queue producer allocation")
+
+    var controlTimes: [UInt64] = []
+    controlTimes.reserveCapacity(1_000)
+    var controlAllocMax: UInt64 = 0
+    var controlBytes = 0
+    for _ in 0..<1_000 {
+        nx_alloc_begin()
+        let start = nx_now()
+        let control = Snapshot.controlRecord(world)
+        let finish = nx_now()
+        let allocation = nx_alloc_end()
+        controlAllocMax = max(controlAllocMax, allocation.calls)
+        controlBytes = control.count + 32
+        controlTimes.append(finish - start)
+    }
+    return [
+        "status":"pass",
+        "assetRecord":["producerAllocations":recordAlloc.calls,
+                       "requestedBytes":recordAlloc.bytes,
+                       "fileBytes":record.count + 32],
+        "queue10000":["producerAllocations":queueAlloc.calls],
+        "controlRecord1000":["p50":stageCQuantile(controlTimes,numerator:50,denominator:100),
+                             "p99":stageCQuantile(controlTimes,numerator:99,denominator:100),
+                             "max":controlTimes.max() ?? 0,
+                             "maxAllocations":controlAllocMax,
+                             "fileBytes":controlBytes]
+    ]
+}
+
 private func stageCDigestString(_ words: [UInt64]) -> String {
     words.map { String(format: "%016llx", $0) }.joined()
 }
@@ -65,6 +112,8 @@ func stageCRun(_ directory: String, count: Int = 1_000_000,
     var writeTimes: [UInt64] = []
     var snapshotSizes: [UInt64] = []
     var peakQueues: [Int] = []
+    var barrierBytesPerSave: [Int] = []
+    var barrierNSPerSave: [UInt64] = []
     var idleNS: UInt64 = 0, idleEvents = 0
     var savingNS: UInt64 = 0, savingEvents = 0
     var idleMaxAlloc: UInt64 = 0, savingMaxAlloc: UInt64 = 0
@@ -128,6 +177,8 @@ func stageCRun(_ directory: String, count: Int = 1_000_000,
             let result = state.lastResult!
             writeTimes.append(result.writeNS); snapshotSizes.append(result.bytes)
             peakQueues.append(result.peakQueuedBytes)
+            barrierBytesPerSave.append(state.barrierBytes)
+            barrierNSPerSave.append(state.barrierNS)
             priorResultEpoch = state.epoch
             savesCommitted += 1
         }
@@ -194,6 +245,11 @@ func stageCRun(_ directory: String, count: Int = 1_000_000,
                    "max":writeTimes.max() ?? 0],
         "restoreNS":restoreNS,
         "peakQueuedBytes":peakQueues.max() ?? prepared.3.peakQueuedBytes,
+        "barrierCopy":["bytesPerSave":barrierBytesPerSave,
+                       "nsPerSave":barrierNSPerSave,
+                       "nsP50":stageCQuantile(barrierNSPerSave,numerator:50,denominator:100),
+                       "nsP99":stageCQuantile(barrierNSPerSave,numerator:99,denominator:100),
+                       "nsMax":barrierNSPerSave.max() ?? 0],
         "allocationsIdleMaxPerAdvance":idleMaxAlloc,
         "allocationsWhileSavingMaxPerAdvance":savingMaxAlloc,
         "barrierChunksMaxPerAdvance":savingMaxBarrierChunks,

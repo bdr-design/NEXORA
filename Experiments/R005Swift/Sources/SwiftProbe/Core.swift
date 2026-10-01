@@ -242,7 +242,7 @@ final class TimingWheel {
     }
     func takeGhost() -> Event? { let value = ghost; ghost = nil; return value }
 #if STAGE_C
-    func stageCAppendNodeChunk(_ range: Range<Int>, into data: inout Data) {
+    func stageCAppendNodeChunk(_ range: Range<Int>, into data: inout [UInt8]) {
         Snapshot.append(due, range, into: &data)
         Snapshot.append(operation, range, into: &data)
         Snapshot.append(asset, range, into: &data)
@@ -251,17 +251,26 @@ final class TimingWheel {
         Snapshot.append(kind, range, into: &data)
         Snapshot.append(live, range, into: &data)
     }
-    func stageCAppendControl(into data: inout Data) {
+    func stageCAppendControl(into data: inout [UInt8]) {
         Snapshot.appendLE(cursor, into: &data)
         Snapshot.appendLE(UInt32(pending), into: &data)
         Snapshot.appendLE(free, into: &data)
-        for value in [cascade, leaf, sortPhase, width, merges, seek, leftCount, rightCount] {
-            Snapshot.appendLE(UInt32(bitPattern: Int32(value)), into: &data)
-        }
-        for value in [pair, left, right, outHead, outTail] { Snapshot.appendLE(value, into: &data) }
+        Snapshot.appendLE(UInt32(bitPattern: Int32(cascade)), into: &data)
+        Snapshot.appendLE(UInt32(bitPattern: Int32(leaf)), into: &data)
+        Snapshot.appendLE(UInt32(bitPattern: Int32(sortPhase)), into: &data)
+        Snapshot.appendLE(UInt32(bitPattern: Int32(width)), into: &data)
+        Snapshot.appendLE(UInt32(bitPattern: Int32(merges)), into: &data)
+        Snapshot.appendLE(UInt32(bitPattern: Int32(seek)), into: &data)
+        Snapshot.appendLE(UInt32(bitPattern: Int32(leftCount)), into: &data)
+        Snapshot.appendLE(UInt32(bitPattern: Int32(rightCount)), into: &data)
+        Snapshot.appendLE(pair, into: &data)
+        Snapshot.appendLE(left, into: &data)
+        Snapshot.appendLE(right, into: &data)
+        Snapshot.appendLE(outHead, into: &data)
+        Snapshot.appendLE(outTail, into: &data)
         Snapshot.append(heads, 0..<heads.count, into: &data)
         Snapshot.append(tails, 0..<tails.count, into: &data)
-        for value in sorted { data.append(value ? 1 : 0) }
+        Snapshot.appendBoolBytes(sorted, 0..<sorted.count, into: &data)
         Snapshot.append(occupied, 0..<occupied.count, into: &data)
     }
     func stageCRestoreControl(_ c: StageCWheelControl) throws {
@@ -462,7 +471,7 @@ final class SwiftWorld {
         wheel.stageCState = nil
         stageCState = nil
     }
-    func stageCAppendControl(into data: inout Data) {
+    func stageCAppendControl(into data: inout [UInt8]) {
         Snapshot.appendLE(UInt32(count), into: &data)
         Snapshot.appendLE(UInt32(wheel.capacity), into: &data)
         Snapshot.appendLE(UInt32(groupAmounts.count), into: &data)

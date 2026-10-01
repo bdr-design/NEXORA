@@ -1,3 +1,25 @@
+# R005 Stage C allocation-root correction — candidate, not yet accepted
+
+Live source before this change: `5a6e83541092970625713e386751e87dc09834cf`.
+Run 36847772963 preserved as FAILED after A/TSan/B and C K1-K10 had passed;
+the 1M/100-save measurement failed only at the unchanged gate
+`allocations on saving advance <= barrier chunks`.
+
+The producer-side source is bounded: Stage C built each record as Foundation
+Data and hashed it before enqueue, while AsyncStream also buffered producer-side
+items. This correction does not relax the gate. It builds each record in one
+pre-reserved [UInt8] buffer, moves SHA-256 to the background writer, replaces
+AsyncStream with a preallocated Mutex queue, and removes literal-array/control
+serialization overhead. UnsafeMutable remains forbidden; read-only Unsafe access
+stays confined to Snapshot.swift as required.
+
+New evidence is mandatory before acceptance: a release allocation probe must show
+one producer allocation for one asset record and zero producer allocations for
+10,000 preallocated-queue submissions; the normal 1M/100-save run records barrier
+bytes and barrier time per save. K1-K10, Debug/Release/TSan, A/B, production guards,
+and all original thresholds remain unchanged. No production source/main/iPhone
+claim is changed.
+
 # R005 proof closure — A/B accepted on green source; C candidate starts
 
 The corrected full-layout A and the full B proof both passed on Apple CI source

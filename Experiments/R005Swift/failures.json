@@ -86,6 +86,17 @@
       "passedBeforeFailure": "Swift 6 Debug/Release, existing behavior/storage gates, corrected Stage A, TSan, full Stage B, the advance asset/group write-barrier correction, and Stage C K1-K10 all passed in Debug/Release/TSan",
       "failedGate": "Stage C 1M/100-save measurement launcher failed before starting the binary because Python subprocess.run received integer argv values for 1000000 and 100",
       "correction": "Convert only the two Stage C launcher argv values to strings. Keep all Stage C thresholds, snapshot/WAL format, crash gates, and this run's failure status unchanged."
+    },
+    {
+      "commit": "5a6e83541092970625713e386751e87dc09834cf",
+      "run": 36847772963,
+      "job": 110321930724,
+      "status": "failure",
+      "artifact": 11156070184,
+      "artifactSHA256": "fc43e8de82ba36bc2de56325ff3331d8d809ee3a10e8398b72b0aaf7b3195f8a",
+      "passedBeforeFailure": "Debug/Release, existing behavior/storage, corrected Stage A, TSan, Stage B 60-record proof, and Stage C K1-K10 all passed at 1M in Debug/Release/TSan",
+      "failedGate": "Stage C 1M/100-save measurement entered the binary and failed the unchanged allocation gate: allocations on a saving advance exceeded barrier chunks",
+      "correction": "Keep the <= one producer allocation per emitted barrier chunk gate unchanged. Replace per-record Data+producer hashing with one pre-reserved byte buffer, move SHA-256 to the writer, replace AsyncStream producer buffering with a preallocated Mutex queue, and record barrier bytes/time per save plus dedicated producer-allocation probes."
     }
   ]
 }
