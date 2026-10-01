@@ -135,5 +135,64 @@ enum StageCWALReplay {
         return StageCWALReplayResult(commands: expectedSequence - 1,
             ignoredTailBytes: bytes.count - position)
     }
+    static func replay(path: String, on world: HybridWorld) throws -> StageCWALReplayResult {
+        guard FileManager.default.fileExists(atPath: path) else {
+            return StageCWALReplayResult(commands: 0, ignoredTailBytes: 0)
+        }
+        let bytes = [UInt8](try Data(contentsOf: URL(fileURLWithPath: path)))
+        guard bytes.count >= 16, String(decoding: bytes[0..<8], as: UTF8.self) == "NXRWAL02" else {
+            throw ProbeError.corruption("stage C hybrid WAL prefix")
+        }
+        var prefix = StageCByteReader(bytes: Array(bytes[8..<16]))
+        guard try prefix.u32() == 2, try prefix.u32() == 1 else {
+            throw ProbeError.corruption("stage C hybrid WAL version")
+        }
+        var position = 16
+        var expectedSequence: UInt64 = 1
+        while position + 4 <= bytes.count {
+            var lr = StageCByteReader(bytes: Array(bytes[position..<(position + 4)]))
+            let length = Int(try lr.u32())
+            guard length >= 48 else { throw ProbeError.corruption("stage C hybrid WAL length") }
+            if position + length > bytes.count {
+                return StageCWALReplayResult(commands: expectedSequence - 1,
+                    ignoredTailBytes: bytes.count - position)
+            }
+            let frame = Data(bytes[position..<(position + length)])
+            let body = frame.prefix(length - 32)
+            let digest = frame.suffix(32)
+            guard Data(digest) == Snapshot.digestData(Data(body)) else {
+                throw ProbeError.corruption("stage C hybrid WAL hash")
+            }
+            var r = StageCByteReader(bytes: Array(body))
+            guard Int(try r.u32()) == length else { throw ProbeError.corruption("stage C hybrid WAL frame length") }
+            let kindRaw = try r.u8()
+            guard try r.u8() == 0, try r.u8() == 0, try r.u8() == 0,
+                  let kind = StageCWALKind(rawValue: kindRaw) else {
+                throw ProbeError.corruption("stage C hybrid WAL kind")
+            }
+            let sequence = try r.u64()
+            guard sequence == expectedSequence else { throw ProbeError.corruption("stage C hybrid WAL sequence") }
+            switch kind {
+            case .advance:
+                let target = try r.u64(), budget = Int(try r.u32()), units = Int(try r.u32())
+                let expectedEvents = Int(try r.u32()); _ = try r.u32()
+                if units > 0 {
+                    let p = try world.advance(to: target, budget: budget, workBudget: units)
+                    try require(p.events == expectedEvents && p.units == units,
+                                "stage C hybrid replay advance state")
+                } else {
+                    try require(expectedEvents == 0, "stage C hybrid zero-unit advance events")
+                }
+            case .rescheduleAll:
+                let baseNow = try r.u64(), firstOperation = try r.u64()
+                try stageCHybridRescheduleAll(world, baseNow: baseNow, firstOperation: firstOperation)
+            }
+            expectedSequence += 1
+            position += length
+        }
+        return StageCWALReplayResult(commands: expectedSequence - 1,
+            ignoredTailBytes: bytes.count - position)
+    }
+
 }
 #endif

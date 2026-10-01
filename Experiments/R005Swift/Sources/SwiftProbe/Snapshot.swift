@@ -217,6 +217,59 @@ enum Snapshot {
         }
     }
 
+    static func controlRecord(_ world: HybridWorld) -> [UInt8] {
+        record(kind: 0, index: 0, elements: 1, payloadBytes: 18_828) { bytes in
+            world.stageCAppendControl(into: &bytes)
+        }
+    }
+
+    static func assetRecord(_ world: HybridWorld, chunk: Int) -> [UInt8] {
+        let lo = chunk << 8
+        let range = lo..<min(lo + 256, world.count)
+        return record(kind: 1, index: UInt32(chunk), elements: UInt32(range.count),
+                      payloadBytes: range.count * 68) { bytes in
+            append(world.hot, range, into: &bytes)
+            append(world.entity, range, into: &bytes)
+            append(world.policy, range, into: &bytes)
+            append(world.origin, range, into: &bytes)
+            append(world.departure, range, into: &bytes)
+        }
+    }
+
+    static func nodeRecord(_ wheel: HybridTimingWheel, chunk: Int) -> [UInt8] {
+        let lo = chunk << 9
+        let range = lo..<min(lo + 512, wheel.capacity)
+        return record(kind: 2, index: UInt32(chunk), elements: UInt32(range.count),
+                      payloadBytes: range.count * 32) { bytes in
+            wheel.stageCAppendNodeChunk(range, into: &bytes)
+        }
+    }
+
+    static func groupRecord(_ world: HybridWorld, chunk: Int) -> [UInt8] {
+        let lo = chunk << 11
+        let range = lo..<min(lo + 2048, world.groupAmounts.count)
+        return record(kind: 3, index: UInt32(chunk), elements: UInt32(range.count),
+                      payloadBytes: range.count * 8) { bytes in
+            append(world.groupAmounts, range, into: &bytes)
+        }
+    }
+
+    static func worldDigest(_ world: HybridWorld) -> [UInt64] {
+        let assetChunks = (world.count + 255) >> 8
+        let nodeChunks = (world.wheel.capacity + 511) >> 9
+        let groupChunks = (world.groupAmounts.count + 2047) >> 11
+        var canonical = Data(capacity: (1 + assetChunks + nodeChunks + groupChunks) * 38)
+        func add(kind: UInt16, index: UInt32, record: [UInt8]) {
+            let digest = digestBytes(record, range: 16..<record.count)
+            appendLE(kind, into: &canonical); appendLE(index, into: &canonical); canonical.append(digest)
+        }
+        add(kind: 0, index: 0, record: controlRecord(world))
+        for chunk in 0..<assetChunks { add(kind: 1,index:UInt32(chunk),record:assetRecord(world,chunk:chunk)) }
+        for chunk in 0..<nodeChunks { add(kind: 2,index:UInt32(chunk),record:nodeRecord(world.wheel,chunk:chunk)) }
+        for chunk in 0..<groupChunks { add(kind: 3,index:UInt32(chunk),record:groupRecord(world,chunk:chunk)) }
+        return shaWords(canonical)
+    }
+
     static func worldDigest(_ world: SwiftWorld) -> [UInt64] {
         let assetChunks = (world.count + 255) >> 8
         let nodeChunks = (world.wheel.capacity + 511) >> 9
@@ -390,6 +443,63 @@ extension Snapshot {
                 asset: asset[j], generation: generation[j], next: next[j],
                 kind: kind[j], live: live[j])
         }
+    }
+
+    static func applyHybridAssetPayload(_ payload: Data, index: UInt32, elements: UInt32,
+                                        to world: HybridWorld) throws {
+        let count=Int(elements),start=Int(index)<<8
+        guard count>0,start>=0,start+count<=world.count,payload.count==count*68 else {
+            throw ProbeError.corruption("stage C hybrid asset chunk")
+        }
+        var r=StageCByteReader(bytes:[UInt8](payload))
+        var hot:[HotAsset]=[];hot.reserveCapacity(count)
+        for _ in 0..<count {
+            var a=HotAsset()
+            a.accruedOperation=try r.u64();a.completed=try r.u64();a.fare=try r.i64()
+            a.generation=try r.u32();a.destination=try r.u32();a.airport=try r.u32()
+            a.contract=try r.u32();a.changeEpoch=try r.u32();a.active=try r.u8()
+            a.reserved0=try r.u8();a.reserved1=try r.u16();hot.append(a)
+        }
+        var entities:[UInt32]=[];entities.reserveCapacity(count)
+        var policies:[UInt32]=[];policies.reserveCapacity(count)
+        var origins:[UInt32]=[];origins.reserveCapacity(count)
+        var departures:[UInt64]=[];departures.reserveCapacity(count)
+        for _ in 0..<count { entities.append(try r.u32()) }
+        for _ in 0..<count { policies.append(try r.u32()) }
+        for _ in 0..<count { origins.append(try r.u32()) }
+        for _ in 0..<count { departures.append(try r.u64()) }
+        guard r.offset==r.bytes.count else { throw ProbeError.corruption("stage C hybrid asset tail") }
+        for j in 0..<count {
+            try world.stageCRestoreAsset(start+j,hot:hot[j],entity:entities[j],policy:policies[j],
+                                         origin:origins[j],departure:departures[j])
+        }
+    }
+
+    static func applyHybridNodePayload(_ payload: Data, index: UInt32, elements: UInt32,
+                                       to wheel: HybridTimingWheel) throws {
+        let count=Int(elements),start=Int(index)<<9
+        guard count>0,start+count<=wheel.capacity,payload.count==count*32 else {
+            throw ProbeError.corruption("stage C hybrid node chunk")
+        }
+        var r=StageCByteReader(bytes:[UInt8](payload))
+        for j in 0..<count {
+            let due=try r.u64(),operation=try r.u64(),asset=try r.u32(),generation=try r.u32(),next=try r.u32()
+            let kind=try r.u8(),live=try r.u8(),reserved=try r.u16()
+            try wheel.stageCRestoreNode(start+j,due:due,operation:operation,asset:asset,generation:generation,
+                                        next:next,kind:kind,live:live,reserved:reserved)
+        }
+        guard r.offset==r.bytes.count else { throw ProbeError.corruption("stage C hybrid node tail") }
+    }
+
+    static func applyHybridGroupPayload(_ payload: Data, index: UInt32, elements: UInt32,
+                                        to world: HybridWorld) throws {
+        let count=Int(elements),start=Int(index)<<11
+        guard count>0,start+count<=world.groupAmounts.count,payload.count==count*8 else {
+            throw ProbeError.corruption("stage C hybrid group chunk")
+        }
+        var r=StageCByteReader(bytes:[UInt8](payload))
+        for j in 0..<count { try world.restoreGroup(start+j,try r.i64()) }
+        guard r.offset==r.bytes.count else { throw ProbeError.corruption("stage C hybrid group tail") }
     }
 
     static func applyGroupPayload(_ payload: Data, index: UInt32, elements: UInt32,

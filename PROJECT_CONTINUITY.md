@@ -1,3 +1,23 @@
+# R005 Stage C selected-layout execution — H support candidate
+
+Run 36855849336 on source `2b09f59c55ce3005849af13a00826438bbabbba4`
+is preserved as FAILED. A/TSan/B and C K1-K10 passed, but current A measured
+H/S=0.7297648494141507 with H owned 100.748672 B/asset, so the directive selected
+H. The S-only C launcher correctly cannot be used as proof for that result.
+
+This candidate does not force S or alter the <=0.75 decision rule. C now follows
+the A artifact: S keeps the existing path; H gets the same chunk-before-first-write
+barrier, one-allocation producer record, preallocated queue, writer-side SHA-256,
+v2 snapshot/footer, WAL chain recovery, K1-K10, and 1M/100-save thresholds.
+A selected-layout allocation probe plus exact 100k snapshot/restore smoke runs
+immediately after A, before the expensive TSan/B/C campaign.
+
+Hot-path estimate before writing: STAGE_C-disabled A builds remain free of these
+hooks. In the C build, idle H advance adds only nil/capturing barrier checks and
+targets zero allocations; during an active save each first-touched chunk is allowed
+exactly one producer allocation, with hashing and file I/O off the simulation
+thread. No production source/main/iPhone acceptance is changed.
+
 # R005 Stage C allocation-root correction — candidate, not yet accepted
 
 Live source before this change: `5a6e83541092970625713e386751e87dc09834cf`.

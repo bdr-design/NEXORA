@@ -95,6 +95,9 @@ final class HybridTimingWheel {
     let mutation: Mutation
     private var fired = false
     private var ghost: Event? = nil
+#if STAGE_C
+    var stageCState: StageCState? = nil
+#endif
 
     init(capacity: Int, mutation: Mutation = .none) throws {
         guard capacity > 0, capacity <= 2_000_000 else { throw ProbeError.invalid("wheel capacity") }
@@ -134,6 +137,9 @@ final class HybridTimingWheel {
     @inline(__always) private func insertNode(_ id: UInt32, into b: Int, cascading: Bool = false) {
         let i = Int(id)
         let tail = tails[b]
+#if STAGE_C
+        stageCState?.willWriteNode(self, index: i)
+#endif
         nodes[i].next = none
         if tail == none {
             heads[b] = id
@@ -141,11 +147,17 @@ final class HybridTimingWheel {
             sorted[b] = true
             setOccupied(b, true)
         } else if mutation == .reverseCascade && cascading {
+#if STAGE_C
+            stageCState?.willWriteNode(self, index: i)
+#endif
             nodes[i].next = heads[b]
             heads[b] = id
             sorted[b] = true
         } else {
             if nodes[Int(tail)].operation > nodes[i].operation { sorted[b] = false }
+#if STAGE_C
+            stageCState?.willWriteNode(self, index: Int(tail))
+#endif
             nodes[Int(tail)].next = id
             tails[b] = id
         }
@@ -158,6 +170,9 @@ final class HybridTimingWheel {
         let id = free
         let i = Int(id)
         free = nodes[i].next
+#if STAGE_C
+        stageCState?.willWriteNode(self, index: i)
+#endif
         nodes[i] = EventNode(due: event.due, operation: event.operation, asset: event.asset,
                              generation: event.generation, next: none, kind: event.kind, live: 1)
         insertNode(id, into: bucket(event.due))
@@ -185,7 +200,12 @@ final class HybridTimingWheel {
         switch sortPhase {
         case 1:
             if pair == none {
-                if outTail != none { nodes[Int(outTail)].next = none }
+                if outTail != none {
+#if STAGE_C
+                    stageCState?.willWriteNode(self, index: Int(outTail))
+#endif
+                    nodes[Int(outTail)].next = none
+                }
                 heads[leaf] = outHead
                 tails[leaf] = outTail
                 if merges <= 1 {
@@ -234,7 +254,12 @@ final class HybridTimingWheel {
                 right = nodes[Int(right)].next
                 rightCount -= 1
             }
-            if outTail == none { outHead = picked } else { nodes[Int(outTail)].next = picked }
+            if outTail == none { outHead = picked } else {
+#if STAGE_C
+                stageCState?.willWriteNode(self, index: Int(outTail))
+#endif
+                nodes[Int(outTail)].next = picked
+            }
             outTail = picked
         default:
             throw ProbeError.invariant("sort phase")
@@ -268,6 +293,10 @@ final class HybridTimingWheel {
             if !sorted[leaf] { startSort(); return .work }
             if mutation == .swapTie && !fired && nodes[Int(id)].next != none {
                 let b = nodes[Int(id)].next
+#if STAGE_C
+                stageCState?.willWriteNode(self, index: Int(id))
+                stageCState?.willWriteNode(self, index: Int(b))
+#endif
                 nodes[Int(id)].next = nodes[Int(b)].next
                 nodes[Int(b)].next = id
                 heads[leaf] = b
@@ -311,6 +340,9 @@ final class HybridTimingWheel {
     func consume(_ id: UInt32) throws -> Event {
         guard leaf >= 0, heads[leaf] == id, nodes[Int(id)].live == 1 else { throw ProbeError.invariant("consume non-head") }
         let value = nodes[Int(id)].asEvent
+#if STAGE_C
+        stageCState?.willWriteNode(self, index: Int(id))
+#endif
         heads[leaf] = nodes[Int(id)].next
         nodes[Int(id)].live = 0
         nodes[Int(id)].next = free
@@ -325,6 +357,51 @@ final class HybridTimingWheel {
         ghost = nil
         return value
     }
+#if STAGE_C
+    func stageCAppendNodeChunk(_ range: Range<Int>, into data: inout [UInt8]) {
+        Snapshot.append(nodes, range, into: &data)
+    }
+    func stageCAppendControl(into data: inout [UInt8]) {
+        Snapshot.appendLE(cursor, into: &data)
+        Snapshot.appendLE(UInt32(pending), into: &data)
+        Snapshot.appendLE(free, into: &data)
+        Snapshot.appendLE(UInt32(bitPattern: Int32(cascade)), into: &data)
+        Snapshot.appendLE(UInt32(bitPattern: Int32(leaf)), into: &data)
+        Snapshot.appendLE(UInt32(bitPattern: Int32(sortPhase)), into: &data)
+        Snapshot.appendLE(UInt32(bitPattern: Int32(width)), into: &data)
+        Snapshot.appendLE(UInt32(bitPattern: Int32(merges)), into: &data)
+        Snapshot.appendLE(UInt32(bitPattern: Int32(seek)), into: &data)
+        Snapshot.appendLE(UInt32(bitPattern: Int32(leftCount)), into: &data)
+        Snapshot.appendLE(UInt32(bitPattern: Int32(rightCount)), into: &data)
+        Snapshot.appendLE(pair, into: &data); Snapshot.appendLE(left, into: &data)
+        Snapshot.appendLE(right, into: &data); Snapshot.appendLE(outHead, into: &data)
+        Snapshot.appendLE(outTail, into: &data)
+        Snapshot.append(heads, 0..<heads.count, into: &data)
+        Snapshot.append(tails, 0..<tails.count, into: &data)
+        Snapshot.appendBoolBytes(sorted, 0..<sorted.count, into: &data)
+        Snapshot.append(occupied, 0..<occupied.count, into: &data)
+    }
+    func stageCRestoreControl(_ c: StageCWheelControl) throws {
+        guard c.heads.count == 2048, c.tails.count == 2048, c.sorted.count == 2048,
+              c.occupied.count == 32, c.pending >= 0, c.pending <= capacity else {
+            throw ProbeError.corruption("stage C hybrid wheel control")
+        }
+        cursor=c.cursor; pending=c.pending; free=c.free; cascade=c.cascade; leaf=c.leaf
+        sortPhase=c.sortPhase; width=c.width; merges=c.merges; seek=c.seek
+        leftCount=c.leftCount; rightCount=c.rightCount; pair=c.pair; left=c.left; right=c.right
+        outHead=c.outHead; outTail=c.outTail
+        heads=ContiguousArray(c.heads); tails=ContiguousArray(c.tails)
+        sorted=ContiguousArray(c.sorted); occupied=ContiguousArray(c.occupied)
+        fired=false; ghost=nil
+    }
+    func stageCRestoreNode(_ i:Int,due:UInt64,operation:UInt64,asset:UInt32,generation:UInt32,
+                           next:UInt32,kind:UInt8,live:UInt8,reserved:UInt16) throws {
+        guard i>=0 && i<capacity,kind<=2,live<=1,reserved==0 else {
+            throw ProbeError.corruption("stage C hybrid node")
+        }
+        nodes[i]=EventNode(due:due,operation:operation,asset:asset,generation:generation,next:next,kind:kind,live:live)
+    }
+#endif
 }
 
 final class HybridWorld {
@@ -345,6 +422,9 @@ final class HybridWorld {
     private(set) var sequenceHash: UInt64 = 14695981039346656037
     private(set) var rejectedStale = 0
     private(set) var changeEpoch: UInt32 = 1
+#if STAGE_C
+    var stageCState: StageCState? = nil
+#endif
 
     init(count: Int, eventCapacity: Int? = nil, mutation: Mutation = .none) throws {
         guard (1...2_000_000).contains(count) else { throw ProbeError.invalid("asset capacity") }
@@ -384,6 +464,9 @@ final class HybridWorld {
     func schedule(asset i: Int, due: UInt64, operation: UInt64, amount: Int64, kind: UInt8 = 0) throws {
         guard i >= 0 && i < count, hot[i].active == 0, due >= now, amount > 0, kind <= 2,
               operation > hot[i].accruedOperation else { throw ProbeError.invalid("asset schedule") }
+#if STAGE_C
+        stageCState?.willWriteAsset(self, index: i)
+#endif
         _ = try wheel.schedule(Event(due: due, operation: operation, asset: UInt32(i),
                                      generation: hot[i].generation, kind: kind))
         origin[i] = hot[i].airport
@@ -394,6 +477,9 @@ final class HybridWorld {
 
     func invalidateGeneration(_ i: Int) throws {
         guard i >= 0 && i < count, hot[i].generation < UInt32.max else { throw ProbeError.invalid("generation") }
+#if STAGE_C
+        stageCState?.willWriteAsset(self, index: i)
+#endif
         hot[i].generation += 1
     }
 
@@ -466,6 +552,10 @@ final class HybridWorld {
                 if c.partialValue < 0 {
                     return SliceResult(events: emitted, units: work, reached: now, stop: .blocked)
                 }
+#if STAGE_C
+                stageCState?.willWriteAsset(self, index: i)
+                stageCState?.willWriteGroup(self, index: g)
+#endif
                 revenue = r.partialValue
                 receivable = d.partialValue
                 groupAmounts[g] = s.partialValue
@@ -487,6 +577,38 @@ final class HybridWorld {
         return SliceResult(events: emitted, units: work, reached: now,
                            stop: emitted == budget ? .budget : .work)
     }
+#if STAGE_C
+    func stageCInstall(_ state: StageCState) { stageCState=state; wheel.stageCState=state }
+    func stageCUninstall() { wheel.stageCState=nil; stageCState=nil }
+    func restoreScalars(now:UInt64,revenue:Int64,receivable:Int64,cash:Int64,processed:UInt64,hash:UInt64) throws {
+        guard wheel.pending==0,revenue>=0,receivable>=0,cash>=0 else { throw ProbeError.corruption("stage C hybrid snapshot balances") }
+        self.now=now;self.revenue=revenue;self.receivable=receivable;self.cash=cash
+        self.processed=processed;sequenceHash=hash;try wheel.restoreCursor(now)
+    }
+    func stageCRestoreAsset(_ i:Int,hot value:HotAsset,entity:UInt32,policy:UInt32,origin:UInt32,departure:UInt64) throws {
+        guard i>=0 && i<count,value.airport>0,value.destination>0,origin>0,value.fare>=0,value.active<=1,
+              value.reserved0==0,value.reserved1==0,Int(value.contract)<groupAmounts.count,entity<32 else {
+            throw ProbeError.corruption("stage C hybrid asset")
+        }
+        hot[i]=value;self.entity[i]=entity;self.policy[i]=policy;self.origin[i]=origin;self.departure[i]=departure
+    }
+    func restoreGroup(_ i:Int,_ amount:Int64) throws {
+        guard i>=0 && i<groupAmounts.count,amount>=0 else { throw ProbeError.corruption("stage C hybrid group") }
+        groupAmounts[i]=amount
+    }
+    func stageCAppendControl(into data:inout [UInt8]) {
+        Snapshot.appendLE(UInt32(count),into:&data);Snapshot.appendLE(UInt32(wheel.capacity),into:&data)
+        Snapshot.appendLE(UInt32(groupAmounts.count),into:&data);Snapshot.appendLE(now,into:&data)
+        Snapshot.appendLE(revenue,into:&data);Snapshot.appendLE(receivable,into:&data);Snapshot.appendLE(cash,into:&data)
+        Snapshot.appendLE(processed,into:&data);Snapshot.appendLE(sequenceHash,into:&data)
+        Snapshot.appendLE(UInt64(rejectedStale),into:&data);Snapshot.appendLE(changeEpoch,into:&data)
+        wheel.stageCAppendControl(into:&data)
+    }
+    func stageCRestoreExtras(rejected:Int,changeEpoch restoredEpoch:UInt32) throws {
+        guard rejected>=0 else { throw ProbeError.corruption("stage C hybrid rejected count") }
+        rejectedStale=rejected;changeEpoch=restoredEpoch
+    }
+#endif
 }
 
 func drainHybrid(_ world: HybridWorld, target: UInt64, budget: Int = 256,

@@ -47,12 +47,25 @@ import Glibc
             result=try stageBRecoverCrash(args[1])
 #if STAGE_C
         case "stage-c-allocation-probes":
-            result=try stageCAllocationProbes()
+            guard args.count==2,["S","H"].contains(args[1]) else {
+                throw ProbeError.invalid("stage-c-allocation-probes S|H")
+            }
+            result = args[1] == "H" ? try stageCHybridAllocationProbes() : try stageCAllocationProbes()
+        case "stage-c-smoke":
+            guard args.count==4,["S","H"].contains(args[2]),let n=Int(args[3]) else {
+                throw ProbeError.invalid("stage-c-smoke directory S|H N")
+            }
+            result = args[2] == "H" ? try stageCHybridSmoke(args[1],count:n) : try stageCSmoke(args[1],count:n)
         case "stage-c":
             guard args.count==4,let n=Int(args[2]),let saves=Int(args[3]) else {
                 throw ProbeError.invalid("stage-c directory N saves")
             }
             result=try stageCRun(args[1],count:n,requestedSaves:saves)
+        case "stage-c-h":
+            guard args.count==4,let n=Int(args[2]),let saves=Int(args[3]) else {
+                throw ProbeError.invalid("stage-c-h directory N saves")
+            }
+            result=try stageCHybridRun(args[1],count:n,requestedSaves:saves)
         case "stage-c-crash-bootstrap":
             guard args.count==3,let n=Int(args[2]) else {
                 throw ProbeError.invalid("stage-c-crash-bootstrap directory N")
@@ -70,6 +83,21 @@ import Glibc
         case "stage-c-chain-crash":
             guard args.count==2 else {throw ProbeError.invalid("stage-c-chain-crash directory")}
             result=try stageCWALChainCrashAction(args[1])
+        case "stage-c-h-crash-bootstrap":
+            guard args.count==3,let n=Int(args[2]) else {throw ProbeError.invalid("stage-c-h-crash-bootstrap directory N")}
+            result=try stageCHybridCrashBootstrap(args[1],count:n)
+        case "stage-c-h-crash-action":
+            guard args.count==3 else {throw ProbeError.invalid("stage-c-h-crash-action directory point")}
+            result=try stageCHybridCrashAction(args[1],point:args[2])
+        case "stage-c-h-recover":
+            guard args.count==2 else {throw ProbeError.invalid("stage-c-h-recover directory")}
+            result=try stageCHybridRecoverCrash(args[1])
+        case "stage-c-h-chain-expected":
+            guard args.count==2 else {throw ProbeError.invalid("stage-c-h-chain-expected directory")}
+            result=try stageCHybridWALChainExpected(args[1])
+        case "stage-c-h-chain-crash":
+            guard args.count==2 else {throw ProbeError.invalid("stage-c-h-chain-crash directory")}
+            result=try stageCHybridWALChainCrashAction(args[1])
 #endif
         case "storage":
             guard args.count==3, let n=Int(args[2]) else {throw ProbeError.invalid("storage directory N")}

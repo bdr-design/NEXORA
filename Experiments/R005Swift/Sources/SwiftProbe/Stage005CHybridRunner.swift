@@ -2,14 +2,14 @@
 import Foundation
 import ProbePlatform
 
-func stageCRescheduleAll(_ world: SwiftWorld, baseNow: UInt64,
+func stageCHybridRescheduleAll(_ world: HybridWorld, baseNow: UInt64,
                          firstOperation: UInt64) throws {
     guard world.wheel.pending == 0, baseNow == world.now else {
         throw ProbeError.invariant("stage C reschedule requires drained target")
     }
     var operation = firstOperation
     for i in 0..<world.count {
-        guard world.active[i] == 0 else { throw ProbeError.invariant("stage C reschedule active") }
+        guard world.hot[i].active == 0 else { throw ProbeError.invariant("stage C reschedule active") }
         try world.schedule(asset: i, due: baseNow + UInt64(i % 600 + 1),
                            operation: operation, amount: Int64(i % 97 + 101))
         operation &+= 1
@@ -17,15 +17,15 @@ func stageCRescheduleAll(_ world: SwiftWorld, baseNow: UInt64,
     }
 }
 
-private func stageCQuantile(_ values: [UInt64], numerator: Int, denominator: Int) -> UInt64 {
+private func stageCHybridQuantile(_ values: [UInt64], numerator: Int, denominator: Int) -> UInt64 {
     guard !values.isEmpty else { return 0 }
     let sorted = values.sorted()
     let index = min(sorted.count - 1, (sorted.count * numerator) / denominator)
     return sorted[index]
 }
 
-func stageCAllocationProbes() throws -> [String: Any] {
-    let world = try SwiftWorld(count: 1_024)
+func stageCHybridAllocationProbes() throws -> [String: Any] {
+    let world = try HybridWorld(count: 1_024)
     let positive = nx_alloc_calibrate()
 #if os(macOS)
     try require(positive > 0, "stage C allocation probe positive control")
@@ -63,22 +63,22 @@ func stageCAllocationProbes() throws -> [String: Any] {
                        "requestedBytes":recordAlloc.bytes,
                        "fileBytes":record.count + 32],
         "queue10000":["producerAllocations":queueAlloc.calls],
-        "controlRecord1000":["p50":stageCQuantile(controlTimes,numerator:50,denominator:100),
-                             "p99":stageCQuantile(controlTimes,numerator:99,denominator:100),
+        "controlRecord1000":["p50":stageCHybridQuantile(controlTimes,numerator:50,denominator:100),
+                             "p99":stageCHybridQuantile(controlTimes,numerator:99,denominator:100),
                              "max":controlTimes.max() ?? 0,
                              "maxAllocations":controlAllocMax,
                              "fileBytes":controlBytes]
     ]
 }
 
-private func stageCDigestString(_ words: [UInt64]) -> String {
+private func stageCHybridDigestString(_ words: [UInt64]) -> String {
     words.map { String(format: "%016llx", $0) }.joined()
 }
 
-private func stageCPrepareInitial(directory: String, count: Int)
-    throws -> (SwiftWorld, StageCState, StageCWAL, StageCSnapshotFileResult) {
+private func stageCHybridPrepareInitial(directory: String, count: Int)
+    throws -> (HybridWorld, StageCState, StageCWAL, StageCSnapshotFileResult) {
     try FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: false)
-    let world = try SwiftWorld(count: count)
+    let world = try HybridWorld(count: count)
     try world.seedFixture()
     let state = StageCState(world: world)
     world.stageCInstall(state)
@@ -89,24 +89,24 @@ private func stageCPrepareInitial(directory: String, count: Int)
     return (world, state, wal, result)
 }
 
-func stageCSmoke(_ directory: String, count: Int) throws -> [String: Any] {
-    guard count == 100_000 else { throw ProbeError.invalid("stage C smoke requires 100k") }
-    let prepared = try stageCPrepareInitial(directory: directory, count: count)
+func stageCHybridSmoke(_ directory: String, count: Int) throws -> [String: Any] {
+    guard count == 100_000 else { throw ProbeError.invalid("stage C hybrid smoke requires 100k") }
+    let prepared = try stageCHybridPrepareInitial(directory: directory, count: count)
     try prepared.2.close()
-    let restored = try StageCSnapshotRestore.recoverLatest(directory)
-    let live = stageCDigestString(Snapshot.worldDigest(prepared.0))
-    let back = stageCDigestString(Snapshot.worldDigest(restored.world))
-    try require(live == back, "stage C smoke restore")
-    return ["status":"pass","variant":"S","assets":count,
+    let restored = try StageCHybridSnapshotRestore.recoverLatest(directory)
+    let live = stageCHybridDigestString(Snapshot.worldDigest(prepared.0))
+    let back = stageCHybridDigestString(Snapshot.worldDigest(restored.world))
+    try require(live == back, "stage C hybrid smoke restore")
+    return ["status":"pass","variant":"H","assets":count,
             "snapshotBytes":prepared.3.bytes,"exactDigest":true]
 }
 
-func stageCRun(_ directory: String, count: Int = 1_000_000,
+func stageCHybridRun(_ directory: String, count: Int = 1_000_000,
                requestedSaves: Int = 100) throws -> [String: Any] {
     guard count == 1_000_000, requestedSaves >= 100 else {
         throw ProbeError.invalid("stage C requires 1M and >=100 saves")
     }
-    let prepared = try stageCPrepareInitial(directory: directory, count: count)
+    let prepared = try stageCHybridPrepareInitial(directory: directory, count: count)
     let world = prepared.0, state = prepared.1
     var wal = prepared.2
     var epoch: UInt32 = 1
@@ -170,7 +170,7 @@ func stageCRun(_ directory: String, count: Int = 1_000_000,
         if p.stop == .target {
             try require(world.wheel.pending == 0 && cycleEvents == count,
                         "stage C target cycle count")
-            try stageCRescheduleAll(world, baseNow: target, firstOperation: firstOperation)
+            try stageCHybridRescheduleAll(world, baseNow: target, firstOperation: firstOperation)
             try wal.appendRescheduleAll(baseNow: target, firstOperation: firstOperation)
             firstOperation += UInt64(count)
             target += 600
@@ -224,16 +224,16 @@ func stageCRun(_ directory: String, count: Int = 1_000_000,
     }
 
     let restoreStart = nx_now()
-    let restored = try StageCSnapshotRestore.recoverLatest(directory)
+    let restored = try StageCHybridSnapshotRestore.recoverLatest(directory)
     let restoreNS = nx_now() - restoreStart
-    let liveDigest = stageCDigestString(Snapshot.worldDigest(world))
-    let restoredDigest = stageCDigestString(Snapshot.worldDigest(restored.world))
+    let liveDigest = stageCHybridDigestString(Snapshot.worldDigest(world))
+    let restoredDigest = stageCHybridDigestString(Snapshot.worldDigest(restored.world))
     try require(liveDigest == restoredDigest, "stage C recovery != connected state")
     let idleNSEvent = Double(idleNS) / Double(idleEvents)
     let savingNSEvent = Double(savingNS) / Double(savingEvents)
     let overhead = savingNSEvent / idleNSEvent
-    let beginP99 = stageCQuantile(beginTimes, numerator: 99, denominator: 100)
-    let advanceP99 = stageCQuantile(savingAdvanceTimes, numerator: 99, denominator: 100)
+    let beginP99 = stageCHybridQuantile(beginTimes, numerator: 99, denominator: 100)
+    let advanceP99 = stageCHybridQuantile(savingAdvanceTimes, numerator: 99, denominator: 100)
 
     try require(beginP99 <= 100_000, "stage C beginSave p99 >0.1ms")
     try require(advanceP99 <= 1_100_000, "stage C advance p99 > deadline+0.1ms")
@@ -241,26 +241,26 @@ func stageCRun(_ directory: String, count: Int = 1_000_000,
     try require(idleMaxAlloc == 0, "stage C idle allocation gate")
 
     return [
-        "status":"pass", "variant":"S", "assets":count, "saves":savesCommitted,
+        "status":"pass", "variant":"H", "assets":count, "saves":savesCommitted,
         "advanceCalls":advanceCalls,
-        "beginSaveNS":["p50":stageCQuantile(beginTimes,numerator:50,denominator:100),
+        "beginSaveNS":["p50":stageCHybridQuantile(beginTimes,numerator:50,denominator:100),
                        "p99":beginP99,"max":beginTimes.max() ?? 0],
-        "advanceDuringSaveNS":["p50":stageCQuantile(savingAdvanceTimes,numerator:50,denominator:100),
+        "advanceDuringSaveNS":["p50":stageCHybridQuantile(savingAdvanceTimes,numerator:50,denominator:100),
                                "p99":advanceP99,"max":savingAdvanceTimes.max() ?? 0],
         "idleNSPerEvent":idleNSEvent, "saveNSPerEvent":savingNSEvent,
         "overheadRatio":overhead,
         "snapshotBytes":snapshotSizes.last ?? prepared.3.bytes,
         "snapshotBytesMin":snapshotSizes.min() ?? prepared.3.bytes,
         "snapshotBytesMax":snapshotSizes.max() ?? prepared.3.bytes,
-        "writeNS":["p50":stageCQuantile(writeTimes,numerator:50,denominator:100),
-                   "p99":stageCQuantile(writeTimes,numerator:99,denominator:100),
+        "writeNS":["p50":stageCHybridQuantile(writeTimes,numerator:50,denominator:100),
+                   "p99":stageCHybridQuantile(writeTimes,numerator:99,denominator:100),
                    "max":writeTimes.max() ?? 0],
         "restoreNS":restoreNS,
         "peakQueuedBytes":peakQueues.max() ?? prepared.3.peakQueuedBytes,
         "barrierCopy":["bytesPerSave":barrierBytesPerSave,
                        "nsPerSave":barrierNSPerSave,
-                       "nsP50":stageCQuantile(barrierNSPerSave,numerator:50,denominator:100),
-                       "nsP99":stageCQuantile(barrierNSPerSave,numerator:99,denominator:100),
+                       "nsP50":stageCHybridQuantile(barrierNSPerSave,numerator:50,denominator:100),
+                       "nsP99":stageCHybridQuantile(barrierNSPerSave,numerator:99,denominator:100),
                        "nsMax":barrierNSPerSave.max() ?? 0],
         "allocationsIdleMaxPerAdvance":idleMaxAlloc,
         "allocationsWhileSavingMaxPerAdvance":savingMaxAlloc,
@@ -273,18 +273,18 @@ func stageCRun(_ directory: String, count: Int = 1_000_000,
     ]
 }
 
-func stageCCrashBootstrap(_ directory: String, count: Int) throws -> [String: Any] {
+func stageCHybridCrashBootstrap(_ directory: String, count: Int) throws -> [String: Any] {
     guard count == 1_000_000 else { throw ProbeError.invalid("stage C crash population") }
-    let prepared = try stageCPrepareInitial(directory: directory, count: count)
+    let prepared = try stageCHybridPrepareInitial(directory: directory, count: count)
     try prepared.2.close()
-    let digest = stageCDigestString(Snapshot.worldDigest(prepared.0))
+    let digest = stageCHybridDigestString(Snapshot.worldDigest(prepared.0))
     return ["status":"pass","epoch":1,"digest":digest,"snapshotBytes":prepared.3.bytes]
 }
 
-func stageCCrashAction(_ directory: String, point: String) throws -> [String: Any] {
-    let recovered = try StageCSnapshotRestore.recoverLatest(directory)
+func stageCHybridCrashAction(_ directory: String, point: String) throws -> [String: Any] {
+    let recovered = try StageCHybridSnapshotRestore.recoverLatest(directory)
     let world = recovered.world
-    let baseline = stageCDigestString(Snapshot.worldDigest(world))
+    let baseline = stageCHybridDigestString(Snapshot.worldDigest(world))
     let state = StageCState(world: world); world.stageCInstall(state)
     guard recovered.epoch == 1 else { throw ProbeError.invariant("stage C crash base epoch") }
     let wal2 = try StageCWAL(directory: directory, epoch: 2)
@@ -304,18 +304,18 @@ func stageCCrashAction(_ directory: String, point: String) throws -> [String: An
     return ["status":"unexpected-no-kill","baseline":baseline]
 }
 
-func stageCWALChainExpected(_ directory: String) throws -> [String: Any] {
-    let recovered = try StageCSnapshotRestore.recoverLatest(directory)
+func stageCHybridWALChainExpected(_ directory: String) throws -> [String: Any] {
+    let recovered = try StageCHybridSnapshotRestore.recoverLatest(directory)
     guard recovered.epoch == 1 else { throw ProbeError.invariant("stage C chain base epoch") }
     let world = recovered.world
     let p = try world.advance(to: 600, budget: 1)
     try require(p.events == 1, "stage C chain expected event")
     return ["status":"pass","processed":world.processed,
-            "digest":stageCDigestString(Snapshot.worldDigest(world))]
+            "digest":stageCHybridDigestString(Snapshot.worldDigest(world))]
 }
 
-func stageCWALChainCrashAction(_ directory: String) throws -> [String: Any] {
-    let recovered = try StageCSnapshotRestore.recoverLatest(directory)
+func stageCHybridWALChainCrashAction(_ directory: String) throws -> [String: Any] {
+    let recovered = try StageCHybridSnapshotRestore.recoverLatest(directory)
     guard recovered.epoch == 1 else { throw ProbeError.invariant("stage C chain crash base epoch") }
     let world = recovered.world
     let state = StageCState(world: world); world.stageCInstall(state)
@@ -330,12 +330,12 @@ func stageCWALChainCrashAction(_ directory: String) throws -> [String: Any] {
     return ["status":"unexpected-no-kill"]
 }
 
-func stageCRecoverCrash(_ directory: String) throws -> [String: Any] {
+func stageCHybridRecoverCrash(_ directory: String) throws -> [String: Any] {
     let start = nx_now()
-    let recovered = try StageCSnapshotRestore.recoverLatest(directory)
+    let recovered = try StageCHybridSnapshotRestore.recoverLatest(directory)
     let elapsed = nx_now() - start
     return ["status":"pass","epoch":recovered.epoch,
-            "digest":stageCDigestString(Snapshot.worldDigest(recovered.world)),
+            "digest":stageCHybridDigestString(Snapshot.worldDigest(recovered.world)),
             "processed":recovered.world.processed,
             "sequenceHash":recovered.world.sequenceHash,
             "replayedCommands":recovered.replayedCommands,

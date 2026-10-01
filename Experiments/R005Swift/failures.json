@@ -97,6 +97,17 @@
       "passedBeforeFailure": "Debug/Release, existing behavior/storage, corrected Stage A, TSan, Stage B 60-record proof, and Stage C K1-K10 all passed at 1M in Debug/Release/TSan",
       "failedGate": "Stage C 1M/100-save measurement entered the binary and failed the unchanged allocation gate: allocations on a saving advance exceeded barrier chunks",
       "correction": "Keep the <= one producer allocation per emitted barrier chunk gate unchanged. Replace per-record Data+producer hashing with one pre-reserved byte buffer, move SHA-256 to the writer, replace AsyncStream producer buffering with a preallocated Mutex queue, and record barrier bytes/time per save plus dedicated producer-allocation probes."
+    },
+    {
+      "commit": "2b09f59c55ce3005849af13a00826438bbabbba4",
+      "run": 36855849336,
+      "job": 110348014394,
+      "status": "failure",
+      "artifact": 11161240349,
+      "artifactSHA256": "4106e7c6a731492cdb38634573adb7af575fe3fc81ffe46111e8431dd1db81c1",
+      "passedBeforeFailure": "Debug/Release, existing behavior/storage, Stage A, TSan, Stage B, and Stage C K1-K10 all passed; the selected-layout allocation probe/smoke completed before the full C measurement",
+      "failedGate": "Stage A selected H on this source (H/S=0.7297648494141507), but the Stage C measurement harness still asserted S and therefore refused to start the 1M/100-save measurement",
+      "correction": "Do not force S and do not change the A decision rule. Add a full H Stage C path using the same barrier/snapshot/WAL/recovery/K1-K10/100-save gates, select C from the current Stage A artifact, and run a 100k selected-layout smoke before the long sanitizer/finance campaign."
     }
   ]
 }

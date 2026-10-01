@@ -7,7 +7,8 @@ output=Path(sys.argv[2]).resolve()
 stage_a=Path(sys.argv[3]).resolve()
 a=json.loads(stage_a.read_text())
 assert a["status"]=="pass",a.get("status")
-assert a["decisionA"]["chosen"]=="S",a["decisionA"]
+chosen=a["decisionA"]["chosen"]
+assert chosen in ("S","H"),a["decisionA"]
 
 environment=dict(os.environ)
 observer=Path(environment["NXR_ALLOCATOR_DYLIB"]).resolve()
@@ -16,13 +17,13 @@ environment["DYLD_INSERT_LIBRARIES"]=str(observer)
 
 with tempfile.TemporaryDirectory(prefix="nxr-stage005-c-") as temp:
     store=Path(temp)/"store"
-    cp=subprocess.run([str(binary),"stage-c",str(store),"1000000","100"],
+    cp=subprocess.run([str(binary),"stage-c-h" if chosen=="H" else "stage-c",str(store),"1000000","100"],
         capture_output=True,text=True,timeout=10800,env=environment)
     if cp.returncode:
         raise RuntimeError((cp.returncode,cp.stderr[-8000:]))
     result=json.loads(cp.stdout)
 
-assert result["status"]=="pass" and result["variant"]=="S"
+assert result["status"]=="pass" and result["variant"]==chosen
 assert result["saves"]>=100
 assert result["beginSaveNS"]["p99"]<=100_000
 assert result["advanceDuringSaveNS"]["p99"]<=1_100_000

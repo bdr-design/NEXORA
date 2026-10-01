@@ -48,6 +48,17 @@ jobs:
           .build/debug/nxr-swift-probe hybrid-order 100000 > ../../swift-results/stage005-a-debug-order-100k.json
           .build/debug/nxr-swift-probe hybrid-order 1000000 > ../../swift-results/stage005-a-debug-order-1m.json
           python3 -B stage005_a.py .build/release/nxr-swift-probe ../../swift-results/STAGE005-A.json 2>&1 | tee ../../swift-results/stage005-a-run.txt
+      - name: R005 Stage C selected-layout allocation and 100k smoke
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          export NXR_ALLOCATOR_DYLIB="$PWD/../../swift-results/AllocationObserver.dylib"
+          swift build --scratch-path .build-stagec-release -c release -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../swift-results/stage005-c-smoke-build.txt
+          variant="$(python3 -c 'import json; print(json.load(open("../../swift-results/STAGE005-A.json"))["decisionA"]["chosen"])')"
+          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" .build-stagec-release/release/nxr-swift-probe stage-c-allocation-probes "$variant" > ../../swift-results/stage005-c-allocation-probes.json
+          rm -rf ../../swift-results/stage005-c-smoke-store
+          .build-stagec-release/release/nxr-swift-probe stage-c-smoke ../../swift-results/stage005-c-smoke-store "$variant" 100000 > ../../swift-results/stage005-c-smoke.json
+          rm -rf ../../swift-results/stage005-c-smoke-store
       - name: Actual Swift model under Thread Sanitizer
         run: |
           set -euo pipefail
@@ -75,11 +86,12 @@ jobs:
           export NXR_ALLOCATOR_DYLIB="$PWD/../../swift-results/AllocationObserver.dylib"
           swift build --scratch-path .build-stagec-debug -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../swift-results/stage005-c-build-debug.txt
           swift build --scratch-path .build-stagec-release -c release -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../swift-results/stage005-c-build-release.txt
-          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" .build-stagec-release/release/nxr-swift-probe stage-c-allocation-probes > ../../swift-results/stage005-c-allocation-probes.json
-          python3 -B stage005_c_crash.py .build-stagec-debug/debug/nxr-swift-probe ../../swift-results/STAGE005-C-KILLS-debug.json 2>&1 | tee ../../swift-results/stage005-c-kills-debug.txt
-          python3 -B stage005_c_crash.py .build-stagec-release/release/nxr-swift-probe ../../swift-results/STAGE005-C-KILLS-release.json 2>&1 | tee ../../swift-results/stage005-c-kills-release.txt
+          variant="$(python3 -c 'import json; print(json.load(open("../../swift-results/STAGE005-A.json"))["decisionA"]["chosen"])')"
+          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" .build-stagec-release/release/nxr-swift-probe stage-c-allocation-probes "$variant" > ../../swift-results/stage005-c-allocation-probes-final.json
+          python3 -B stage005_c_crash.py .build-stagec-debug/debug/nxr-swift-probe ../../swift-results/STAGE005-C-KILLS-debug.json "$variant" 2>&1 | tee ../../swift-results/stage005-c-kills-debug.txt
+          python3 -B stage005_c_crash.py .build-stagec-release/release/nxr-swift-probe ../../swift-results/STAGE005-C-KILLS-release.json "$variant" 2>&1 | tee ../../swift-results/stage005-c-kills-release.txt
           swift build --scratch-path .build-stagec-tsan --sanitize=thread -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../swift-results/stage005-c-build-tsan.txt
-          python3 -B stage005_c_crash.py .build-stagec-tsan/debug/nxr-swift-probe ../../swift-results/STAGE005-C-KILLS-tsan.json 2>&1 | tee ../../swift-results/stage005-c-kills-tsan.txt
+          python3 -B stage005_c_crash.py .build-stagec-tsan/debug/nxr-swift-probe ../../swift-results/STAGE005-C-KILLS-tsan.json "$variant" 2>&1 | tee ../../swift-results/stage005-c-kills-tsan.txt
           python3 -B stage005_c.py .build-stagec-release/release/nxr-swift-probe ../../swift-results/STAGE005-C.json ../../swift-results/STAGE005-A.json 2>&1 | tee ../../swift-results/stage005-c-run.txt
       - name: Production unchanged and source file digests
         run: |

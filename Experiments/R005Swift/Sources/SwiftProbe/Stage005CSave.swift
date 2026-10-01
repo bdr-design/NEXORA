@@ -253,6 +253,14 @@ final class StageCState {
         nodeSaved = .init(repeating: 0, count: nodeChunks)
         groupSaved = .init(repeating: 0, count: groupChunks)
     }
+    init(world: HybridWorld) {
+        assetChunks = (world.count + 255) >> 8
+        nodeChunks = (world.wheel.capacity + 511) >> 9
+        groupChunks = (world.groupAmounts.count + 2047) >> 11
+        assetSaved = .init(repeating: 0, count: assetChunks)
+        nodeSaved = .init(repeating: 0, count: nodeChunks)
+        groupSaved = .init(repeating: 0, count: groupChunks)
+    }
 
     var expectedCounts: [UInt32] {
         [1, UInt32(assetChunks), UInt32(nodeChunks), UInt32(groupChunks)]
@@ -272,6 +280,15 @@ final class StageCState {
         barrierBytes = 0
         barrierNS = 0
         lastResult = nil
+        preparedSink.emit(Snapshot.controlRecord(world))
+        nx_kill_point("c.k1.after_begin")
+    }
+    func begin(world: HybridWorld, preparedSink: SnapshotSink) throws {
+        guard sink == nil, !capturing, preparedSink.epoch > epoch else {
+            throw ProbeError.invalid("stage C save already active/epoch")
+        }
+        epoch=preparedSink.epoch;sink=preparedSink;capturing=true;serviceCursor=0
+        barrierEmits=0;barrierBytes=0;barrierNS=0;lastResult=nil
         preparedSink.emit(Snapshot.controlRecord(world))
         nx_kill_point("c.k1.after_begin")
     }
@@ -318,6 +335,36 @@ final class StageCState {
             groupSaved[chunk] = epoch
             barrierEmits += 1
             if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
+        }
+    }
+    @inline(__always) func willWriteAsset(_ world: HybridWorld, index: Int) {
+        guard capturing, let sink else { return }
+        let chunk=index>>8
+        if assetSaved[chunk] != epoch {
+            let start=nx_now();let record=Snapshot.assetRecord(world,chunk:chunk);sink.emit(record)
+            barrierNS += nx_now()-start;barrierBytes += record.count+32
+            assetSaved[chunk]=epoch;barrierEmits += 1
+            if barrierEmits==1 { nx_kill_point("c.k2.after_first_barrier") }
+        }
+    }
+    @inline(__always) func willWriteNode(_ wheel: HybridTimingWheel, index: Int) {
+        guard capturing, let sink else { return }
+        let chunk=index>>9
+        if nodeSaved[chunk] != epoch {
+            let start=nx_now();let record=Snapshot.nodeRecord(wheel,chunk:chunk);sink.emit(record)
+            barrierNS += nx_now()-start;barrierBytes += record.count+32
+            nodeSaved[chunk]=epoch;barrierEmits += 1
+            if barrierEmits==1 { nx_kill_point("c.k2.after_first_barrier") }
+        }
+    }
+    @inline(__always) func willWriteGroup(_ world: HybridWorld, index: Int) {
+        guard capturing, let sink else { return }
+        let chunk=index>>11
+        if groupSaved[chunk] != epoch {
+            let start=nx_now();let record=Snapshot.groupRecord(world,chunk:chunk);sink.emit(record)
+            barrierNS += nx_now()-start;barrierBytes += record.count+32
+            groupSaved[chunk]=epoch;barrierEmits += 1
+            if barrierEmits==1 { nx_kill_point("c.k2.after_first_barrier") }
         }
     }
 
@@ -373,6 +420,51 @@ final class StageCState {
             }
         }
         guard let lastResult else { throw ProbeError.invalid("stage C missing save result") }
+        return lastResult
+    }
+    private func emitCanonicalIfUnsaved(_ world: HybridWorld, canonical: Int) {
+        guard let sink else { return }
+        if canonical < assetChunks {
+            if assetSaved[canonical] != epoch {
+                sink.emit(Snapshot.assetRecord(world,chunk:canonical));assetSaved[canonical]=epoch
+            }
+            return
+        }
+        let nodeBase=assetChunks
+        if canonical < nodeBase+nodeChunks {
+            let chunk=canonical-nodeBase
+            if nodeSaved[chunk] != epoch {
+                sink.emit(Snapshot.nodeRecord(world.wheel,chunk:chunk));nodeSaved[chunk]=epoch
+            }
+            return
+        }
+        let chunk=canonical-nodeBase-nodeChunks
+        if groupSaved[chunk] != epoch {
+            sink.emit(Snapshot.groupRecord(world,chunk:chunk));groupSaved[chunk]=epoch
+        }
+    }
+    func service(world: HybridWorld, budgetNS: UInt64) throws {
+        guard sink != nil else { return }
+        if capturing {
+            let deadline=nx_now() &+ budgetNS
+            while serviceCursor<totalChunks && nx_now()<deadline {
+                emitCanonicalIfUnsaved(world,canonical:serviceCursor);serviceCursor += 1
+            }
+            if serviceCursor==totalChunks { sink?.finish();capturing=false }
+        }
+        if !capturing,let result=try sink?.resultIfDone() { lastResult=result;sink=nil }
+    }
+    func waitForCommit(world: HybridWorld, serviceBudgetNS: UInt64 = 500_000) throws -> StageCSnapshotFileResult {
+        var spins=0
+        while sink != nil {
+            try service(world:world,budgetNS:serviceBudgetNS)
+            if sink != nil {
+                spins += 1
+                if spins>5_000_000 { throw ProbeError.invalid("stage C hybrid writer did not finish") }
+                Thread.sleep(forTimeInterval:0.00005)
+            }
+        }
+        guard let lastResult else { throw ProbeError.invalid("stage C hybrid missing save result") }
         return lastResult
     }
 }

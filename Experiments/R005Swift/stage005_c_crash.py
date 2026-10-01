@@ -26,7 +26,7 @@ def run(binary,*args,timeout=900):
 def kill_at(binary,directory,point,command="stage-c-crash-action"):
     e=env_for(binary);e["NXR_KILL_AT"]=point
     argv=[str(binary),command,str(directory)]
-    if command=="stage-c-crash-action": argv.append(point)
+    if command in ("stage-c-crash-action","stage-c-h-crash-action"): argv.append(point)
     p=subprocess.Popen(argv,
         env=e,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     selector=selectors.DefaultSelector();selector.register(p.stdout,selectors.EVENT_READ)
@@ -48,17 +48,23 @@ def kill_at(binary,directory,point,command="stage-c-crash-action"):
             p.kill();p.communicate(timeout=30)
 
 def main():
-    a=argparse.ArgumentParser();a.add_argument("binary",type=Path);a.add_argument("output",type=Path)
+    a=argparse.ArgumentParser();a.add_argument("binary",type=Path);a.add_argument("output",type=Path);a.add_argument("variant",choices=("S","H"))
     args=a.parse_args();binary=args.binary.resolve()
+    hybrid=args.variant=="H"
+    bootstrap_cmd="stage-c-h-crash-bootstrap" if hybrid else "stage-c-crash-bootstrap"
+    action_cmd="stage-c-h-crash-action" if hybrid else "stage-c-crash-action"
+    recover_cmd="stage-c-h-recover" if hybrid else "stage-c-recover"
+    chain_expected_cmd="stage-c-h-chain-expected" if hybrid else "stage-c-chain-expected"
+    chain_crash_cmd="stage-c-h-chain-crash" if hybrid else "stage-c-chain-crash"
     results=[]
     with tempfile.TemporaryDirectory(prefix="nxr-stage005-c-kill-") as temp:
         root=Path(temp);base=root/"base"
-        bootstrap=run(binary,"stage-c-crash-bootstrap",base,1000000,timeout=3600)
+        bootstrap=run(binary,bootstrap_cmd,base,1000000,timeout=3600)
         baseline=bootstrap["digest"]
         for point,epoch in POINTS:
             case=root/("case-"+point.replace(".","-"));shutil.copytree(base,case)
-            kill_at(binary,case,point)
-            restored=run(binary,"stage-c-recover",case,timeout=1800)
+            kill_at(binary,case,point,command=action_cmd)
+            restored=run(binary,recover_cmd,case,timeout=1800)
             assert restored["epoch"]==epoch,(point,restored,epoch)
             assert restored["digest"]==baseline,(point,"digest mismatch")
             results.append({"point":point,"signal":"SIGKILL","expectedEpoch":epoch,
@@ -67,10 +73,10 @@ def main():
             shutil.rmtree(case)
 
         reference=root/"chain-reference";shutil.copytree(base,reference)
-        expected=run(binary,"stage-c-chain-expected",reference,timeout=1800)
+        expected=run(binary,chain_expected_cmd,reference,timeout=1800)
         chain=root/"chain-crash";shutil.copytree(base,chain)
-        kill_at(binary,chain,"c.chain.after_wal",command="stage-c-chain-crash")
-        chained=run(binary,"stage-c-recover",chain,timeout=1800)
+        kill_at(binary,chain,"c.chain.after_wal",command=chain_crash_cmd)
+        chained=run(binary,recover_cmd,chain,timeout=1800)
         assert chained["epoch"]==1,(chained,"fallback must use previous snapshot")
         assert chained["processed"]==expected["processed"],(chained,expected)
         assert chained["digest"]==expected["digest"],("chained WAL digest mismatch",chained,expected)
@@ -80,7 +86,7 @@ def main():
                         "exactDigest":True,"processed":chained["processed"]}
     report={"status":"pass","population":1000000,"points":10,"results":results,
             "chainFallback":chain_fallback,
-            "limit":"real process SIGKILL, not physical power loss"}
+            "variant":args.variant,"limit":"real process SIGKILL, not physical power loss"}
     args.output.write_text(json.dumps(report,indent=2)+"\n")
     print("PASS Stage C",len(results),"SIGKILL points at 1M")
 
