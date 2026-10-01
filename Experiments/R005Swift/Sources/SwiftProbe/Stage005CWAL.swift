@@ -1,5 +1,6 @@
 #if STAGE_C
 import Foundation
+import ProbePlatform
 
 enum StageCWALKind: UInt8 { case advance = 1, rescheduleAll = 2 }
 

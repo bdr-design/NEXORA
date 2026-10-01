@@ -51,6 +51,17 @@
       "passedBeforeFailure": "Corrected full-S Stage A Debug/Release measurement passed and chose S; existing behavior/storage gates passed",
       "failedGate": "Stage B full G16 measurement still hit the inherited 3-period LedgerRow decode bound; TSan and source guard were skipped by workflow ordering",
       "correction": "Same bounded period correction recorded for the preceding failure, plus workflow ordering changed so TSan completes before full B. This run remains failed and its corrected-A metrics are not substituted for the later fully green source."
+    },
+    {
+      "commit": "0efaa1d42ca764bf56d479411596bd124aeb3e72",
+      "run": 36840087429,
+      "job": 110296871795,
+      "status": "failure",
+      "artifact": 11150734041,
+      "artifactSHA256": "c329962d78c5a98650440d9c6efb1e024bf7895b0bbc4acb28bab061150aa9cc",
+      "passedBeforeFailure": "Swift 6 Debug/Release, existing behavior/storage gates, corrected Stage A, TSan, and full Stage B all passed; Stage B still produced exactly 60 records",
+      "failedGate": "Stage C conditional build failed before any C runtime gate because Stage005CWAL.swift referenced nx_kill_point without importing ProbePlatform",
+      "correction": "Import ProbePlatform in Stage005CWAL.swift only. Do not change any Stage C threshold, snapshot/WAL format, kill point, A/B result, or production source; keep this run failed."
     }
   ]
 }
