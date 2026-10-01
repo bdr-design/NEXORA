@@ -1,12 +1,12 @@
 import Foundation
 import ProbePlatform
 
-func stageBRun(_ directory: String, caseName: String) throws -> [String: Any] {
+func stageBRun(_ directory: String, caseName: String, window: Int = 7) throws -> [String: Any] {
     let groups: Int, groupSize: Int
     if caseName == "G16" { groups = 62_500; groupSize = 16 }
     else if caseName == "G1" { groups = 1_000_000; groupSize = 1 }
     else { throw ProbeError.invalid("stage-b case G16|G1") }
-    let window = 7
+    guard window == 3 || window == 7 else { throw ProbeError.invalid("stage-b window") }
     try FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: false)
     _ = FileManager.default.createFile(atPath: bSummaryPath(directory), contents: nil)
     _ = FileManager.default.createFile(atPath: bManifestPath(directory), contents: nil)

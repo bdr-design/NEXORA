@@ -33,6 +33,9 @@ import Glibc
         case "stage-b":
             guard args.count==3 else {throw ProbeError.invalid("stage-b directory G16|G1")}
             result=try stageBRun(args[1],caseName:args[2])
+        case "stage-b-window":
+            guard args.count==4,let window=Int(args[3]) else {throw ProbeError.invalid("stage-b-window directory G1 3")}
+            result=try stageBRun(args[1],caseName:args[2],window:window)
         case "stage-b-crash-bootstrap":
             guard args.count==2 else {throw ProbeError.invalid("stage-b-crash-bootstrap directory")}
             result=try stageBCrashBootstrap(args[1])
@@ -42,6 +45,24 @@ import Glibc
         case "stage-b-recover-crash":
             guard args.count==2 else {throw ProbeError.invalid("stage-b-recover-crash directory")}
             result=try stageBRecoverCrash(args[1])
+#if STAGE_C
+        case "stage-c":
+            guard args.count==4,let n=Int(args[2]),let saves=Int(args[3]) else {
+                throw ProbeError.invalid("stage-c directory N saves")
+            }
+            result=try stageCRun(args[1],count:n,requestedSaves:saves)
+        case "stage-c-crash-bootstrap":
+            guard args.count==3,let n=Int(args[2]) else {
+                throw ProbeError.invalid("stage-c-crash-bootstrap directory N")
+            }
+            result=try stageCCrashBootstrap(args[1],count:n)
+        case "stage-c-crash-action":
+            guard args.count==3 else {throw ProbeError.invalid("stage-c-crash-action directory point")}
+            result=try stageCCrashAction(args[1],point:args[2])
+        case "stage-c-recover":
+            guard args.count==2 else {throw ProbeError.invalid("stage-c-recover directory")}
+            result=try stageCRecoverCrash(args[1])
+#endif
         case "storage":
             guard args.count==3, let n=Int(args[2]) else {throw ProbeError.invalid("storage directory N")}
             result=try storageCheck(args[1],count:n)

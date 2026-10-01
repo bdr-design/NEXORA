@@ -12,6 +12,7 @@ NXRAlloc nx_alloc_end(void);
 uint64_t nx_alloc_calibrate(void);
 uint32_t nx_crc(uint32_t crc, const unsigned char *data, size_t count);
 NXRHash nx_hash_file(const char *path);
+NXRHash nx_hash_bytes(const unsigned char *bytes, size_t count);
 int nx_sync_dir(const char *path);
 void nx_kill_point(const char *name);
 int nx_replace_file(const char *source, const char *destination);

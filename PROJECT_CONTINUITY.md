@@ -1,3 +1,39 @@
+# R005 proof closure — A/B accepted on green source; C candidate starts
+
+The corrected full-layout A and the full B proof both passed on Apple CI source
+`670d462016f12b490f3dd475106970bc0f17fbf1`.
+Swift run 36837182928 and companion existing-gates run 36837182920 both completed
+SUCCESS. Artifact 11149973992 was downloaded and verified locally as ZIP SHA-256
+`2de69b88da75701d7091aab324077d153b863e652c03e0e4c431543f9e0b149d`.
+
+Final accepted A decision for this stage source:
+- S @1M: 96.160704 owned B/asset; median 99.2767825 ns/event.
+- H @1M: 100.748672 owned B/asset; median 83.4846225 ns/event.
+- H/S = 0.8409279631921995, so H does NOT meet the required <=0.75*S threshold.
+- all measured allocation maxima/advance were zero; corrected layout/order/mutant
+  and TSan gates passed. Chosen layout is **S** by the directive rule.
+STAGE005-A.json SHA-256:
+`7618f3a0bcc1dfe4489c361153a3d1463f1e761aac82886cd58bfda140c0317a`.
+
+Accepted B:
+- exactly 60 day records (30 G16/W7 + 30 G1/W7);
+- G16 BdayMax 8,000,016; S30 99,840; Omax 120,016 bytes;
+- G1/W7 BdayMax 128,000,016; S30 99,840; Omax 1,920,016 bytes;
+- exact final disk totals pass and all S1-S5 kills pass in Debug/Release/TSan.
+STAGE005-B.json SHA-256:
+`9f01ed06a76bd37a9d5e21d7e048a4c2336686edb04aaa45963b00ec30f590c2`.
+A quota-only G1/W3 aggregate is now added because the directive's final quota table
+requires it; it does not add rows to the 60-record B matrix.
+
+Stage C candidate now targets the chosen S layout only. It is compiled behind
+`STAGE_C`, so normal A builds have no save-hook hot-path code. It adds the
+chunk-before-first-write barrier, v2 typed little-endian snapshot records with
+SHA-256 payloads and canonical footer, background AsyncStream writer, generation
+commit markers, WAL/replay, K1-K10 recovery and the 1M/100-save workload. Unsafe
+Swift is confined to Snapshot.swift, read-only BitwiseCopyable serialization.
+No production source, production save path, main merge or iPhone acceptance is
+changed. C is not accepted until its Apple CI runs and measured thresholds pass.
+
 # R005 Stage B retry — period-bound correction and CI ordering
 
 Run 36836005603 on commit `717093a8a5ce71bb08de8f5a4fccc310e1223a90`

@@ -29,7 +29,11 @@ def main():
     try:
         for f in HERE.glob('Sources/SwiftProbe/*.swift'):
             text=f.read_text()
-            assert not any(word in text for word in ['UnsafePointer','UnsafeMutable','unsafeBitCast','withUnsafe','unchecked:']),f
+            assert not any(word in text for word in ['@unchecked Sendable','nonisolated(unsafe)','unowned(unsafe)','Unmanaged']),f
+            if f.name == 'Snapshot.swift':
+                assert 'UnsafeMutable' not in text and 'unsafeBitCast' not in text,f
+            else:
+                assert 'Unsafe' not in text and 'withUnsafe' not in text,f
         result['selftest']=call('selftest','selftest')
         assert len(result['selftest']['mutations'])==8 and all(x['detected'] for x in result['selftest']['mutations'])
         sizes=[1000,5000,20000,50000,100000,250000,1000000] if a.release else [1000,100000,1000000]

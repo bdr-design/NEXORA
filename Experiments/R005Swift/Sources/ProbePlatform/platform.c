@@ -73,6 +73,25 @@ uint64_t nx_alloc_calibrate(void) {
 uint32_t nx_crc(uint32_t crc,const unsigned char *p,size_t n){
  crc=~crc;for(size_t i=0;i<n;i++){crc^=p[i];for(unsigned b=0;b<8;b++)crc=(crc>>1)^(0xedb88320U & (0U-(crc&1U)));}return ~crc;
 }
+
+NXRHash nx_hash_bytes(const unsigned char *bytes,size_t count){
+ NXRHash result={0,0,0,0,1};unsigned char digest[32];
+ if(count>0&&!bytes)return result;
+#ifdef __APPLE__
+ CC_SHA256(bytes,(CC_LONG)count,digest);
+#else
+ unsigned digest_length=0;
+ EVP_MD_CTX *ctx=EVP_MD_CTX_new();if(!ctx)return result;
+ if(EVP_DigestInit_ex(ctx,EVP_sha256(),NULL)!=1||
+    EVP_DigestUpdate(ctx,bytes,count)!=1||
+    EVP_DigestFinal_ex(ctx,digest,&digest_length)!=1||digest_length!=32){
+   EVP_MD_CTX_free(ctx);return result;
+ }
+ EVP_MD_CTX_free(ctx);
+#endif
+ uint64_t words[4]={0};for(unsigned i=0;i<32;i++)words[i/8]=(words[i/8]<<8)|digest[i];
+ result.a=words[0];result.b=words[1];result.c=words[2];result.d=words[3];result.status=0;return result;
+}
 NXRHash nx_hash_file(const char *path){
  NXRHash result={0,0,0,0,1};FILE *f=fopen(path,"rb");if(!f)return result;
  unsigned char block[65536],digest[32]; size_t n;

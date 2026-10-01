@@ -40,6 +40,17 @@
       "passedBeforeFailure": "Debug/Release builds, existing Swift behavior/storage gates, provisional pre-fidelity Stage A, and Stage B S1-S5 SIGKILL checks in Debug and Release",
       "failedGate": "Stage B full G16 measurement rejected day-period rows above the legacy 3-period LedgerRow read limit",
       "correction": "Expand only the experiment LedgerRow parsing period bound to the directive's 30-day horizon; keep old 1-3 day tests unchanged and move Stage B full measurement after TSan so a B failure cannot hide Stage A sanitizer evidence."
+    },
+    {
+      "commit": "b95d4d05a6a123431f10ad8cc47e86034fd8356d",
+      "run": 36836912437,
+      "job": 110286413441,
+      "status": "failure",
+      "artifact": 11150325158,
+      "artifactSHA256": "591db21c9644061d29b0238de202b9c9f168763520795ef72c13b6fe98ddf3af",
+      "passedBeforeFailure": "Corrected full-S Stage A Debug/Release measurement passed and chose S; existing behavior/storage gates passed",
+      "failedGate": "Stage B full G16 measurement still hit the inherited 3-period LedgerRow decode bound; TSan and source guard were skipped by workflow ordering",
+      "correction": "Same bounded period correction recorded for the preceding failure, plus workflow ordering changed so TSan completes before full B. This run remains failed and its corrected-A metrics are not substituted for the later fully green source."
     }
   ]
 }

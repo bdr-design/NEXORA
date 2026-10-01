@@ -62,6 +62,9 @@ final class TimingWheel {
     let mutation: Mutation
     private var fired = false
     private var ghost: Event? = nil
+#if STAGE_C
+    var stageCState: StageCState? = nil
+#endif
     init(capacity: Int, mutation: Mutation = .none) throws {
         guard capacity > 0, capacity <= 2_000_000 else { throw ProbeError.invalid("wheel capacity") }
         self.mutation = mutation
@@ -94,14 +97,23 @@ final class TimingWheel {
     }
     @inline(__always) private func insertNode(_ id: UInt32, into b: Int, cascading: Bool = false) {
         let i = Int(id), tail = tails[b]
+#if STAGE_C
+        stageCState?.willWriteNode(self, index: i)
+#endif
         next[i] = none
         if tail == none {
             heads[b] = id; tails[b] = id; sorted[b] = true; setOccupied(b, true)
         } else if mutation == .reverseCascade && cascading {
             // Real mutation: a head-insertion cascade incorrectly retains its sorted certificate.
+#if STAGE_C
+            stageCState?.willWriteNode(self, index: i)
+#endif
             next[i] = heads[b]; heads[b] = id; sorted[b] = true
         } else {
             if operation[Int(tail)] > operation[i] { sorted[b] = false }
+#if STAGE_C
+            stageCState?.willWriteNode(self, index: Int(tail))
+#endif
             next[Int(tail)] = id; tails[b] = id
         }
         if mutation == .omitTieBreaker { sorted[b] = true }
@@ -110,6 +122,9 @@ final class TimingWheel {
         guard event.due >= cursor, event.operation > 0, free != none else { throw ProbeError.invalid("schedule") }
         guard sortPhase == 0 && leaf == -1 && cascade == -1 else { throw ProbeError.invalid("schedule during wheel continuation") }
         let id = free, i = Int(id); free = next[i]
+#if STAGE_C
+        stageCState?.willWriteNode(self, index: i)
+#endif
         due[i] = event.due; operation[i] = event.operation; asset[i] = event.asset
         generation[i] = event.generation; kind[i] = event.kind; live[i] = 1
         insertNode(id, into: bucket(event.due)); pending += 1
@@ -131,7 +146,12 @@ final class TimingWheel {
         switch sortPhase {
         case 1:
             if pair == none {
-                if outTail != none { next[Int(outTail)] = none }
+                if outTail != none {
+#if STAGE_C
+                    stageCState?.willWriteNode(self, index: Int(outTail))
+#endif
+                    next[Int(outTail)] = none
+                }
                 heads[leaf] = outHead; tails[leaf] = outTail
                 if merges <= 1 { sorted[leaf] = true; sortPhase = 0; return }
                 guard width <= capacity else { throw ProbeError.invariant("sort bound") }
@@ -149,7 +169,12 @@ final class TimingWheel {
             let picked: UInt32
             if chooseLeft { picked = left; left = next[Int(left)]; leftCount -= 1 }
             else { picked = right; right = next[Int(right)]; rightCount -= 1 }
-            if outTail == none { outHead = picked } else { next[Int(outTail)] = picked }
+            if outTail == none { outHead = picked } else {
+#if STAGE_C
+                stageCState?.willWriteNode(self, index: Int(outTail))
+#endif
+                next[Int(outTail)] = picked
+            }
             outTail = picked
         default: throw ProbeError.invariant("sort phase")
         }
@@ -170,7 +195,12 @@ final class TimingWheel {
             if id == none { setOccupied(leaf, false); tails[leaf] = none; leaf = -1; return .work }
             if !sorted[leaf] { startSort(); return .work }
             if mutation == .swapTie && !fired && next[Int(id)] != none {
-                let b = next[Int(id)]; next[Int(id)] = next[Int(b)]; next[Int(b)] = id; heads[leaf] = b; fired = true
+                let b = next[Int(id)]
+#if STAGE_C
+                stageCState?.willWriteNode(self, index: Int(id))
+                stageCState?.willWriteNode(self, index: Int(b))
+#endif
+                next[Int(id)] = next[Int(b)]; next[Int(b)] = id; heads[leaf] = b; fired = true
             }
             let ready = heads[leaf]
             guard due[Int(ready)] == cursor else { throw ProbeError.invariant("wrong wheel slot/time") }
@@ -202,12 +232,61 @@ final class TimingWheel {
     func consume(_ id: UInt32) throws -> Event {
         guard leaf >= 0, heads[leaf] == id, live[Int(id)] == 1 else { throw ProbeError.invariant("consume non-head") }
         let value = event(id)
+#if STAGE_C
+        stageCState?.willWriteNode(self, index: Int(id))
+#endif
         heads[leaf] = next[Int(id)]
         live[Int(id)] = 0; next[Int(id)] = free; free = id; pending -= 1
         if mutation == .duplicate && !fired { ghost = value; fired = true }
         return value
     }
     func takeGhost() -> Event? { let value = ghost; ghost = nil; return value }
+#if STAGE_C
+    func stageCAppendNodeChunk(_ range: Range<Int>, into data: inout Data) {
+        Snapshot.append(due, range, into: &data)
+        Snapshot.append(operation, range, into: &data)
+        Snapshot.append(asset, range, into: &data)
+        Snapshot.append(generation, range, into: &data)
+        Snapshot.append(next, range, into: &data)
+        Snapshot.append(kind, range, into: &data)
+        Snapshot.append(live, range, into: &data)
+    }
+    func stageCAppendControl(into data: inout Data) {
+        Snapshot.appendLE(cursor, into: &data)
+        Snapshot.appendLE(UInt32(pending), into: &data)
+        Snapshot.appendLE(free, into: &data)
+        for value in [cascade, leaf, sortPhase, width, merges, seek, leftCount, rightCount] {
+            Snapshot.appendLE(UInt32(bitPattern: Int32(value)), into: &data)
+        }
+        for value in [pair, left, right, outHead, outTail] { Snapshot.appendLE(value, into: &data) }
+        Snapshot.append(heads, 0..<heads.count, into: &data)
+        Snapshot.append(tails, 0..<tails.count, into: &data)
+        for value in sorted { data.append(value ? 1 : 0) }
+        Snapshot.append(occupied, 0..<occupied.count, into: &data)
+    }
+    func stageCRestoreControl(_ c: StageCWheelControl) throws {
+        guard c.heads.count == 2048, c.tails.count == 2048, c.sorted.count == 2048,
+              c.occupied.count == 32, c.pending >= 0, c.pending <= capacity else {
+            throw ProbeError.corruption("stage C wheel control")
+        }
+        cursor = c.cursor; pending = c.pending; free = c.free
+        cascade = c.cascade; leaf = c.leaf; sortPhase = c.sortPhase; width = c.width
+        merges = c.merges; seek = c.seek; leftCount = c.leftCount; rightCount = c.rightCount
+        pair = c.pair; left = c.left; right = c.right; outHead = c.outHead; outTail = c.outTail
+        heads = ContiguousArray(c.heads); tails = ContiguousArray(c.tails)
+        sorted = ContiguousArray(c.sorted); occupied = ContiguousArray(c.occupied)
+        fired = false; ghost = nil
+    }
+    func stageCRestoreNode(_ i: Int, due valueDue: UInt64, operation valueOperation: UInt64,
+                           asset valueAsset: UInt32, generation valueGeneration: UInt32,
+                           next valueNext: UInt32, kind valueKind: UInt8, live valueLive: UInt8) throws {
+        guard i >= 0 && i < capacity, valueKind <= 2, valueLive <= 1 else {
+            throw ProbeError.corruption("stage C node")
+        }
+        due[i] = valueDue; operation[i] = valueOperation; asset[i] = valueAsset
+        generation[i] = valueGeneration; next[i] = valueNext; kind[i] = valueKind; live[i] = valueLive
+    }
+#endif
 }
 
 struct SliceResult {
@@ -244,6 +323,9 @@ final class SwiftWorld {
     private(set) var sequenceHash: UInt64 = 14695981039346656037
     private(set) var rejectedStale = 0
     private(set) var changeEpoch: UInt32 = 1
+#if STAGE_C
+    var stageCState: StageCState? = nil
+#endif
     init(count: Int, eventCapacity: Int? = nil, mutation: Mutation = .none) throws {
         guard (1...2_000_000).contains(count) else { throw ProbeError.invalid("asset capacity") }
         self.count = count; wheel = try TimingWheel(capacity: eventCapacity ?? count, mutation: mutation)
@@ -274,11 +356,17 @@ final class SwiftWorld {
     func schedule(asset i: Int, due: UInt64, operation: UInt64, amount: Int64, kind: UInt8 = 0) throws {
         guard i >= 0 && i < count, active[i] == 0, due >= now, amount > 0, kind <= 2,
               operation > accruedOperations[i] else { throw ProbeError.invalid("asset schedule") }
+#if STAGE_C
+        stageCState?.willWriteAsset(self, index: i)
+#endif
         _ = try wheel.schedule(Event(due: due, operation: operation, asset: UInt32(i), generation: generations[i], kind: kind))
         origins[i] = airports[i]; departures[i] = now; fares[i] = amount; active[i] = 1
     }
     func invalidateGeneration(_ i: Int) throws {
         guard i >= 0 && i < count, generations[i] < UInt32.max else { throw ProbeError.invalid("generation") }
+#if STAGE_C
+        stageCState?.willWriteAsset(self, index: i)
+#endif
         generations[i] += 1
     }
     func addCash(_ value: Int64) throws {
@@ -361,4 +449,33 @@ final class SwiftWorld {
         }
         return SliceResult(events: emitted, units: work, reached: now, stop: emitted == budget ? .budget : .work)
     }
+#if STAGE_C
+    func stageCInstall(_ state: StageCState) {
+        stageCState = state
+        wheel.stageCState = state
+    }
+    func stageCUninstall() {
+        wheel.stageCState = nil
+        stageCState = nil
+    }
+    func stageCAppendControl(into data: inout Data) {
+        Snapshot.appendLE(UInt32(count), into: &data)
+        Snapshot.appendLE(UInt32(wheel.capacity), into: &data)
+        Snapshot.appendLE(UInt32(groupAmounts.count), into: &data)
+        Snapshot.appendLE(now, into: &data)
+        Snapshot.appendLE(revenue, into: &data)
+        Snapshot.appendLE(receivable, into: &data)
+        Snapshot.appendLE(cash, into: &data)
+        Snapshot.appendLE(processed, into: &data)
+        Snapshot.appendLE(sequenceHash, into: &data)
+        Snapshot.appendLE(UInt64(rejectedStale), into: &data)
+        Snapshot.appendLE(changeEpoch, into: &data)
+        wheel.stageCAppendControl(into: &data)
+    }
+    func stageCRestoreExtras(rejected: Int, changeEpoch restoredEpoch: UInt32) throws {
+        guard rejected >= 0 else { throw ProbeError.corruption("stage C rejected count") }
+        rejectedStale = rejected
+        changeEpoch = restoredEpoch
+    }
+#endif
 }
