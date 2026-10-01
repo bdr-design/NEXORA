@@ -1,4 +1,31 @@
-# NEXORA — current reference / المرجعية الحالية
+# R005 proof-closure execution update — Stage A candidate
+
+Updated: 2026-10-01 / Asia/Riyadh.
+Live branch was rechecked before this change at `74bc02b717cae0a80c5014c92b33c0c8d273dfe1`;
+main remained `38ce39cf9322f47e4def5f6eddb425c5a66ea7f9`.
+AGENTS.md was reread. The three excluded branches remain denylist-only and none
+of their implementation content was opened or used.
+
+The owner supplied the 18-page directive “R005 — التوجيه الهندسي التنفيذي لإغلاق
+مرحلة الإثبات” and explicitly ordered completion in stages without stopping. It
+authorizes proof-only experiments A/B/C inside Experiments/R005Swift and still
+forbids production integration until the measured results are presented and approved.
+
+Current candidate work is Stage A only: it adds the complete S-vs-H layout experiment.
+H uses a 48-byte BitwiseCopyable HotAsset record and 32-byte EventNode record with
+explicit zeroed padding, keeps cold fields in columns, preserves the hierarchical
+wheel semantics, exact event oracle, all eight injected faults, and the 15 partition
+cases. The measurement runner requests 3 independent processes per (variant,size),
+2 warmups then 10 measured runs in each process at 100k/1M/2M, budget 256. The
+documented rule is enforced exactly: H is selected only if its 1M median ns/event
+is <= 0.75*S, its owned bytes are <=128 B/asset, and all health gates pass.
+
+This section records a CANDIDATE, not a passing result. Apple CI must compile and
+run it under Debug, Release and TSan. Do not advance to B until Stage A CI has
+completed successfully and the measured decision is read from its artifact.
+No production Sources/Tests/root Package, no main merge and no iPhone claim.
+
+# NEXORA — previous reference / المرجعية السابقة
 
 Updated: 2026-10-01 / Asia/Riyadh. Repository: bdr-design/NEXORA only.
 Game name: NEXORA. Read AGENTS.md before every resumed work session.

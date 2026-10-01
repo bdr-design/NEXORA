@@ -7,7 +7,7 @@ permissions:
 jobs:
   swift-model:
     runs-on: macos-15
-    timeout-minutes: 40
+    timeout-minutes: 120
     env:
       PYTHONDONTWRITEBYTECODE: 1
     steps:
@@ -38,6 +38,16 @@ jobs:
           export NXR_ALLOCATOR_DYLIB="$PWD/../../swift-results/AllocationObserver.dylib"
           python3 -B run_suite.py .build/debug/nxr-swift-probe ../../swift-results/debug 2>&1 | tee ../../swift-results/debug-run.txt
           python3 -B run_suite.py .build/release/nxr-swift-probe ../../swift-results/release --release 2>&1 | tee ../../swift-results/release-run.txt
+      - name: R005 Stage A deterministic Debug gates and Release measurement
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          export NXR_ALLOCATOR_DYLIB="$PWD/../../swift-results/AllocationObserver.dylib"
+          .build/debug/nxr-swift-probe hybrid-selftest > ../../swift-results/stage005-a-debug-layout.json
+          .build/debug/nxr-swift-probe hybrid-mutants > ../../swift-results/stage005-a-debug-mutants.json
+          .build/debug/nxr-swift-probe hybrid-order 100000 > ../../swift-results/stage005-a-debug-order-100k.json
+          .build/debug/nxr-swift-probe hybrid-order 1000000 > ../../swift-results/stage005-a-debug-order-1m.json
+          python3 -B stage005_a.py .build/release/nxr-swift-probe ../../swift-results/STAGE005-A.json 2>&1 | tee ../../swift-results/stage005-a-run.txt
       - name: Actual Swift model under Thread Sanitizer
         run: |
           set -euo pipefail
@@ -45,6 +55,10 @@ jobs:
           swift build --scratch-path .build-tsan --sanitize=thread -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../swift-results/tsan-build.txt
           .build-tsan/debug/nxr-swift-probe selftest > ../../swift-results/tsan-selftest.json
           .build-tsan/debug/nxr-swift-probe order 1000 > ../../swift-results/tsan-order.json
+          .build-tsan/debug/nxr-swift-probe hybrid-selftest > ../../swift-results/stage005-a-tsan-layout.json
+          .build-tsan/debug/nxr-swift-probe hybrid-mutants > ../../swift-results/stage005-a-tsan-mutants.json
+          .build-tsan/debug/nxr-swift-probe hybrid-order 100000 > ../../swift-results/stage005-a-tsan-order-100k.json
+          .build-tsan/debug/nxr-swift-probe hybrid-order 1000000 > ../../swift-results/stage005-a-tsan-order-1m.json
           python3 -B crash_tests.py .build-tsan/debug/nxr-swift-probe ../../swift-results/tsan-crashes.json
       - name: Production unchanged and source file digests
         run: |

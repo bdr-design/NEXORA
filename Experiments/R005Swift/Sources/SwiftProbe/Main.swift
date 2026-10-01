@@ -18,6 +18,18 @@ import Glibc
         case "order":
             guard args.count==2,let n=Int(args[1]) else {throw ProbeError.invalid("order N")}
             result=try completeOrderChecks(n)
+        case "hybrid-selftest":
+            result=try hybridLayoutSelftest()
+        case "hybrid-mutants":
+            result=try hybridMutationChecks()
+        case "hybrid-order":
+            guard args.count==2,let n=Int(args[1]) else {throw ProbeError.invalid("hybrid-order N")}
+            result=try hybridOrderChecks(n)
+        case "stage-a-bench":
+            guard args.count==4,let n=Int(args[2]),let runs=Int(args[3]) else {
+                throw ProbeError.invalid("stage-a-bench S|H N 10")
+            }
+            result=try stageABenchmark(variant:args[1],count:n,measuredRuns:runs)
         case "storage":
             guard args.count==3, let n=Int(args[2]) else {throw ProbeError.invalid("storage directory N")}
             result=try storageCheck(args[1],count:n)
@@ -47,7 +59,8 @@ import Glibc
         case "bench":
             guard args.count>=3,let n=Int(args[1]),let b=Int(args[2]) else {throw ProbeError.invalid("bench N budget [legacy|deadline]")}
             result=try benchmark(n,budget:b,legacy:args.contains("legacy"),deadline:args.contains("deadline"))
-        default: throw ProbeError.invalid("selftest | order N | bench N budget")
+        default:
+            throw ProbeError.invalid("selftest | order N | hybrid-selftest | hybrid-mutants | hybrid-order N | stage-a-bench S|H N 10 | bench N budget")
         }
         let data=try JSONSerialization.data(withJSONObject:result,options:[.sortedKeys,.prettyPrinted])
         print(String(decoding:data,as:UTF8.self))
