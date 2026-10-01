@@ -236,6 +236,32 @@ func stageCCrashAction(_ directory: String, point: String) throws -> [String: An
     return ["status":"unexpected-no-kill","baseline":baseline]
 }
 
+func stageCWALChainExpected(_ directory: String) throws -> [String: Any] {
+    let recovered = try StageCSnapshotRestore.recoverLatest(directory)
+    guard recovered.epoch == 1 else { throw ProbeError.invariant("stage C chain base epoch") }
+    let world = recovered.world
+    let p = try world.advance(to: 600, budget: 1)
+    try require(p.events == 1, "stage C chain expected event")
+    return ["status":"pass","processed":world.processed,
+            "digest":stageCDigestString(Snapshot.worldDigest(world))]
+}
+
+func stageCWALChainCrashAction(_ directory: String) throws -> [String: Any] {
+    let recovered = try StageCSnapshotRestore.recoverLatest(directory)
+    guard recovered.epoch == 1 else { throw ProbeError.invariant("stage C chain crash base epoch") }
+    let world = recovered.world
+    let state = StageCState(world: world); world.stageCInstall(state)
+    let wal2 = try StageCWAL(directory: directory, epoch: 2)
+    let sink = SnapshotSink(directory: directory, epoch: 2, expectedCounts: state.expectedCounts)
+    try state.begin(world: world, preparedSink: sink)
+    let p = try world.advance(to: 600, budget: 1)
+    try require(p.events == 1, "stage C chain crash event")
+    try wal2.appendAdvance(target: 600, budget: 1, units: p.units, events: p.events)
+    nx_kill_point("c.chain.after_wal")
+    try wal2.close()
+    return ["status":"unexpected-no-kill"]
+}
+
 func stageCRecoverCrash(_ directory: String) throws -> [String: Any] {
     let start = nx_now()
     let recovered = try StageCSnapshotRestore.recoverLatest(directory)

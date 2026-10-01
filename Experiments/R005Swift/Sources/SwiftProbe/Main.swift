@@ -62,6 +62,12 @@ import Glibc
         case "stage-c-recover":
             guard args.count==2 else {throw ProbeError.invalid("stage-c-recover directory")}
             result=try stageCRecoverCrash(args[1])
+        case "stage-c-chain-expected":
+            guard args.count==2 else {throw ProbeError.invalid("stage-c-chain-expected directory")}
+            result=try stageCWALChainExpected(args[1])
+        case "stage-c-chain-crash":
+            guard args.count==2 else {throw ProbeError.invalid("stage-c-chain-crash directory")}
+            result=try stageCWALChainCrashAction(args[1])
 #endif
         case "storage":
             guard args.count==3, let n=Int(args[2]) else {throw ProbeError.invalid("storage directory N")}

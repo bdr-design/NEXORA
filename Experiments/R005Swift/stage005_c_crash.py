@@ -23,9 +23,11 @@ def run(binary,*args,timeout=900):
         raise RuntimeError((args,cp.returncode,cp.stderr[-4000:]))
     return json.loads(cp.stdout)
 
-def kill_at(binary,directory,point):
+def kill_at(binary,directory,point,command="stage-c-crash-action"):
     e=env_for(binary);e["NXR_KILL_AT"]=point
-    p=subprocess.Popen([str(binary),"stage-c-crash-action",str(directory),point],
+    argv=[str(binary),command,str(directory)]
+    if command=="stage-c-crash-action": argv.append(point)
+    p=subprocess.Popen(argv,
         env=e,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
     selector=selectors.DefaultSelector();selector.register(p.stdout,selectors.EVENT_READ)
     seen=b"";deadline=time.monotonic()+1800
@@ -63,7 +65,21 @@ def main():
                             "restoredEpoch":restored["epoch"],"exactDigest":True,
                             "ignoredWALTailBytes":restored["ignoredWALTailBytes"]})
             shutil.rmtree(case)
+
+        reference=root/"chain-reference";shutil.copytree(base,reference)
+        expected=run(binary,"stage-c-chain-expected",reference,timeout=1800)
+        chain=root/"chain-crash";shutil.copytree(base,chain)
+        kill_at(binary,chain,"c.chain.after_wal",command="stage-c-chain-crash")
+        chained=run(binary,"stage-c-recover",chain,timeout=1800)
+        assert chained["epoch"]==1,(chained,"fallback must use previous snapshot")
+        assert chained["processed"]==expected["processed"],(chained,expected)
+        assert chained["digest"]==expected["digest"],("chained WAL digest mismatch",chained,expected)
+        assert chained["replayedCommands"]>=1,chained
+        chain_fallback={"point":"c.chain.after_wal","signal":"SIGKILL",
+                        "baseSnapshotEpoch":1,"replayedThroughWAL":2,
+                        "exactDigest":True,"processed":chained["processed"]}
     report={"status":"pass","population":1000000,"points":10,"results":results,
+            "chainFallback":chain_fallback,
             "limit":"real process SIGKILL, not physical power loss"}
     args.output.write_text(json.dumps(report,indent=2)+"\n")
     print("PASS Stage C",len(results),"SIGKILL points at 1M")

@@ -6,7 +6,8 @@
     "Exact R004 transcript test detected prototype generation=1 versus baseline generation=0; prototype corrected, oracle unchanged.",
     "Initial ad-hoc raw artifact inspection looked for records at the top level rather than fixture.records; read path corrected, original bytes unchanged.",
     "Post-Stage-A directive review found the measured S variant still used the earlier thin 45-byte asset columns and had not added the five required UInt32 columns contract/changeEpoch/entity/policy/origin. The successful run is preserved as invalid for the A design decision; S was corrected to the required 65-byte full-column layout, the full typed checkpoint was extended accordingly, and A must be remeasured before B/C acceptance.",
-    "Pre-acceptance Stage C adversarial review found that SwiftWorld.advance had save barriers on schedule/invalidate paths but not before its asset/group mutations. Corrected by emitting the asset and group pre-write chunks after all recoverable checks and before the first mutation; no threshold or result was reclassified."
+    "Pre-acceptance Stage C adversarial review found that SwiftWorld.advance had save barriers on schedule/invalidate paths but not before its asset/group mutations. Corrected by emitting the asset and group pre-write chunks after all recoverable checks and before the first mutation; no threshold or result was reclassified.",
+    "Pre-acceptance Stage C recovery review found that fallback from an incomplete current snapshot replayed only the previous snapshot's matching WAL, but the directive requires previous snapshot + previous WAL + current WAL. Recovery now replays every contiguous WAL from the restored snapshot epoch through the current epoch, rejects gaps/tails followed by newer WALs, and adds an exact SIGKILL chain-fallback regression."
   ],
   "apple": [
     {

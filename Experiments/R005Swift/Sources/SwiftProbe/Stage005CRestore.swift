@@ -144,16 +144,55 @@ enum StageCSnapshotRestore {
         return epochs.sorted(by: >)
     }
 
+    static func walEpochs(_ directory: String) throws -> [UInt32] {
+        var epochs: [UInt32] = []
+        for name in try FileManager.default.contentsOfDirectory(atPath: directory)
+            where name.hasPrefix("wal-") && name.hasSuffix(".log") {
+            let raw = name.dropFirst(4).dropLast(4)
+            if let value = UInt32(raw) { epochs.append(value) }
+        }
+        return epochs.sorted()
+    }
+
     static func recoverLatest(_ directory: String) throws -> StageCRestored {
         let epochs = try committedEpochs(directory)
         guard !epochs.isEmpty else { throw ProbeError.corruption("stage C no committed snapshot") }
+        let allWALs = try walEpochs(directory)
         var lastError: Error? = nil
         for epoch in epochs {
             do {
                 let world = try restoreSnapshot(directory + "/snapshot-\(epoch).bin")
-                let replay = try StageCWALReplay.replay(path: directory + "/wal-\(epoch).log", on: world)
+                let replayEpochs = allWALs.filter { $0 >= epoch }
+                guard replayEpochs.first == epoch else {
+                    throw ProbeError.corruption("stage C missing base WAL")
+                }
+                var expected = epoch
+                var commands: UInt64 = 0
+                var ignoredTail = 0
+                for (position, walEpoch) in replayEpochs.enumerated() {
+                    guard walEpoch == expected else { throw ProbeError.corruption("stage C WAL epoch gap") }
+                    let replay = try StageCWALReplay.replay(
+                        path: directory + "/wal-\(walEpoch).log", on: world)
+                    let sum = commands.addingReportingOverflow(replay.commands)
+                    guard !sum.overflow else { throw ProbeError.corruption("stage C replay count overflow") }
+                    commands = sum.partialValue
+                    ignoredTail = replay.ignoredTailBytes
+                    if ignoredTail > 0 {
+                        guard position == replayEpochs.count - 1 else {
+                            throw ProbeError.corruption("stage C WAL after torn current WAL")
+                        }
+                        break
+                    }
+                    if expected == UInt32.max {
+                        guard position == replayEpochs.count - 1 else {
+                            throw ProbeError.corruption("stage C WAL epoch overflow")
+                        }
+                    } else {
+                        expected += 1
+                    }
+                }
                 return StageCRestored(world: world, epoch: epoch,
-                    replayedCommands: replay.commands, ignoredWALTailBytes: replay.ignoredTailBytes)
+                    replayedCommands: commands, ignoredWALTailBytes: ignoredTail)
             } catch {
                 lastError = error
             }
