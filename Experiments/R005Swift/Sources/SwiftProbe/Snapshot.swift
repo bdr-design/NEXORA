@@ -70,13 +70,31 @@ enum Snapshot {
         }
     }
 
-    static func shaWords(_ data: Data) -> [UInt64] {
+    static func hashData(_ data: Data, range: Range<Int>? = nil) -> NXRHash {
+        let selected = range ?? 0..<data.count
+        precondition(selected.lowerBound >= 0 && selected.upperBound <= data.count)
         let result: NXRHash = data.withUnsafeBytes { raw in
-            let pointer = raw.bindMemory(to: UInt8.self).baseAddress
-            return nx_hash_bytes(pointer, raw.count)
+            let base = raw.bindMemory(to: UInt8.self).baseAddress
+            let pointer = selected.isEmpty ? base : base?.advanced(by: selected.lowerBound)
+            return nx_hash_bytes(pointer, selected.count)
         }
         precondition(result.status == 0)
+        return result
+    }
+
+    static func shaWords(_ data: Data) -> [UInt64] {
+        let result = hashData(data)
         return [result.a, result.b, result.c, result.d]
+    }
+
+    static func appendDigestHash(_ result: NXRHash, into data: inout Data) {
+        @inline(__always) func appendWord(_ word: UInt64, into target: inout Data) {
+            for shift in stride(from: 56, through: 0, by: -8) {
+                target.append(UInt8(truncatingIfNeeded: word >> UInt64(shift)))
+            }
+        }
+        appendWord(result.a, into: &data); appendWord(result.b, into: &data)
+        appendWord(result.c, into: &data); appendWord(result.d, into: &data)
     }
 
     static func appendDigestWords(_ words: [UInt64], into data: inout Data) {
@@ -90,65 +108,69 @@ enum Snapshot {
 
     static func digestData(_ data: Data) -> Data {
         var out = Data(capacity: 32)
-        appendDigestWords(shaWords(data), into: &out)
+        appendDigestHash(hashData(data), into: &out)
         return out
     }
 
-    static func record(kind: UInt16, index: UInt32, elements: UInt32, payload: Data) -> Data {
-        var data = Data(capacity: 16 + payload.count + 32)
+    static func record(kind: UInt16, index: UInt32, elements: UInt32, payloadBytes: Int,
+                       appendPayload: (inout Data) -> Void) -> Data {
+        var data = Data(capacity: 16 + payloadBytes + 32)
         appendLE(kind, into: &data)
         appendLE(UInt16(0), into: &data)
         appendLE(index, into: &data)
         appendLE(elements, into: &data)
-        appendLE(UInt32(payload.count), into: &data)
-        data.append(payload)
-        data.append(digestData(payload))
+        appendLE(UInt32(payloadBytes), into: &data)
+        let payloadStart = data.count
+        appendPayload(&data)
+        precondition(data.count == payloadStart + payloadBytes)
+        appendDigestHash(hashData(data, range: payloadStart..<data.count), into: &data)
+        precondition(data.count == 16 + payloadBytes + 32)
         return data
     }
 
     static func controlRecord(_ world: SwiftWorld) -> Data {
-        var payload = Data(capacity: 20_000)
-        world.stageCAppendControl(into: &payload)
-        return record(kind: 0, index: 0, elements: 1, payload: payload)
+        record(kind: 0, index: 0, elements: 1, payloadBytes: 18_828) { data in
+            world.stageCAppendControl(into: &data)
+        }
     }
 
     static func assetRecord(_ world: SwiftWorld, chunk: Int) -> Data {
         let lo = chunk << 8
         let range = lo..<min(lo + 256, world.count)
-        var payload = Data(capacity: range.count * 65)
-        append(world.generations, range, into: &payload)
-        append(world.airports, range, into: &payload)
-        append(world.destinations, range, into: &payload)
-        append(world.departures, range, into: &payload)
-        append(world.fares, range, into: &payload)
-        append(world.completed, range, into: &payload)
-        append(world.accruedOperations, range, into: &payload)
-        append(world.active, range, into: &payload)
-        append(world.contracts, range, into: &payload)
-        append(world.changeEpochs, range, into: &payload)
-        append(world.entities, range, into: &payload)
-        append(world.policies, range, into: &payload)
-        append(world.origins, range, into: &payload)
-        precondition(payload.count == range.count * 65)
-        return record(kind: 1, index: UInt32(chunk), elements: UInt32(range.count), payload: payload)
+        return record(kind: 1, index: UInt32(chunk), elements: UInt32(range.count),
+                      payloadBytes: range.count * 65) { data in
+            append(world.generations, range, into: &data)
+            append(world.airports, range, into: &data)
+            append(world.destinations, range, into: &data)
+            append(world.departures, range, into: &data)
+            append(world.fares, range, into: &data)
+            append(world.completed, range, into: &data)
+            append(world.accruedOperations, range, into: &data)
+            append(world.active, range, into: &data)
+            append(world.contracts, range, into: &data)
+            append(world.changeEpochs, range, into: &data)
+            append(world.entities, range, into: &data)
+            append(world.policies, range, into: &data)
+            append(world.origins, range, into: &data)
+        }
     }
 
     static func nodeRecord(_ wheel: TimingWheel, chunk: Int) -> Data {
         let lo = chunk << 9
         let range = lo..<min(lo + 512, wheel.capacity)
-        var payload = Data(capacity: range.count * 30)
-        wheel.stageCAppendNodeChunk(range, into: &payload)
-        precondition(payload.count == range.count * 30)
-        return record(kind: 2, index: UInt32(chunk), elements: UInt32(range.count), payload: payload)
+        return record(kind: 2, index: UInt32(chunk), elements: UInt32(range.count),
+                      payloadBytes: range.count * 30) { data in
+            wheel.stageCAppendNodeChunk(range, into: &data)
+        }
     }
 
     static func groupRecord(_ world: SwiftWorld, chunk: Int) -> Data {
         let lo = chunk << 11
         let range = lo..<min(lo + 2048, world.groupAmounts.count)
-        var payload = Data(capacity: range.count * 8)
-        append(world.groupAmounts, range, into: &payload)
-        precondition(payload.count == range.count * 8)
-        return record(kind: 3, index: UInt32(chunk), elements: UInt32(range.count), payload: payload)
+        return record(kind: 3, index: UInt32(chunk), elements: UInt32(range.count),
+                      payloadBytes: range.count * 8) { data in
+            append(world.groupAmounts, range, into: &data)
+        }
     }
 
     static func worldDigest(_ world: SwiftWorld) -> [UInt64] {
