@@ -1,3 +1,52 @@
+# Current review checkpoint — 2026-10-05
+
+Repository bdr-design/NEXORA, branch diagnostic/r005-design-1m-20260930.
+Reviewed live source: fa9c44656d6a7544f5cd0255781c64fde3e9ce1f;
+tree 13d773e230a8858dedc083280b80d35127b0a2b8;
+main unchanged at 38ce39cf9322f47e4def5f6eddb425c5a66ea7f9.
+Read AGENTS.md and recheck live HEAD before changing anything. All three denied
+branches remain excluded; their implementation was not opened or used.
+
+Latest Apple runs: 36875130411 SUCCESS, 36875130222 FAILED in C on S.
+Downloaded artifact 11170911262 ZIP SHA-256:
+6517060278e24e0a8b3bdb0db0476ebe719543eac293bcb2b903dc22fc356d71.
+A chose S (H/S=0.7855310255832999); A measured allocation maxima were all zero.
+B's 60-record and existing crash proof passed.
+C/S: begin p99 15125 ns, advance p99 1018375 ns / 35904 samples,
+100 saves; overheadRatio 1.5162503372173357 > 1.10. C remains OPEN.
+The failure is now recorded in Experiments/R005Swift/failures.json.
+
+Review findings and exact scope: [2026-10-05 review](Docs/Daily/2026-10-05-R005-REVIEW.md).
+Two evidence gaps reproduced with synthetic inputs against the real evaluators:
+A nonzero allocations can fall back to S and still emit PASS;
+C compares independent allocation/chunk maxima rather than paired per-advance bounds.
+These findings do NOT establish an actual allocation violation in the latest Apple run.
+The executable workflow also skipped its post-C source guard on failure; direct
+comparison, local guard and companion design CI still confirm production unchanged.
+A B manifest torn-tail/resume-write risk was identified by source review only.
+
+104 local Python tests and baseline/source guards passed. All 183 fetched files
+matched the reviewed Git blob hashes and file modes. No Swift/Xcode toolchain is
+available in this review environment; no fresh Swift/TSan/device result is claimed.
+Review publication changes documentation and the failure registry only.
+
+Two consecutive overhead failures already exist (36864229515, 36875130222).
+No third full campaign or hot-path edit was started. Present the bounded alternatives
+in the review to the owner before another overhead attempt. Recommended next scope:
+correct evidence gates, then a short copy/enqueue/hooks/writer micro-test. Do not
+assume copy alone explains overhead: subtracting all recorded barrier time
+arithmetically still leaves a ratio about 1.351 (diagnostic, not causal/predictive).
+Keep the 1.10 gate unchanged and name S or H explicitly at closure.
+
+No production merge, final R005 acceptance, iOS app/IPA, FPS or thermal certification.
+Device target remains iPhone 17 Pro Max; newer design target 1M/capacity 2M supersedes
+the older scale wording in Docs/REQUIREMENTS.md, without waiving full-feature goals.
+The sections below are historical updates; this checkpoint is current.
+Chat disconnect cause is unverified. Resume by checking live HEAD and this file;
+do not rely on chat memory, promise background work, or repeat an uncertain write.
+
+---
+
 # R005 C evidence scope and predeclared numeric reporting
 
 Run 36864229515 on `f70c0ea7d8efab06379b4eb07182493bf67fea6b`
