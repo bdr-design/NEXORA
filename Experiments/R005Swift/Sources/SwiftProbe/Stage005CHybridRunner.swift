@@ -146,9 +146,16 @@ func stageCHybridRun(_ directory: String, count: Int = 1_000_000,
     var firstViolationCall = -1, firstViolationChunks = 0
     var firstViolationAllocations: UInt64 = 0
     var priorResultEpoch: UInt32 = 1
+    // Diagnostics only, updated after both the timer and allocation scope.
+    var phaseNS = [UInt64](repeating: 0, count: 3)
+    var phaseEvents = [Int](repeating: 0, count: 3)
+    var phaseUnits = [Int](repeating: 0, count: 3)
+    var phaseCalls = [Int](repeating: 0, count: 3)
+    var phaseBarrierChunks = [Int](repeating: 0, count: 3)
 
     while savesCommitted < requestedSaves {
         let savingBefore = state.inFlight
+        let phase = savingBefore ? (state.capturing ? 1 : 2) : 0
         let barrierBefore = state.barrierEmits
         let deadline = nx_now() &+ 1_000_000
         nx_alloc_begin()
@@ -168,6 +175,9 @@ func stageCHybridRun(_ directory: String, count: Int = 1_000_000,
         }
 
         let barrierDelta = state.barrierEmits - barrierBefore
+        phaseNS[phase] += elapsed; phaseEvents[phase] += p.events
+        phaseUnits[phase] += p.units; phaseCalls[phase] += 1
+        phaseBarrierChunks[phase] += barrierDelta
         if savingBefore {
             savingAdvanceTimes.append(elapsed); savingNS += elapsed; savingEvents += p.events
             savingMaxAlloc = max(savingMaxAlloc, allocations.calls)
@@ -260,11 +270,22 @@ func stageCHybridRun(_ directory: String, count: Int = 1_000_000,
     let advanceMargin = Int64(stageCHybridAdvanceP99LimitNS) - Int64(advanceP99)
     let overheadMargin = stageCHybridOverheadRatioLimit - overhead
 
+    try require(phaseNS[0] == idleNS && phaseNS[1] + phaseNS[2] == savingNS &&
+                phaseEvents[0] == idleEvents && phaseEvents[1] + phaseEvents[2] == savingEvents &&
+                phaseCalls.reduce(0, +) == advanceCalls,
+                "stage C phase diagnostics must cover every measured call")
+    var phases: [String: Any] = [:]
+    for (i, name) in ["idle", "capturing", "writerOnly"].enumerated() {
+        phases[name] = ["ns":phaseNS[i], "events":phaseEvents[i], "workUnits":phaseUnits[i],
+                        "calls":phaseCalls[i], "barrierChunks":phaseBarrierChunks[i],
+                        "nsPerEvent":phaseEvents[i] > 0 ? Double(phaseNS[i])/Double(phaseEvents[i]) : 0,
+                        "nsPerWorkUnit":phaseUnits[i] > 0 ? Double(phaseNS[i])/Double(phaseUnits[i]) : 0]
+    }
     // Numerical acceptance gates are applied by stage005_c.py after this raw
     // measurement JSON is persisted, so a failing run retains every metric.
     return [
         "status":diagnosticOnly ? "diagnostic" : "measured", "variant":"H", "assets":count, "saves":savesCommitted,
-        "advanceCalls":advanceCalls,
+        "advanceCalls":advanceCalls, "simulationPhases":phases,
         "thresholds":["beginSaveP99NS":stageCHybridBeginP99LimitNS,
                       "advanceDuringSaveP99NS":stageCHybridAdvanceP99LimitNS,
                       "overheadRatio":stageCHybridOverheadRatioLimit,

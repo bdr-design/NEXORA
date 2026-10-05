@@ -65,7 +65,7 @@ jobs:
             rm -rf "../../c-results/transport-$mode"
           done
       - name: Bounded diagnostic micro only
-        if: ${{ contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-micro-recover]') && !contains(github.event.head_commit.message, '[r005-transport-verify]') }}
+        if: ${{ contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-micro-recover]') && !contains(github.event.head_commit.message, '[r005-transport-verify]') && !contains(github.event.head_commit.message, '[r005-profile]') }}
         run: |
           set -euo pipefail
           cd Experiments/R005Swift
@@ -75,6 +75,32 @@ jobs:
           DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" stage-c-micro ../../c-results/micro-s S > ../../c-results/MICRO-S.json
           DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" stage-c-micro ../../c-results/micro-h H > ../../c-results/MICRO-H.json
           rm -rf ../../c-results/components-store ../../c-results/micro-s ../../c-results/micro-h
+      - name: Same-run phase diagnosis and advisory call-stack sample on S
+        if: contains(github.event.head_commit.message, '[r005-profile]')
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          trap 'rm -rf ../../c-results/profile-store ../../c-results/profile-sampled-store' EXIT
+          export NXR_ALLOCATOR_DYLIB="$PWD/../../c-results/AllocationObserver.dylib"
+          bin=.build-c-release/release/nxr-swift-probe
+          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" stage-c-micro ../../c-results/profile-store S > ../../c-results/PROFILE-S.json
+          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" stage-c-micro ../../c-results/profile-sampled-store S > ../../c-results/PROFILE-S-SAMPLED.json &
+          probe_pid=$!
+          if sample "$probe_pid" 3 1 -mayDie -file ../../c-results/profile-stacks.txt > ../../c-results/sampler-log.txt 2>&1; then
+            echo 0 > ../../c-results/sampler-exit-status.txt
+          else
+            echo $? > ../../c-results/sampler-exit-status.txt
+          fi
+          wait "$probe_pid"
+          python3 - <<'PY'
+          import json,pathlib
+          p=pathlib.Path('../../c-results')
+          for name in ('PROFILE-S.json','PROFILE-S-SAMPLED.json'):
+              d=json.loads((p/name).read_text())
+              assert d['status']=='diagnostic' and d['saves']==5
+              print(name, json.dumps(d['simulationPhases']))
+          (p/'profile-scope.txt').write_text('Uninstrumented PROFILE-S is bounded diagnosis only. PROFILE-S-SAMPLED is under an advisory sampler and cannot establish a timing improvement or C acceptance. Original C thresholds/calculation remain unchanged.\n')
+          PY
       - name: Recover completed micro metrics without repeating measurement
         if: contains(github.event.head_commit.message, '[r005-micro-recover]')
         env:

@@ -1,3 +1,16 @@
+# Resumed C fix — 2026-10-05
+
+Owner says «حله!» after the alternatives were presented. Live base HEAD rechecked:
+210875d0e96d4a4e0028d0997ee2c6de63954b88, tree e2ee8de6a88791c5b3065e025fe58933000b3cf2.
+Resume bounded profiling on the same permitted branch; AGENTS/current continuity
+and original directive reread. No production change or threshold relaxation.
+Next: read uninstrumented S 1M/5-save phase totals and separate advisory stack
+sample. Counters are outside advance/allocation timing and must reconcile every
+call to unchanged acceptance totals. No performance fix is yet claimed.
+Keep the entire earlier history below. New full acceptance attempts: 0 of 2.
+
+---
+
 # Execution candidate — 2026-10-05
 
 Owner authorized the recommended bounded path with «نفذ بدقه».
