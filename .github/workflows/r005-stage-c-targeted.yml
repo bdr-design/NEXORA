@@ -43,7 +43,7 @@ jobs:
           python3 -B Experiments/R005Swift/verify_reused_ab.py c-results/prior-ab c-results/REUSED-AB.json
           cp c-results/prior-ab/STAGE005-A.json c-results/STAGE005-A.json
       - name: Build Debug and Release C and allocator observer
-        if: ${{ !contains(github.event.head_commit.message, '[r005-micro-recover]') }}
+        if: ${{ !contains(github.event.head_commit.message, '[r005-micro-recover]') && !contains(github.event.head_commit.message, '[r005-transport-verify]') }}
         run: |
           set -euo pipefail
           cd Experiments/R005Swift
@@ -51,7 +51,7 @@ jobs:
           swift build --scratch-path .build-c-release -c release -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../c-results/build-release.txt
           cc -dynamiclib -O2 -Wall -Wextra -Werror AllocationObserver.c -ISources/ProbePlatform/include -o ../../c-results/AllocationObserver.dylib
       - name: Debug and Release transport lifecycle and exact 100k restore checks
-        if: ${{ !contains(github.event.head_commit.message, '[r005-micro-recover]') }}
+        if: ${{ !contains(github.event.head_commit.message, '[r005-micro-recover]') && !contains(github.event.head_commit.message, '[r005-transport-verify]') }}
         run: |
           set -euo pipefail
           cd Experiments/R005Swift
@@ -65,7 +65,7 @@ jobs:
             rm -rf "../../c-results/transport-$mode"
           done
       - name: Bounded diagnostic micro only
-        if: ${{ contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-micro-recover]') }}
+        if: ${{ contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-micro-recover]') && !contains(github.event.head_commit.message, '[r005-transport-verify]') }}
         run: |
           set -euo pipefail
           cd Experiments/R005Swift
@@ -97,6 +97,19 @@ jobs:
               print(json.dumps({'variant':c['variant'],'overheadRatio':c['overheadRatio'],
                   'barrierNS':c['barrierCopy']['nsPerSave'],'pairs':c['allocationPairing']}))
           PYCODE
+      - name: Bounded TSan transport verification without new overhead measurement
+        if: contains(github.event.head_commit.message, '[r005-transport-verify]')
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          swift build --scratch-path .build-c-tsan --sanitize=thread -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../c-results/build-tsan.txt
+          bin=.build-c-tsan/debug/nxr-swift-probe
+          TSAN_OPTIONS=halt_on_error=1 "$bin" stage-c-transport-checks ../../c-results/transport-tsan > ../../c-results/transport-tsan.json 2> ../../c-results/transport-tsan-stderr.txt
+          for variant in S H; do
+            TSAN_OPTIONS=halt_on_error=1 "$bin" stage-c-smoke "../../c-results/smoke-tsan-$variant" "$variant" 100000 > "../../c-results/smoke-tsan-$variant.json" 2> "../../c-results/smoke-tsan-$variant-stderr.txt"
+            rm -rf "../../c-results/smoke-tsan-$variant"
+          done
+          rm -rf ../../c-results/transport-tsan
       - name: Selected-layout allocation smoke, recovery and C gates
         if: contains(github.event.head_commit.message, '[r005-c-targeted]')
         run: |

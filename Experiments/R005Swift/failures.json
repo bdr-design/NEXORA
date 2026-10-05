@@ -143,5 +143,56 @@
       "failedGate": "Workflow cleanup rm inherited DYLD_INSERT_LIBRARIES for the arm64 allocation observer; system rm required arm64e and aborted. No simulation gate was reclassified.",
       "correction": "Scope DYLD_INSERT_LIBRARIES to each probe process only. Harvest already-completed JSON from the exact artifact with digest and source verification, without repeating measurements. Original run remains FAILED."
     }
+  ],
+  "diagnosticThresholdMisses": [
+    {
+      "commit": "1abc2fa11bd2160672b1467ed6c392e528fd7ecd",
+      "run": 37308440794,
+      "workflowConclusion": "failure",
+      "scope": "diagnostic 1M/5 saves, not acceptance",
+      "artifact": 11344981195,
+      "artifactSHA256": "c52baa28d44246931581d073782afe455b241d71c642f0fa30f4e9d5d912c812",
+      "retrievedFrom": {
+        "run": 37309407651,
+        "artifact": 11345341757,
+        "artifactSHA256": "5594657c03d6ea67a99621a2b672c42b5b3bb48f96f8b38d5d34d94acb875769"
+      },
+      "S": {
+        "overheadRatio": 1.4442141548290686,
+        "advanceP99NS": 1840667,
+        "pairedAllocationViolations": 0
+      },
+      "H": {
+        "overheadRatio": 1.2293202891244133,
+        "advanceP99NS": 1009000,
+        "pairedAllocationViolations": 0
+      }
+    },
+    {
+      "commit": "1c0c87151a0a3f39c0967da4c0f5ba6c5ab68547",
+      "run": 37310351003,
+      "workflowConclusion": "success",
+      "scope": "diagnostic 1M/5 saves, not acceptance; workflow success does not pass C",
+      "artifact": 11345188872,
+      "artifactSHA256": "0db7ad3cee68594f73c936884b68b8bab54bd24344c8409950ccfb2240f2b0b4",
+      "passed": [
+        "Debug/Release compilation",
+        "queue FIFO/wake/finish and writer error/range checks",
+        "S/H exact 100k restore in Debug/Release",
+        "source guards before and after",
+        "unchanged A/B evidence revalidated"
+      ],
+      "S": {
+        "overheadRatio": 1.3479114849942384,
+        "advanceP99NS": 1747583,
+        "pairedAllocationViolations": 0
+      },
+      "H": {
+        "overheadRatio": 1.6172182240914499,
+        "advanceP99NS": 1755709,
+        "pairedAllocationViolations": 0
+      },
+      "correction": "No proven performance fix. Do not start 100-save C proof with this candidate. Verify bounded TSan transport safety, retain raw diagnostics, and present alternatives to the owner before further overhead attempts."
+    }
   ]
 }

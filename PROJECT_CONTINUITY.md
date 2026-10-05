@@ -12,11 +12,16 @@ Recovery run 37309407651 SUCCESS; artifact 11345341757 SHA-256
 5594657c03d6ea67a99621a2b672c42b5b3bb48f96f8b38d5d34d94acb875769. Original micro
 source remains 1abc2fa and its run stays FAILED. S diagnostic ratio=1.444214155,
 H=1.229320289; zero paired allocation violations. Copy alone is insufficient.
-Next candidate: bind sink only for unsaved chunks, write immutable record storage
-without a second payload copy, notify one utility writer instead of empty-queue
-Task.yield. See daily execution report for pre-change estimates and exact scope.
-Run Debug/Release transport lifecycle + S/H 100k restore and fresh 5-save micro;
-do not run full C until data supports it. Five saves cannot close C.
+Candidate micro run 37310351003 SUCCESS on 1c0c87151a0a3f39c0967da4c0f5ba6c5ab68547;
+artifact 11345188872 SHA-256
+0db7ad3cee68594f73c936884b68b8bab54bd24344c8409950ccfb2240f2b0b4.
+Debug/Release transport lifecycle + S/H 100k restore PASS; zero paired allocation
+violations. S diagnostic ratio=1.347911485, advance p99=1747583 ns; H=1.617218224,
+p99=1755709 ns. Thus C is OPEN on both layouts despite workflow SUCCESS.
+Candidate transport is functionally tested but NOT accepted as a performance fix.
+Next: bounded TSan transport + S/H 100k restore only, then present alternatives.
+No more overhead attempts or 100-save campaign until the owner chooses a next path.
+Keep candidate source and raw metrics reviewable; do not merge into production.
 All thresholds remain unchanged.
 See Docs/Daily/2026-10-05-R005-EXECUTION.md for owners, paths, estimates and evidence reuse.
 No production changes/merge/IPA or device acceptance. Earlier failures stay FAILED.
