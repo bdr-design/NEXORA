@@ -142,6 +142,19 @@
       "passedBeforeFailure": "Source guards before and after, exact reused A/B verification, Debug/Release builds; component and S/H 5-save commands completed and produced JSON before cleanup.",
       "failedGate": "Workflow cleanup rm inherited DYLD_INSERT_LIBRARIES for the arm64 allocation observer; system rm required arm64e and aborted. No simulation gate was reclassified.",
       "correction": "Scope DYLD_INSERT_LIBRARIES to each probe process only. Harvest already-completed JSON from the exact artifact with digest and source verification, without repeating measurements. Original run remains FAILED."
+    },
+    {
+      "commit": "ec695084cba1aa63a563602549c2a96f80418cc9",
+      "tree": "569a5c6bb43794ae9964155882fd37fe33acb397",
+      "run": 37316669619,
+      "job": 111785022800,
+      "status": "failure",
+      "artifact": 11348271339,
+      "artifactSHA256": "4978fd9a2040e2af497a2d3c1276d00275d169b30b8baeb84635dbf11645f53d",
+      "scope": "bounded priority micro, not 100-save C acceptance",
+      "passedBeforeFailure": "Debug/Release builds, unchanged A/B revalidation, transport/known SHA and S/H 100k exact restore, S/H zero-reuse allocation probes, real K3 1M exact recovery in Debug/Release, component micro; always-after source guard passed.",
+      "failedGate": "S micro aborted: stage C save did not commit within 2000 advance calls. Background-enforced writer priority does not satisfy the unchanged cadence. No S ratio or H run is inferred from this failure.",
+      "correction": "Reverted Snapshot/Stage005CSave/Stage005CRunner/Stage005CHybridRunner byte-for-byte to allowed source 3b3711de; removed pooling, batching and background-priority experiments from live path. Retained exact failed evidence, repaired gates and known-SHA/K3 regressions. Stop performance attempts after two bounded candidate runs; do not start a 100-save campaign. Recover metadata from large ZIP in CI without remeasurement."
     }
   ],
   "diagnosticThresholdMisses": [

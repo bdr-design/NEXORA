@@ -40,14 +40,6 @@ func stageCHybridAllocationProbes() throws -> [String: Any] {
     try require(recordAlloc.available == 1 && recordAlloc.calls == 1,
                 "stage C record must allocate exactly once")
 
-    var reusable = Array(repeating: UInt8(0), count: record.count)
-    nx_alloc_begin()
-    Snapshot.assetRecord(world, chunk: 0, into: &reusable)
-    let reusableAlloc = nx_alloc_end()
-    try require(reusableAlloc.available == 1 && reusableAlloc.calls == 0,
-                "stage C reusable record producer allocation")
-    try require(reusable == record, "stage C reusable record exact bytes")
-
     let queue = StageCRecordQueue(capacity: 10_000)
     nx_alloc_begin()
     for _ in 0..<10_000 { queue.push(record) }
@@ -78,7 +70,6 @@ func stageCHybridAllocationProbes() throws -> [String: Any] {
         "assetRecord":["producerAllocations":recordAlloc.calls,
                        "requestedBytes":recordAlloc.bytes,
                        "fileBytes":record.count + 32],
-        "reusableAssetRecord":["producerAllocations":reusableAlloc.calls,"exactBytes":true],
         "queue10000":["producerAllocations":queueAlloc.calls],
         "controlRecord1000":["p50":stageCHybridQuantile(controlTimes,numerator:50,denominator:100),
                              "p99":controlP99,
@@ -308,12 +299,6 @@ func stageCHybridRun(_ directory: String, count: Int = 1_000_000,
         "idleNSPerEvent":idleNSEvent, "saveNSPerEvent":savingNSEvent,
         "idleEvents":idleEvents, "savingEvents":savingEvents,
         "overheadRatio":overhead, "overheadRatioMargin":overheadMargin,
-        "saveScratch":["buffers":state.totalChunks,"capacityBytes":state.scratchCapacityBytes,
-                       "preparationNS":state.scratchPreparationNS,
-                       "footprintDeltaBytes":state.scratchFootprintDelta as Any? ?? NSNull(),
-                       "scope":"cold snapshot scratch retained outside measured advance; not A kernel-owned memory"],
-        "writerBatch":["qos":"background-enforced","targetBytes":StageCSnapshotWriter.batchBytes,
-                       "lastFlushes":state.lastResult?.batchFlushes ?? prepared.3.batchFlushes],
         "snapshotBytes":snapshotSizes.last ?? prepared.3.bytes,
         "snapshotBytesMin":snapshotSizes.min() ?? prepared.3.bytes,
         "snapshotBytesMax":snapshotSizes.max() ?? prepared.3.bytes,

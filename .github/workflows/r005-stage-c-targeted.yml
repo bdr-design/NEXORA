@@ -69,6 +69,7 @@ jobs:
         run: |
           set -euo pipefail
           cd Experiments/R005Swift
+          trap 'rm -rf ../../c-results/components-store ../../c-results/micro-s ../../c-results/micro-h' EXIT
           export NXR_ALLOCATOR_DYLIB="$PWD/../../c-results/AllocationObserver.dylib"
           bin=.build-c-release/release/nxr-swift-probe
           for variant in S H; do
@@ -108,7 +109,7 @@ jobs:
           (p/'profile-scope.txt').write_text('Uninstrumented PROFILE-S is bounded diagnosis only. PROFILE-S-SAMPLED is under an advisory sampler and cannot establish a timing improvement or C acceptance. Original C thresholds/calculation remain unchanged.\n')
           PY
       - name: Recover completed micro metrics without repeating measurement
-        if: contains(github.event.head_commit.message, '[r005-micro-recover]')
+        if: ${{ contains(github.event.head_commit.message, '[r005-micro-recover]') && !contains(github.event.head_commit.message, '[r005-qos-recover]') }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -128,6 +129,36 @@ jobs:
               assert c['status']=='diagnostic' and c['saves']==5
               print(json.dumps({'variant':c['variant'],'overheadRatio':c['overheadRatio'],
                   'barrierNS':c['barrierCopy']['nsPerSave'],'pairs':c['allocationPairing']}))
+          PYCODE
+      - name: Recover failed priority-run evidence and verify exact transport rollback
+        if: contains(github.event.head_commit.message, '[r005-qos-recover]')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin 3b3711de3123f85980dd100e35cae2b3e998a4de
+          gh api repos/bdr-design/NEXORA/actions/artifacts/11348271339/zip > "$RUNNER_TEMP/prior-qos.zip"
+          python3 - "$RUNNER_TEMP/prior-qos.zip" <<'PYCODE'
+          import hashlib,json,pathlib,subprocess,sys,zipfile
+          p=pathlib.Path(sys.argv[1])
+          assert hashlib.sha256(p.read_bytes()).hexdigest()=='4978fd9a2040e2af497a2d3c1276d00275d169b30b8baeb84635dbf11645f53d'
+          dest=pathlib.Path('c-results/prior-qos');dest.mkdir()
+          with zipfile.ZipFile(p) as z:
+              for name in z.namelist():
+                  if '/' not in name and name.endswith(('.json','.txt')):
+                      (dest/name).write_bytes(z.read(name))
+          assert (dest/'commit.txt').read_text().strip()=='ec695084cba1aa63a563602549c2a96f80418cc9'
+          assert (dest/'tree.txt').read_text().strip()=='569a5c6bb43794ae9964155882fd37fe33acb397'
+          for name in ('Snapshot.swift','Stage005CSave.swift','Stage005CRunner.swift','Stage005CHybridRunner.swift'):
+              path='Experiments/R005Swift/Sources/SwiftProbe/'+name
+              prior=subprocess.check_output(['git','show','3b3711de3123f85980dd100e35cae2b3e998a4de:'+path])
+              assert pathlib.Path(path).read_bytes()==prior,path
+          report={'status':'pass','scope':'evidence extraction and byte-equal rollback, not new measurement',
+                  'failedRun':37316669619,'failedRunStatus':'failure','artifact':11348271339,
+                  'artifactSHA256':hashlib.sha256(p.read_bytes()).hexdigest(),
+                  'restoredTransportSource':'3b3711de3123f85980dd100e35cae2b3e998a4de',
+                  'reusedFiles':4,'extractedFiles':len(list(dest.iterdir()))}
+          pathlib.Path('c-results/RECOVERED-QOS.json').write_text(json.dumps(report,indent=2)+'\n')
           PYCODE
       - name: Bounded TSan transport verification without new overhead measurement
         if: contains(github.event.head_commit.message, '[r005-transport-verify]')

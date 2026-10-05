@@ -1,0 +1,8 @@
+2026-10-05T13:26:41.8333280Z env:
+2026-10-05T13:26:41.8333660Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-05T13:26:41.8333930Z ##[endgroup]
+2026-10-05T13:27:33.0156540Z mismatch: stage C save did not commit within 2000 advance calls
+2026-10-05T13:27:33.0250600Z ##[error]Process completed with exit code 1.
+2026-10-05T13:27:33.0536920Z ##[group]Run set -euo pipefail
+2026-10-05T13:27:33.0538150Z [36;1mset -euo pipefail[0m
+2026-10-05T13:27:33.0539550Z [36;1mpython3 -B Checks/financial-diagnostics.py --guard --selftest > c-results/source-guard-after.txt[0m

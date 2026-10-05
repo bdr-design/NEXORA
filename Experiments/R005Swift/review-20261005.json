@@ -24,36 +24,14 @@
     "CI": "source guards before execution and always after failure"
   },
   "candidate": {
-    "source": "bbe26ef771c78a6ebd7aa5bdc198696303fa066f",
-    "tree": "b5a2573c6b55438769661fc00e65079d82eb5473",
-    "run": 37315706838,
-    "workflowConclusion": "success",
-    "acceptance": "not accepted as a performance fix",
-    "artifact": 11347843021,
-    "artifactSHA256": "c1134d5e6c4c6eedb4b7d80c2153482d304771193b971a7f763fb99d4b3e8644",
-    "functionalChecks": [
-      "Debug/Release build and transport lifecycle",
-      "known SHA and legacy digest encoding",
-      "S/H 100k exact restore",
-      "zero reusable producer allocations in S/H",
-      "real K3 truncated payload and exact 1M recovery in Debug/Release"
-    ],
-    "scratch": {
-      "S": {
-        "buffers": 5892,
-        "capacityBytes": 97327488,
-        "footprintDeltaBytes": 98041984,
-        "preparationNS": 9436958,
-        "scope": "cold snapshot scratch retained outside measured advance; not A kernel-owned memory"
-      },
-      "H": {
-        "buffers": 5892,
-        "capacityBytes": 103327616,
-        "footprintDeltaBytes": 104136960,
-        "preparationNS": 21452208,
-        "scope": "cold snapshot scratch retained outside measured advance; not A kernel-owned memory"
-      }
-    }
+    "source": "ec695084cba1aa63a563602549c2a96f80418cc9",
+    "tree": "569a5c6bb43794ae9964155882fd37fe33acb397",
+    "run": 37316669619,
+    "workflowConclusion": "failure",
+    "acceptance": "failed cadence; not a performance fix",
+    "artifact": 11348271339,
+    "artifactSHA256": "4978fd9a2040e2af497a2d3c1276d00275d169b30b8baeb84635dbf11645f53d",
+    "failedGate": "save did not commit within 2000 advance calls"
   },
   "thresholds": {
     "beginSaveP99NS": 100000,
@@ -312,6 +290,12 @@
       "sha256": "6b5c66029e9e1aeea0a02efa1198a8d313e33c280dcc4b13c2c1ce9762285ad7",
       "run": 37315706838,
       "originalName": "mid-record-release.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37316669619-failure-log.txt",
+      "sha256": "647281ffb2a01b4e4153955106be00d263bf756c68b478d42c9617051770f5db",
+      "run": 37316669619,
+      "originalName": "GitHub failure log excerpt; full logs retained in run"
     }
   ],
   "reuse": {
@@ -326,14 +310,14 @@
   "limits": [
     "C remains open on S and H",
     "5-save diagnostics do not close C",
-    "no new 1M/100-save acceptance campaign or K1-K10 for this transport candidate",
+    "No new 1M/100-save acceptance campaign; both new performance candidates failed bounded checks and were rolled back.",
     "no production change, main merge, IPA or iPhone acceptance",
     "no causal improvement inferred from different hosted CI runs",
     "manifest torn-tail resume-write risk remains source-reviewed, not fixed in this C-only scope",
     "Chat app disconnect cause unverified; continuity persists in repository"
   ],
   "failureRegistry": "Experiments/R005Swift/failures.json",
-  "next": "One final bounded background-priority micro; if overhead remains, stop and present measured alternatives. No full acceptance campaign without supporting micro.",
+  "next": "Stopped at the owner limit. Present matched-host diagnosis / ownership redesign / hold experimental C with their costs. No production approval.",
   "candidateHistory": [
     {
       "source": "1c0c87151a0a3f39c0967da4c0f5ba6c5ab68547",
@@ -358,6 +342,50 @@
         "artifactSHA256": "96f24e025c67875c5a8075f8b5da241433f97f09cc64affa3e16cbc371fb0f8a",
         "scope": "queue transport lifecycle and S/H 100k exact restore only; no 1M K1-K10 performance acceptance"
       }
+    },
+    {
+      "source": "bbe26ef771c78a6ebd7aa5bdc198696303fa066f",
+      "tree": "b5a2573c6b55438769661fc00e65079d82eb5473",
+      "run": 37315706838,
+      "workflowConclusion": "success",
+      "acceptance": "not accepted as a performance fix",
+      "artifact": 11347843021,
+      "artifactSHA256": "c1134d5e6c4c6eedb4b7d80c2153482d304771193b971a7f763fb99d4b3e8644",
+      "functionalChecks": [
+        "Debug/Release build and transport lifecycle",
+        "known SHA and legacy digest encoding",
+        "S/H 100k exact restore",
+        "zero reusable producer allocations in S/H",
+        "real K3 truncated payload and exact 1M recovery in Debug/Release"
+      ],
+      "scratch": {
+        "S": {
+          "buffers": 5892,
+          "capacityBytes": 97327488,
+          "footprintDeltaBytes": 98041984,
+          "preparationNS": 9436958,
+          "scope": "cold snapshot scratch retained outside measured advance; not A kernel-owned memory"
+        },
+        "H": {
+          "buffers": 5892,
+          "capacityBytes": 103327616,
+          "footprintDeltaBytes": 104136960,
+          "preparationNS": 21452208,
+          "scope": "cold snapshot scratch retained outside measured advance; not A kernel-owned memory"
+        }
+      }
     }
-  ]
+  ],
+  "liveTransportRestoredFrom": {
+    "source": "3b3711de3123f85980dd100e35cae2b3e998a4de",
+    "tree": "6c04893b16c17492e2b7d74a9dc4a57751f2468b",
+    "files": [
+      "Snapshot.swift",
+      "Stage005CSave.swift",
+      "Stage005CRunner.swift",
+      "Stage005CHybridRunner.swift"
+    ],
+    "status": "local blob hashes verified; CI byte-equality check pending",
+    "scope": "no new performance evidence; original C remains open"
+  }
 }
