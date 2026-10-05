@@ -53,6 +53,13 @@ struct StageCRecordKey: Hashable, Comparable, Sendable {
     }
 }
 
+private struct StageCDigestStorage: BitwiseCopyable {
+    let a: UInt64
+    let b: UInt64
+    let c: UInt64
+    let d: UInt64
+}
+
 enum Snapshot {
     static let prefix = Data("NXRSNAP2".utf8)
     static let footerMagic = Data("NXREND02".utf8)
@@ -172,21 +179,32 @@ enum Snapshot {
         }
     }
 
+    private static func digestStorage(_ hash: NXRHash) -> Data {
+        precondition(MemoryLayout<StageCDigestStorage>.size == 32)
+        var storage = StageCDigestStorage(a: hash.a.bigEndian, b: hash.b.bigEndian,
+                                         c: hash.c.bigEndian, d: hash.d.bigEndian)
+        return withUnsafeBytes(of: &storage) { Data($0) }
+    }
+
     static func digestData(_ data: Data) -> Data {
-        var out = Data(capacity: 32)
-        appendDigestHash(hashData(data), into: &out)
-        return out
+        digestStorage(hashData(data))
     }
 
     static func digestBytes(_ bytes: [UInt8], range: Range<Int>) -> Data {
-        var out = Data(capacity: 32)
-        appendDigestHash(hashBytes(bytes, range: range), into: &out)
-        return out
+        digestStorage(hashBytes(bytes, range: range))
     }
 
     static func record(kind: UInt16, index: UInt32, elements: UInt32, payloadBytes: Int,
                        appendPayload: (inout [UInt8]) -> Void) -> [UInt8] {
         var bytes: [UInt8] = []
+        record(kind: kind, index: index, elements: elements, payloadBytes: payloadBytes,
+               into: &bytes, appendPayload: appendPayload)
+        return bytes
+    }
+
+    static func record(kind: UInt16, index: UInt32, elements: UInt32, payloadBytes: Int,
+                       into bytes: inout [UInt8], appendPayload: (inout [UInt8]) -> Void) {
+        bytes.removeAll(keepingCapacity: true)
         bytes.reserveCapacity(16 + payloadBytes)
         appendLE(kind, into: &bytes)
         appendLE(UInt16(0), into: &bytes)
@@ -197,7 +215,6 @@ enum Snapshot {
         appendPayload(&bytes)
         precondition(bytes.count == payloadStart + payloadBytes)
         precondition(bytes.count == 16 + payloadBytes)
-        return bytes
     }
 
     static func controlRecord(_ world: SwiftWorld) -> [UInt8] {
@@ -207,10 +224,16 @@ enum Snapshot {
     }
 
     static func assetRecord(_ world: SwiftWorld, chunk: Int) -> [UInt8] {
+        var bytes: [UInt8] = []
+        assetRecord(world, chunk: chunk, into: &bytes)
+        return bytes
+    }
+
+    static func assetRecord(_ world: SwiftWorld, chunk: Int, into bytes: inout [UInt8]) {
         let lo = chunk << 8
         let range = lo..<min(lo + 256, world.count)
-        return record(kind: 1, index: UInt32(chunk), elements: UInt32(range.count),
-                      payloadBytes: range.count * 65) { bytes in
+        record(kind: 1, index: UInt32(chunk), elements: UInt32(range.count),
+                      payloadBytes: range.count * 65, into: &bytes) { bytes in
             append(world.generations, range, into: &bytes)
             append(world.airports, range, into: &bytes)
             append(world.destinations, range, into: &bytes)
@@ -228,19 +251,31 @@ enum Snapshot {
     }
 
     static func nodeRecord(_ wheel: TimingWheel, chunk: Int) -> [UInt8] {
+        var bytes: [UInt8] = []
+        nodeRecord(wheel, chunk: chunk, into: &bytes)
+        return bytes
+    }
+
+    static func nodeRecord(_ wheel: TimingWheel, chunk: Int, into bytes: inout [UInt8]) {
         let lo = chunk << 9
         let range = lo..<min(lo + 512, wheel.capacity)
-        return record(kind: 2, index: UInt32(chunk), elements: UInt32(range.count),
-                      payloadBytes: range.count * 30) { bytes in
+        record(kind: 2, index: UInt32(chunk), elements: UInt32(range.count),
+                      payloadBytes: range.count * 30, into: &bytes) { bytes in
             wheel.stageCAppendNodeChunk(range, into: &bytes)
         }
     }
 
     static func groupRecord(_ world: SwiftWorld, chunk: Int) -> [UInt8] {
+        var bytes: [UInt8] = []
+        groupRecord(world, chunk: chunk, into: &bytes)
+        return bytes
+    }
+
+    static func groupRecord(_ world: SwiftWorld, chunk: Int, into bytes: inout [UInt8]) {
         let lo = chunk << 11
         let range = lo..<min(lo + 2048, world.groupAmounts.count)
-        return record(kind: 3, index: UInt32(chunk), elements: UInt32(range.count),
-                      payloadBytes: range.count * 8) { bytes in
+        record(kind: 3, index: UInt32(chunk), elements: UInt32(range.count),
+                      payloadBytes: range.count * 8, into: &bytes) { bytes in
             append(world.groupAmounts, range, into: &bytes)
         }
     }
@@ -252,10 +287,16 @@ enum Snapshot {
     }
 
     static func assetRecord(_ world: HybridWorld, chunk: Int) -> [UInt8] {
+        var bytes: [UInt8] = []
+        assetRecord(world, chunk: chunk, into: &bytes)
+        return bytes
+    }
+
+    static func assetRecord(_ world: HybridWorld, chunk: Int, into bytes: inout [UInt8]) {
         let lo = chunk << 8
         let range = lo..<min(lo + 256, world.count)
-        return record(kind: 1, index: UInt32(chunk), elements: UInt32(range.count),
-                      payloadBytes: range.count * 68) { bytes in
+        record(kind: 1, index: UInt32(chunk), elements: UInt32(range.count),
+                      payloadBytes: range.count * 68, into: &bytes) { bytes in
             append(world.hot, range, into: &bytes)
             append(world.entity, range, into: &bytes)
             append(world.policy, range, into: &bytes)
@@ -265,21 +306,51 @@ enum Snapshot {
     }
 
     static func nodeRecord(_ wheel: HybridTimingWheel, chunk: Int) -> [UInt8] {
+        var bytes: [UInt8] = []
+        nodeRecord(wheel, chunk: chunk, into: &bytes)
+        return bytes
+    }
+
+    static func nodeRecord(_ wheel: HybridTimingWheel, chunk: Int, into bytes: inout [UInt8]) {
         let lo = chunk << 9
         let range = lo..<min(lo + 512, wheel.capacity)
-        return record(kind: 2, index: UInt32(chunk), elements: UInt32(range.count),
-                      payloadBytes: range.count * 32) { bytes in
+        record(kind: 2, index: UInt32(chunk), elements: UInt32(range.count),
+                      payloadBytes: range.count * 32, into: &bytes) { bytes in
             wheel.stageCAppendNodeChunk(range, into: &bytes)
         }
     }
 
     static func groupRecord(_ world: HybridWorld, chunk: Int) -> [UInt8] {
+        var bytes: [UInt8] = []
+        groupRecord(world, chunk: chunk, into: &bytes)
+        return bytes
+    }
+
+    static func groupRecord(_ world: HybridWorld, chunk: Int, into bytes: inout [UInt8]) {
         let lo = chunk << 11
         let range = lo..<min(lo + 2048, world.groupAmounts.count)
-        return record(kind: 3, index: UInt32(chunk), elements: UInt32(range.count),
-                      payloadBytes: range.count * 8) { bytes in
+        record(kind: 3, index: UInt32(chunk), elements: UInt32(range.count),
+                      payloadBytes: range.count * 8, into: &bytes) { bytes in
             append(world.groupAmounts, range, into: &bytes)
         }
+    }
+
+    // Allocation and page touching happen before any measured advance. Each
+    // immutable emitted value is released before the next generation reuses it.
+    static func preallocatedRecords(assets: Int, nodes: Int, groups: Int,
+                                    assetStride: Int, nodeStride: Int) -> [[UInt8]] {
+        var buffers: [[UInt8]] = []
+        buffers.reserveCapacity((assets + 255) / 256 + (nodes + 511) / 512 + (groups + 2047) / 2048)
+        for start in stride(from: 0, to: assets, by: 256) {
+            buffers.append(Array(repeating: 0, count: 16 + min(256, assets - start) * assetStride))
+        }
+        for start in stride(from: 0, to: nodes, by: 512) {
+            buffers.append(Array(repeating: 0, count: 16 + min(512, nodes - start) * nodeStride))
+        }
+        for start in stride(from: 0, to: groups, by: 2048) {
+            buffers.append(Array(repeating: 0, count: 16 + min(2048, groups - start) * 8))
+        }
+        return buffers
     }
 
     static func worldDigest(_ world: HybridWorld) -> [UInt64] {

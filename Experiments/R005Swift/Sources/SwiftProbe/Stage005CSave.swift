@@ -8,6 +8,7 @@ struct StageCSnapshotFileResult: Sendable {
     let chunks: Int
     let writeNS: UInt64
     let peakQueuedBytes: Int
+    let batchFlushes: Int
 }
 
 final class StageCWriterCounters: Sendable {
@@ -18,6 +19,7 @@ final class StageCWriterCounters: Sendable {
     let bytes = Atomic<UInt64>(0)
     let chunks = Atomic<Int>(0)
     let writeNS = Atomic<UInt64>(0)
+    let batchFlushes = Atomic<Int>(0)
 }
 
 struct StageCRecordQueueState: Sendable {
@@ -99,6 +101,7 @@ final class SnapshotSink: Sendable {
                 counters.bytes.store(result.bytes, ordering: .releasing)
                 counters.chunks.store(result.chunks, ordering: .releasing)
                 counters.writeNS.store(result.writeNS, ordering: .releasing)
+                counters.batchFlushes.store(result.batchFlushes, ordering: .releasing)
             } catch {
                 counters.failed.store(1, ordering: .releasing)
             }
@@ -131,11 +134,13 @@ final class SnapshotSink: Sendable {
         return StageCSnapshotFileResult(bytes: counters.bytes.load(ordering: .acquiring),
             chunks: counters.chunks.load(ordering: .acquiring),
             writeNS: counters.writeNS.load(ordering: .acquiring),
-            peakQueuedBytes: counters.peak.load(ordering: .acquiring))
+            peakQueuedBytes: counters.peak.load(ordering: .acquiring),
+            batchFlushes: counters.batchFlushes.load(ordering: .acquiring))
     }
 }
 
 enum StageCSnapshotWriter {
+    static let batchBytes = 256 * 1024
     static func parseRecord(_ record: [UInt8]) throws -> (StageCRecordKey, UInt32, Data) {
         guard record.count >= 16 else { throw ProbeError.corruption("stage C short record") }
         var r = StageCByteReader(bytes: record)
@@ -169,6 +174,19 @@ enum StageCSnapshotWriter {
         var counts = [UInt32](repeating: 0, count: 4)
         var digests: [StageCRecordKey: Data] = [:]
         digests.reserveCapacity(expectedCounts.reduce(0) { $0 + Int($1) })
+        var batch: [UInt8] = []
+        batch.reserveCapacity(batchBytes + 18_876)
+        var pendingRecordBytes = 0
+        var batchFlushes = 0
+        var midpointWritten = false
+        func flush() throws {
+            guard !batch.isEmpty else { return }
+            try Snapshot.writeRecord(batch, descriptor: handle.fileDescriptor, range: 0..<batch.count)
+            batchFlushes += 1
+            batch.removeAll(keepingCapacity: true)
+            _ = counters.queued.subtract(pendingRecordBytes, ordering: .relaxed)
+            pendingRecordBytes = 0
+        }
 
         while true {
             guard let record = queue.waitAndPop() else { break }
@@ -180,19 +198,28 @@ enum StageCSnapshotWriter {
             }
             digests[key] = parsed.2
             counts[Int(key.kind)] += 1
-            if key.kind > 0 {
+            if key.kind > 0 && !midpointWritten {
                 let split = max(16, record.count / 2)
-                try Snapshot.writeRecord(record, descriptor: handle.fileDescriptor, range: 0..<split)
+                batch.append(contentsOf: record[0..<split])
+                // K3 is reached only after a real, incomplete record is written.
+                // Count its complete bytes as queued until the remainder flushes.
+                try flush()
                 nx_kill_point("c.k3.mid_record")
-                try Snapshot.writeRecord(record, descriptor: handle.fileDescriptor, range: split..<record.count)
+                midpointWritten = true
+                batch.append(contentsOf: record[split..<record.count])
             } else {
-                try Snapshot.writeRecord(record, descriptor: handle.fileDescriptor, range: 0..<record.count)
+                batch.append(contentsOf: record)
             }
-            try handle.write(contentsOf: parsed.2)
+            batch.append(contentsOf: parsed.2)
             bytesWritten += UInt64(record.count + parsed.2.count)
-            _ = counters.queued.subtract(record.count + parsed.2.count, ordering: .relaxed)
+            pendingRecordBytes += record.count + parsed.2.count
+            if batch.count >= batchBytes { try flush() }
         }
 
+        try flush()
+        guard counters.queued.load(ordering: .relaxed) == 0 else {
+            throw ProbeError.invariant("stage C queued byte accounting")
+        }
         guard counts == expectedCounts else { throw ProbeError.corruption("stage C missing record") }
         nx_kill_point("c.k4.before_footer")
         var canonical = Data(capacity: digests.count * 38)
@@ -237,7 +264,8 @@ enum StageCSnapshotWriter {
             guard nx_sync_dir(directory) == 0 else { throw ProbeError.invalid("stage C generation cleanup sync") }
         }
         return StageCSnapshotFileResult(bytes: totalBytes, chunks: digests.count,
-            writeNS: nx_now() - start, peakQueuedBytes: counters.peak.load(ordering: .relaxed))
+            writeNS: nx_now() - start, peakQueuedBytes: counters.peak.load(ordering: .relaxed),
+            batchFlushes: batchFlushes)
     }
 }
 
@@ -248,6 +276,10 @@ final class StageCState {
     private var assetSaved: ContiguousArray<UInt32>
     private var nodeSaved: ContiguousArray<UInt32>
     private var groupSaved: ContiguousArray<UInt32>
+    private var recordBuffers: [[UInt8]]
+    let scratchPreparationNS: UInt64
+    let scratchCapacityBytes: Int
+    let scratchFootprintDelta: Int64?
     private(set) var epoch: UInt32 = 0
     private(set) var capturing = false
     private(set) var serviceCursor = 0
@@ -264,6 +296,15 @@ final class StageCState {
         assetSaved = .init(repeating: 0, count: assetChunks)
         nodeSaved = .init(repeating: 0, count: nodeChunks)
         groupSaved = .init(repeating: 0, count: groupChunks)
+        let footprintBefore = nx_footprint(), start = nx_now()
+        let buffers = Snapshot.preallocatedRecords(assets: world.count, nodes: world.wheel.capacity,
+            groups: world.groupAmounts.count, assetStride: 65, nodeStride: 30)
+        recordBuffers = buffers
+        scratchPreparationNS = nx_now() - start
+        scratchCapacityBytes = buffers.reduce(0) { $0 + $1.capacity }
+        let footprintAfter = nx_footprint()
+        scratchFootprintDelta = footprintBefore.status == 0 && footprintAfter.status == 0
+            ? Int64(footprintAfter.bytes) - Int64(footprintBefore.bytes) : nil
     }
     init(world: HybridWorld) {
         assetChunks = (world.count + 255) >> 8
@@ -272,6 +313,15 @@ final class StageCState {
         assetSaved = .init(repeating: 0, count: assetChunks)
         nodeSaved = .init(repeating: 0, count: nodeChunks)
         groupSaved = .init(repeating: 0, count: groupChunks)
+        let footprintBefore = nx_footprint(), start = nx_now()
+        let buffers = Snapshot.preallocatedRecords(assets: world.count, nodes: world.wheel.capacity,
+            groups: world.groupAmounts.count, assetStride: 68, nodeStride: 32)
+        recordBuffers = buffers
+        scratchPreparationNS = nx_now() - start
+        scratchCapacityBytes = buffers.reduce(0) { $0 + $1.capacity }
+        let footprintAfter = nx_footprint()
+        scratchFootprintDelta = footprintBefore.status == 0 && footprintAfter.status == 0
+            ? Int64(footprintAfter.bytes) - Int64(footprintBefore.bytes) : nil
     }
 
     var expectedCounts: [UInt32] {
@@ -310,7 +360,8 @@ final class StageCState {
         let chunk = index >> 8
         if assetSaved[chunk] != epoch, let sink {
             let start = nx_now()
-            let record = Snapshot.assetRecord(world, chunk: chunk)
+            Snapshot.assetRecord(world, chunk: chunk, into: &recordBuffers[chunk])
+            let record = recordBuffers[chunk]
             sink.emit(record)
             barrierNS += nx_now() - start
             barrierBytes += record.count + 32
@@ -325,7 +376,8 @@ final class StageCState {
         let chunk = index >> 9
         if nodeSaved[chunk] != epoch, let sink {
             let start = nx_now()
-            let record = Snapshot.nodeRecord(wheel, chunk: chunk)
+            Snapshot.nodeRecord(wheel, chunk: chunk, into: &recordBuffers[assetChunks + chunk])
+            let record = recordBuffers[assetChunks + chunk]
             sink.emit(record)
             barrierNS += nx_now() - start
             barrierBytes += record.count + 32
@@ -340,7 +392,8 @@ final class StageCState {
         let chunk = index >> 11
         if groupSaved[chunk] != epoch, let sink {
             let start = nx_now()
-            let record = Snapshot.groupRecord(world, chunk: chunk)
+            Snapshot.groupRecord(world, chunk: chunk, into: &recordBuffers[assetChunks + nodeChunks + chunk])
+            let record = recordBuffers[assetChunks + nodeChunks + chunk]
             sink.emit(record)
             barrierNS += nx_now() - start
             barrierBytes += record.count + 32
@@ -353,7 +406,10 @@ final class StageCState {
         guard capturing else { return }
         let chunk=index>>8
         if assetSaved[chunk] != epoch, let sink {
-            let start=nx_now();let record=Snapshot.assetRecord(world,chunk:chunk);sink.emit(record)
+            let start = nx_now()
+            Snapshot.assetRecord(world, chunk: chunk, into: &recordBuffers[chunk])
+            let record = recordBuffers[chunk]
+            sink.emit(record)
             barrierNS += nx_now()-start;barrierBytes += record.count+32
             assetSaved[chunk]=epoch;barrierEmits += 1
             if barrierEmits==1 { nx_kill_point("c.k2.after_first_barrier") }
@@ -363,7 +419,10 @@ final class StageCState {
         guard capturing else { return }
         let chunk=index>>9
         if nodeSaved[chunk] != epoch, let sink {
-            let start=nx_now();let record=Snapshot.nodeRecord(wheel,chunk:chunk);sink.emit(record)
+            let start = nx_now()
+            Snapshot.nodeRecord(wheel, chunk: chunk, into: &recordBuffers[assetChunks + chunk])
+            let record = recordBuffers[assetChunks + chunk]
+            sink.emit(record)
             barrierNS += nx_now()-start;barrierBytes += record.count+32
             nodeSaved[chunk]=epoch;barrierEmits += 1
             if barrierEmits==1 { nx_kill_point("c.k2.after_first_barrier") }
@@ -373,7 +432,10 @@ final class StageCState {
         guard capturing else { return }
         let chunk=index>>11
         if groupSaved[chunk] != epoch, let sink {
-            let start=nx_now();let record=Snapshot.groupRecord(world,chunk:chunk);sink.emit(record)
+            let start = nx_now()
+            Snapshot.groupRecord(world, chunk: chunk, into: &recordBuffers[assetChunks + nodeChunks + chunk])
+            let record = recordBuffers[assetChunks + nodeChunks + chunk]
+            sink.emit(record)
             barrierNS += nx_now()-start;barrierBytes += record.count+32
             groupSaved[chunk]=epoch;barrierEmits += 1
             if barrierEmits==1 { nx_kill_point("c.k2.after_first_barrier") }
@@ -384,7 +446,8 @@ final class StageCState {
         guard let sink else { return }
         if canonical < assetChunks {
             if assetSaved[canonical] != epoch {
-                sink.emit(Snapshot.assetRecord(world, chunk: canonical)); assetSaved[canonical] = epoch
+                Snapshot.assetRecord(world, chunk: canonical, into: &recordBuffers[canonical])
+                sink.emit(recordBuffers[canonical]); assetSaved[canonical] = epoch
             }
             return
         }
@@ -392,13 +455,15 @@ final class StageCState {
         if canonical < nodeBase + nodeChunks {
             let chunk = canonical - nodeBase
             if nodeSaved[chunk] != epoch {
-                sink.emit(Snapshot.nodeRecord(world.wheel, chunk: chunk)); nodeSaved[chunk] = epoch
+                Snapshot.nodeRecord(world.wheel, chunk: chunk, into: &recordBuffers[canonical])
+                sink.emit(recordBuffers[canonical]); nodeSaved[chunk] = epoch
             }
             return
         }
         let chunk = canonical - nodeBase - nodeChunks
         if groupSaved[chunk] != epoch {
-            sink.emit(Snapshot.groupRecord(world, chunk: chunk)); groupSaved[chunk] = epoch
+            Snapshot.groupRecord(world, chunk: chunk, into: &recordBuffers[canonical])
+                sink.emit(recordBuffers[canonical]); groupSaved[chunk] = epoch
         }
     }
 
@@ -438,7 +503,8 @@ final class StageCState {
         guard let sink else { return }
         if canonical < assetChunks {
             if assetSaved[canonical] != epoch {
-                sink.emit(Snapshot.assetRecord(world,chunk:canonical));assetSaved[canonical]=epoch
+                Snapshot.assetRecord(world, chunk: canonical, into: &recordBuffers[canonical])
+                sink.emit(recordBuffers[canonical]); assetSaved[canonical] = epoch
             }
             return
         }
@@ -446,13 +512,15 @@ final class StageCState {
         if canonical < nodeBase+nodeChunks {
             let chunk=canonical-nodeBase
             if nodeSaved[chunk] != epoch {
-                sink.emit(Snapshot.nodeRecord(world.wheel,chunk:chunk));nodeSaved[chunk]=epoch
+                Snapshot.nodeRecord(world.wheel, chunk: chunk, into: &recordBuffers[canonical])
+                sink.emit(recordBuffers[canonical]); nodeSaved[chunk] = epoch
             }
             return
         }
         let chunk=canonical-nodeBase-nodeChunks
         if groupSaved[chunk] != epoch {
-            sink.emit(Snapshot.groupRecord(world,chunk:chunk));groupSaved[chunk]=epoch
+            Snapshot.groupRecord(world, chunk: chunk, into: &recordBuffers[canonical])
+                sink.emit(recordBuffers[canonical]); groupSaved[chunk] = epoch
         }
     }
     func service(world: HybridWorld, budgetNS: UInt64) throws {

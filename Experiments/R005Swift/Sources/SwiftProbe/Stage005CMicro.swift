@@ -47,8 +47,18 @@ func stageCMicroTransportChecks(_ directory: String) throws -> [String: Any] {
     do { try Snapshot.writeRecord(bytes, descriptor: -1, range: 0..<1) } catch { rejected += 1 }
     do { try Snapshot.writeRecord(bytes, descriptor: handle.fileDescriptor, range: 0..<10001) } catch { rejected += 1 }
     try require(rejected == 2, "micro writer error/range rejection")
+    let abc = Data("abc".utf8)
+    let knownSHA = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+    let digest = Snapshot.digestData(abc)
+    let hex = digest.map { String(format: "%02x", $0) }.joined()
+    var oldDigest = Data()
+    Snapshot.appendDigestHash(Snapshot.hashData(abc), into: &oldDigest)
+    try require(hex == knownSHA && digest == oldDigest &&
+                Snapshot.digestBytes([UInt8](abc), range: 0..<3) == oldDigest,
+                "micro independent SHA-256 and digest encoding")
     return ["status":"pass","fifoRecords":10000,"emptyFinish":true,
             "exactWrittenBytes":10000,"rejectedMisuse":rejected,
+            "knownSHA256":true,"legacyDigestEncoding":true,
             "scope":"queue/writer lifecycle checks, not Stage C acceptance"]
 }
 

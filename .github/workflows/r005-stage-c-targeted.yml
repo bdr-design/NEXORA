@@ -71,6 +71,12 @@ jobs:
           cd Experiments/R005Swift
           export NXR_ALLOCATOR_DYLIB="$PWD/../../c-results/AllocationObserver.dylib"
           bin=.build-c-release/release/nxr-swift-probe
+          for variant in S H; do
+            DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" stage-c-allocation-probes "$variant" > "../../c-results/allocation-probes-$variant.json"
+          done
+          for mode in debug release; do
+            python3 -B stage005_c_mid_record.py ".build-c-$mode/$mode/nxr-swift-probe" "../../c-results/mid-record-$mode.json"
+          done
           DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" stage-c-micro-components ../../c-results/components-store > ../../c-results/MICRO-COMPONENTS.json
           DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" stage-c-micro ../../c-results/micro-s S > ../../c-results/MICRO-S.json
           DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" stage-c-micro ../../c-results/micro-h H > ../../c-results/MICRO-H.json

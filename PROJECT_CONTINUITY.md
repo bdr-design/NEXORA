@@ -1,3 +1,24 @@
+# Current bounded C candidate — 2026-10-05
+
+Live base 3b3711de3123f85980dd100e35cae2b3e998a4de, tree
+6c04893b16c17492e2b7d74a9dc4a57751f2468b, same permitted branch.
+AGENTS and the original 18-page directive reread; denied sources not opened.
+Phase run 37313101995 SUCCESS, artifact 11346613481 ZIP SHA-256
+5ad3de4ca6f78db19f7b091b2882adc0d9e27496a8c56452986b28a06058bb1d.
+S 5-save ratio 1.5299667559605041: C stays OPEN. Writer-only per-event
+644.205 vs idle 480.534; separate sample shows write-call pressure.
+Candidate reuses per-chunk immutable record storage and batches background writes;
+chunk sizes, typed bytes, WAL/kill points and all thresholds/calculation unchanged.
+Two-line allocation/time estimate and lifecycle analysis are in today's execution log.
+Scratch adds about 96 MB at 1M; exact capacity, physical delta and preparation
+cost are new diagnostics, not device or A memory acceptance.
+Next: inspect Apple bounded micro artifact, Debug/Release exact 100k S/H restores,
+known SHA, zero reuse allocations and physically truncated K3 at 1M. No full
+100-save acceptance until the micro supports it. New full attempts: 0 of 2.
+Production/main untouched; earlier failed runs stay FAILED. History below retained.
+
+---
+
 # Resumed C fix — 2026-10-05
 
 Owner says «حله!» after the alternatives were presented. Live base HEAD rechecked:
