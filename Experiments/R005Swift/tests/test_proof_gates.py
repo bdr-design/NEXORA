@@ -1,7 +1,14 @@
 import copy
 import sys
+import contextlib
+import io
+import json
+import os
+import runpy
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from proof_gates import stage_a_failures, stage_c_failures
@@ -65,6 +72,53 @@ class ProofGateTests(unittest.TestCase):
             self.assertTrue(stage_c_failures(c))
             c = self.c(); c[key]["samples"] = 0
             self.assertTrue(stage_c_failures(c))
+
+    def test_a_launcher_persists_failure_and_exits(self):
+        class Reply:
+            returncode = 0
+            stderr = ""
+            def __init__(self, value): self.stdout = json.dumps(value)
+        def fake(argv, **kwargs):
+            command = argv[1]
+            if command == "stage-a-bench":
+                sample = {"nsPerEvent": 1.0, "ownedBytesPerAsset": 100.0,
+                          "physDeltaPerAsset": None, "maxAllocationsPerAdvance": 1,
+                          "advanceCallNS": {"p50": 1, "p99": 1, "max": 1}}
+                return Reply({"status": "pass", "measuredRuns": 10, "warmups": 2,
+                              "cAllocationPositiveControl": 1, "swiftAllocationPositiveControl": 1,
+                              "samples": [sample]*10})
+            if command == "selftest": return Reply({"mutations": [{"detected": True}]*8})
+            if command == "hybrid-mutants": return Reply([{"detected": True}]*8)
+            return Reply({"status": "pass", "partitionCases": 15})
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)/"A.json"; observer = Path(directory)/"observer"; observer.touch()
+            with patch.dict(os.environ, {"NXR_ALLOCATOR_DYLIB": str(observer)}), \
+                 patch.object(sys, "argv", ["stage005_a.py", "/fake", str(output)]), \
+                 patch("subprocess.run", fake), contextlib.redirect_stdout(io.StringIO()):
+                with self.assertRaises(AssertionError):
+                    runpy.run_path(str(Path(__file__).resolve().parents[1]/"stage005_a.py"), run_name="__main__")
+            result = json.loads(output.read_text())
+            self.assertEqual(result["status"], "failure")
+            self.assertIsNone(result["decisionA"]["chosen"])
+            self.assertEqual(len(result["A"]), 6)
+
+    def test_c_launcher_persists_pair_failure_and_exits(self):
+        value = self.c()
+        value.update(status="measured", variant="S", overheadRatioMargin=0,
+                     snapshotBytes=1, restoreNS=1, peakQueuedBytes=1)
+        for key in ("beginSaveNS", "advanceDuringSaveNS"): value[key]["marginNS"] = 0
+        value["allocationPairing"].update(violations=1, maxExcess=1)
+        class Reply:
+            returncode = 0; stderr = ""; stdout = json.dumps(value)
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory)/"C.json"; observer = Path(directory)/"observer"; observer.touch()
+            a = Path(directory)/"A.json"; a.write_text(json.dumps({"status": "pass", "decisionA": {"chosen": "S"}}))
+            with patch.dict(os.environ, {"NXR_ALLOCATOR_DYLIB": str(observer)}), \
+                 patch.object(sys, "argv", ["stage005_c.py", "/fake", str(output), str(a)]), \
+                 patch("subprocess.run", lambda *args, **kwargs: Reply()), contextlib.redirect_stdout(io.StringIO()):
+                with self.assertRaises(AssertionError):
+                    runpy.run_path(str(Path(__file__).resolve().parents[1]/"stage005_c.py"), run_name="__main__")
+            self.assertEqual(json.loads(output.read_text())["status"], "failure")
 
 
 if __name__ == "__main__":

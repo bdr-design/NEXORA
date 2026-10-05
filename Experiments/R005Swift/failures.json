@@ -130,6 +130,18 @@
       "passedBeforeFailure": "A selected S; Debug/Release, existing behavior/storage, selected-layout smoke/allocation probe, TSan, B and C K1-K10 passed. Reported beginSave p99 and advance p99 passed. Aggregate allocation maxima passed the existing evaluator, but the 2026-10-05 review found they do not prove the required paired per-advance allocation bound.",
       "failedGate": "Stage C S at 1M/100 saves: overheadRatio 1.5162503372173357 > 1.10. beginSave p99 15125 ns (100 samples); advanceDuringSave p99 1018375 ns (35904 samples); idle allocations max 0; saving allocations max 457; barrier chunks max 457.",
       "correction": "NOT FIXED. Preserve failure. Repair evidence-gate gaps before closure, then profile copy/enqueue/writer contention in a bounded micro-test without weakening thresholds. Two consecutive overhead failures are already present (36864229515, 36875130222); no third full CI campaign was started during this review. See Docs/Daily/2026-10-05-R005-REVIEW.md."
+    },
+    {
+      "commit": "1abc2fa11bd2160672b1467ed6c392e528fd7ecd",
+      "run": 37308440794,
+      "job": 111757675261,
+      "status": "failure",
+      "artifact": 11344981195,
+      "artifactSHA256": "c52baa28d44246931581d073782afe455b241d71c642f0fa30f4e9d5d912c812",
+      "scope": "bounded micro, not full C acceptance attempt",
+      "passedBeforeFailure": "Source guards before and after, exact reused A/B verification, Debug/Release builds; component and S/H 5-save commands completed and produced JSON before cleanup.",
+      "failedGate": "Workflow cleanup rm inherited DYLD_INSERT_LIBRARIES for the arm64 allocation observer; system rm required arm64e and aborted. No simulation gate was reclassified.",
+      "correction": "Scope DYLD_INSERT_LIBRARIES to each probe process only. Harvest already-completed JSON from the exact artifact with digest and source verification, without repeating measurements. Original run remains FAILED."
     }
   ]
 }

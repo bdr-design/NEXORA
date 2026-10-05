@@ -43,6 +43,7 @@ jobs:
           python3 -B Experiments/R005Swift/verify_reused_ab.py c-results/prior-ab c-results/REUSED-AB.json
           cp c-results/prior-ab/STAGE005-A.json c-results/STAGE005-A.json
       - name: Build Debug and Release C and allocator observer
+        if: ${{ !contains(github.event.head_commit.message, '[r005-micro-recover]') }}
         run: |
           set -euo pipefail
           cd Experiments/R005Swift
@@ -50,17 +51,38 @@ jobs:
           swift build --scratch-path .build-c-release -c release -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../c-results/build-release.txt
           cc -dynamiclib -O2 -Wall -Wextra -Werror AllocationObserver.c -ISources/ProbePlatform/include -o ../../c-results/AllocationObserver.dylib
       - name: Bounded diagnostic micro only
-        if: contains(github.event.head_commit.message, '[r005-micro]')
+        if: ${{ contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-micro-recover]') }}
         run: |
           set -euo pipefail
           cd Experiments/R005Swift
           export NXR_ALLOCATOR_DYLIB="$PWD/../../c-results/AllocationObserver.dylib"
-          export DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB"
           bin=.build-c-release/release/nxr-swift-probe
-          "$bin" stage-c-micro-components ../../c-results/components-store > ../../c-results/MICRO-COMPONENTS.json
-          "$bin" stage-c-micro ../../c-results/micro-s S > ../../c-results/MICRO-S.json
-          "$bin" stage-c-micro ../../c-results/micro-h H > ../../c-results/MICRO-H.json
+          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" stage-c-micro-components ../../c-results/components-store > ../../c-results/MICRO-COMPONENTS.json
+          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" stage-c-micro ../../c-results/micro-s S > ../../c-results/MICRO-S.json
+          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" stage-c-micro ../../c-results/micro-h H > ../../c-results/MICRO-H.json
           rm -rf ../../c-results/components-store ../../c-results/micro-s ../../c-results/micro-h
+      - name: Recover completed micro metrics without repeating measurement
+        if: contains(github.event.head_commit.message, '[r005-micro-recover]')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh api repos/bdr-design/NEXORA/actions/artifacts/11344981195/zip > "$RUNNER_TEMP/prior-micro.zip"
+          python3 - "$RUNNER_TEMP/prior-micro.zip" <<'PYCODE'
+          import hashlib,json,pathlib,sys,zipfile
+          p=pathlib.Path(sys.argv[1])
+          assert hashlib.sha256(p.read_bytes()).hexdigest()=='c52baa28d44246931581d073782afe455b241d71c642f0fa30f4e9d5d912c812'
+          dest=pathlib.Path('c-results/prior-micro');dest.mkdir()
+          with zipfile.ZipFile(p) as z:
+              for name in ('MICRO-COMPONENTS.json','MICRO-S.json','MICRO-H.json','commit.txt','tree.txt'):
+                  (dest/name).write_bytes(z.read(name))
+          assert (dest/'commit.txt').read_text().strip()=='1abc2fa11bd2160672b1467ed6c392e528fd7ecd'
+          for name in ('MICRO-S.json','MICRO-H.json'):
+              c=json.loads((dest/name).read_text())
+              assert c['status']=='diagnostic' and c['saves']==5
+              print(json.dumps({'variant':c['variant'],'overheadRatio':c['overheadRatio'],
+                  'barrierNS':c['barrierCopy']['nsPerSave'],'pairs':c['allocationPairing']}))
+          PYCODE
       - name: Selected-layout allocation smoke, recovery and C gates
         if: contains(github.event.head_commit.message, '[r005-c-targeted]')
         run: |

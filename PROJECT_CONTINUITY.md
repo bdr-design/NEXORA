@@ -3,7 +3,13 @@
 Owner authorized the recommended bounded path with «نفذ بدقه».
 Base live HEAD: 647d9c2559222f094b01f1341f4c5444c1b1e96b. Existing branch only.
 A/C evidence gates and before/always-after CI guards are corrected as candidates.
-A 1M/5-save micro on S and H is the next action; it cannot close C.
+Apple micro run 37308440794 on 1abc2fa11bd2160672b1467ed6c392e528fd7ecd is FAILED
+at cleanup only (DYLD observer inherited by arm64e rm); measurement commands,
+Debug/Release builds, exact A/B reuse and before/after guards completed.
+Artifact 11344981195 is preserved with ZIP SHA-256
+c52baa28d44246931581d073782afe455b241d71c642f0fa30f4e9d5d912c812.
+Next: recover existing small JSONs from that verified artifact on CI without
+remeasuring; scope DYLD_INSERT_LIBRARIES to probe commands. Five saves cannot close C.
 Do not optimize until the micro artifact is read. All thresholds remain unchanged.
 See Docs/Daily/2026-10-05-R005-EXECUTION.md for owners, paths, estimates and evidence reuse.
 No production changes/merge/IPA or device acceptance. Earlier failures stay FAILED.
