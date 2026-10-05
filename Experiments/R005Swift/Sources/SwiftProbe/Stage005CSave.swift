@@ -94,7 +94,7 @@ final class SnapshotSink: Sendable {
         let queue = StageCRecordQueue(capacity: capacity)
         self.counters = counters
         self.queue = queue
-        DispatchQueue.global(qos: .utility).async {
+        DispatchQueue.global(qos: .background).async(qos: .background, flags: .enforceQoS) {
             do {
                 let result = try StageCSnapshotWriter.run(queue, counters: counters,
                     directory: directory, epoch: epoch, expectedCounts: expectedCounts)

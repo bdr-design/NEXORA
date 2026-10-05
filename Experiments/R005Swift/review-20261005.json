@@ -24,27 +24,35 @@
     "CI": "source guards before execution and always after failure"
   },
   "candidate": {
-    "source": "1c0c87151a0a3f39c0967da4c0f5ba6c5ab68547",
-    "tree": "f4b8c08a4aba271c56a316827b39567ccca66b76",
-    "run": 37310351003,
+    "source": "bbe26ef771c78a6ebd7aa5bdc198696303fa066f",
+    "tree": "b5a2573c6b55438769661fc00e65079d82eb5473",
+    "run": 37315706838,
     "workflowConclusion": "success",
     "acceptance": "not accepted as a performance fix",
-    "artifact": 11345188872,
-    "artifactSHA256": "0db7ad3cee68594f73c936884b68b8bab54bd24344c8409950ccfb2240f2b0b4",
+    "artifact": 11347843021,
+    "artifactSHA256": "c1134d5e6c4c6eedb4b7d80c2153482d304771193b971a7f763fb99d4b3e8644",
     "functionalChecks": [
-      "Debug/Release",
-      "10000 FIFO records and empty-finish wake",
-      "writer error/range rejection and exact bytes",
-      "S/H 100k exact restore in Debug/Release"
+      "Debug/Release build and transport lifecycle",
+      "known SHA and legacy digest encoding",
+      "S/H 100k exact restore",
+      "zero reusable producer allocations in S/H",
+      "real K3 truncated payload and exact 1M recovery in Debug/Release"
     ],
-    "TSan": {
-      "source": "2f8bd8b8b749562b5b88a84b3858c8a44dcb4b88",
-      "tree": "67186f5da61494f86534adf191f6933ba831e144",
-      "run": 37311166676,
-      "workflowConclusion": "success",
-      "artifact": 11346245823,
-      "artifactSHA256": "96f24e025c67875c5a8075f8b5da241433f97f09cc64affa3e16cbc371fb0f8a",
-      "scope": "queue transport lifecycle and S/H 100k exact restore only; no 1M K1-K10 performance acceptance"
+    "scratch": {
+      "S": {
+        "buffers": 5892,
+        "capacityBytes": 97327488,
+        "footprintDeltaBytes": 98041984,
+        "preparationNS": 9436958,
+        "scope": "cold snapshot scratch retained outside measured advance; not A kernel-owned memory"
+      },
+      "H": {
+        "buffers": 5892,
+        "capacityBytes": 103327616,
+        "footprintDeltaBytes": 104136960,
+        "preparationNS": 21452208,
+        "scope": "cold snapshot scratch retained outside measured advance; not A kernel-owned memory"
+      }
     }
   },
   "thresholds": {
@@ -134,6 +142,66 @@
       },
       "idleAllocationsMax": 0,
       "snapshotBytes": 100801772
+    },
+    {
+      "run": 37313101995,
+      "layout": "S",
+      "saves": 5,
+      "status": "diagnostic",
+      "overheadRatio": 1.5299667559605041,
+      "beginSaveP99NS": 19625,
+      "advanceP99NS": 1155208,
+      "advanceSamples": 1381,
+      "allocationPairing": {
+        "firstViolationAllocations": 0,
+        "firstViolationCall": -1,
+        "firstViolationChunks": 0,
+        "maxExcess": 0,
+        "samples": 1381,
+        "violations": 0
+      },
+      "idleAllocationsMax": 0,
+      "snapshotBytes": 95801772
+    },
+    {
+      "run": 37315706838,
+      "layout": "S",
+      "saves": 5,
+      "status": "diagnostic",
+      "overheadRatio": 1.8873046206229083,
+      "beginSaveP99NS": 21875,
+      "advanceP99NS": 1172542,
+      "advanceSamples": 732,
+      "allocationPairing": {
+        "firstViolationAllocations": 0,
+        "firstViolationCall": -1,
+        "firstViolationChunks": 0,
+        "maxExcess": 0,
+        "samples": 732,
+        "violations": 0
+      },
+      "idleAllocationsMax": 0,
+      "snapshotBytes": 95801772
+    },
+    {
+      "run": 37315706838,
+      "layout": "H",
+      "saves": 5,
+      "status": "diagnostic",
+      "overheadRatio": 1.9071515315977814,
+      "beginSaveP99NS": 25500,
+      "advanceP99NS": 1384250,
+      "advanceSamples": 675,
+      "allocationPairing": {
+        "firstViolationAllocations": 0,
+        "firstViolationCall": -1,
+        "firstViolationChunks": 0,
+        "maxExcess": 0,
+        "samples": 675,
+        "violations": 0
+      },
+      "idleAllocationsMax": 0,
+      "snapshotBytes": 100801772
     }
   ],
   "rawEvidence": [
@@ -190,6 +258,60 @@
       "sha256": "7c014caff38fa59789e7c29e6a0ec6c54e03ff480a0a61a41008ec8f636d7be5",
       "run": 37311166676,
       "originalName": "smoke-tsan-H.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37313101995-PROFILE-S.json",
+      "sha256": "079ceae00b3c4f4e464b96550c8410d6d153f36df395f49291dbec614e1c602b",
+      "run": 37313101995,
+      "originalName": "PROFILE-S.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37313101995-PROFILE-S-SAMPLED.json",
+      "sha256": "d1f6007ab9d04ca0f10a1d8b6509d1ddcc56dd2104fb84a50cc93bb638aaf2f6",
+      "run": 37313101995,
+      "originalName": "PROFILE-S-SAMPLED.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37315706838-MICRO-COMPONENTS.json",
+      "sha256": "5b7a3d4e8b2f1b4627f010e34ccd3a9e4511ceac17559fe2e914b8ff89d4109b",
+      "run": 37315706838,
+      "originalName": "MICRO-COMPONENTS.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37315706838-MICRO-S.json",
+      "sha256": "8f289af0165e7e2c50902a12f077d8803f72264268fbe8ce86e11a056e599688",
+      "run": 37315706838,
+      "originalName": "MICRO-S.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37315706838-MICRO-H.json",
+      "sha256": "951565c28a30d39fa3694b07234a1b68715b99e38f0e7234a495da7785d2d212",
+      "run": 37315706838,
+      "originalName": "MICRO-H.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37315706838-allocation-probes-S.json",
+      "sha256": "58645e4d294b7c971c442a7c9f97cb7a05cc50f64a7242c0a5d48554d639c140",
+      "run": 37315706838,
+      "originalName": "allocation-probes-S.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37315706838-allocation-probes-H.json",
+      "sha256": "4d4e729933ee0390a25f0ffb754103a153c7c1d57d60ce710f74dbaf38427cd8",
+      "run": 37315706838,
+      "originalName": "allocation-probes-H.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37315706838-mid-record-debug.json",
+      "sha256": "6b5c66029e9e1aeea0a02efa1198a8d313e33c280dcc4b13c2c1ce9762285ad7",
+      "run": 37315706838,
+      "originalName": "mid-record-debug.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37315706838-mid-record-release.json",
+      "sha256": "6b5c66029e9e1aeea0a02efa1198a8d313e33c280dcc4b13c2c1ce9762285ad7",
+      "run": 37315706838,
+      "originalName": "mid-record-release.json"
     }
   ],
   "reuse": {
@@ -211,5 +333,31 @@
     "Chat app disconnect cause unverified; continuity persists in repository"
   ],
   "failureRegistry": "Experiments/R005Swift/failures.json",
-  "next": "pause further overhead attempts and present bounded alternatives to owner"
+  "next": "One final bounded background-priority micro; if overhead remains, stop and present measured alternatives. No full acceptance campaign without supporting micro.",
+  "candidateHistory": [
+    {
+      "source": "1c0c87151a0a3f39c0967da4c0f5ba6c5ab68547",
+      "tree": "f4b8c08a4aba271c56a316827b39567ccca66b76",
+      "run": 37310351003,
+      "workflowConclusion": "success",
+      "acceptance": "not accepted as a performance fix",
+      "artifact": 11345188872,
+      "artifactSHA256": "0db7ad3cee68594f73c936884b68b8bab54bd24344c8409950ccfb2240f2b0b4",
+      "functionalChecks": [
+        "Debug/Release",
+        "10000 FIFO records and empty-finish wake",
+        "writer error/range rejection and exact bytes",
+        "S/H 100k exact restore in Debug/Release"
+      ],
+      "TSan": {
+        "source": "2f8bd8b8b749562b5b88a84b3858c8a44dcb4b88",
+        "tree": "67186f5da61494f86534adf191f6933ba831e144",
+        "run": 37311166676,
+        "workflowConclusion": "success",
+        "artifact": 11346245823,
+        "artifactSHA256": "96f24e025c67875c5a8075f8b5da241433f97f09cc64affa3e16cbc371fb0f8a",
+        "scope": "queue transport lifecycle and S/H 100k exact restore only; no 1M K1-K10 performance acceptance"
+      }
+    }
+  ]
 }

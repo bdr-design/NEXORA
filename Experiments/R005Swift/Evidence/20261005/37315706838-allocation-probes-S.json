@@ -1,0 +1,25 @@
+{
+  "assetRecord" : {
+    "fileBytes" : 16688,
+    "producerAllocations" : 1,
+    "requestedBytes" : 16688
+  },
+  "controlRecord1000" : {
+    "fileBytes" : 18876,
+    "limitP99NS" : 100000,
+    "marginNS" : 98208,
+    "max" : 18625,
+    "maxAllocations" : 1,
+    "p50" : 709,
+    "p99" : 1792,
+    "samples" : 1000
+  },
+  "queue10000" : {
+    "producerAllocations" : 0
+  },
+  "reusableAssetRecord" : {
+    "exactBytes" : true,
+    "producerAllocations" : 0
+  },
+  "status" : "pass"
+}

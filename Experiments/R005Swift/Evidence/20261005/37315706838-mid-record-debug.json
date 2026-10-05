@@ -1,0 +1,15 @@
+{
+  "status": "pass",
+  "point": "c.k3.mid_record",
+  "signal": "SIGKILL",
+  "population": 1000000,
+  "variant": "S",
+  "completeRecords": 1,
+  "partialRecordKind": 1,
+  "partialRecordIndex": 0,
+  "partialRecordBytes": 8328,
+  "expectedRecordBytes": 16688,
+  "exactRecoveredDigest": true,
+  "restoredEpoch": 1,
+  "scope": "bounded batched-writer K3 regression; not K1-K10 or C acceptance"
+}
