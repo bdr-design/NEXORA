@@ -50,6 +50,20 @@ jobs:
           swift build --scratch-path .build-c-debug -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../c-results/build-debug.txt
           swift build --scratch-path .build-c-release -c release -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../c-results/build-release.txt
           cc -dynamiclib -O2 -Wall -Wextra -Werror AllocationObserver.c -ISources/ProbePlatform/include -o ../../c-results/AllocationObserver.dylib
+      - name: Debug and Release transport lifecycle and exact 100k restore checks
+        if: ${{ !contains(github.event.head_commit.message, '[r005-micro-recover]') }}
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          for mode in debug release; do
+            bin=".build-c-$mode/$mode/nxr-swift-probe"
+            "$bin" stage-c-transport-checks "../../c-results/transport-$mode" > "../../c-results/transport-$mode.json"
+            for variant in S H; do
+              "$bin" stage-c-smoke "../../c-results/smoke-$mode-$variant" "$variant" 100000 > "../../c-results/smoke-$mode-$variant.json"
+              rm -rf "../../c-results/smoke-$mode-$variant"
+            done
+            rm -rf "../../c-results/transport-$mode"
+          done
       - name: Bounded diagnostic micro only
         if: ${{ contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-micro-recover]') }}
         run: |

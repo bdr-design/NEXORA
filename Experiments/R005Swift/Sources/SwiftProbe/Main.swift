@@ -46,6 +46,9 @@ import Glibc
             guard args.count==2 else {throw ProbeError.invalid("stage-b-recover-crash directory")}
             result=try stageBRecoverCrash(args[1])
 #if STAGE_C
+        case "stage-c-transport-checks":
+            guard args.count == 2 else { throw ProbeError.invalid("stage-c-transport-checks directory") }
+            result = try stageCMicroTransportChecks(args[1])
         case "stage-c-micro-components":
             guard args.count == 2 else { throw ProbeError.invalid("stage-c-micro-components directory") }
             result = try stageCMicroComponents(args[1])

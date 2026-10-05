@@ -1,6 +1,11 @@
 #if STAGE_C
 import Foundation
 import ProbePlatform
+#if canImport(Darwin)
+import Darwin
+#else
+import Glibc
+#endif
 
 struct StageCWheelControl {
     var cursor: UInt64
@@ -53,6 +58,29 @@ enum Snapshot {
     static let footerMagic = Data("NXREND02".utf8)
     static let version: UInt32 = 2
     static let flags: UInt32 = 1
+
+    // Read-only storage stays alive until every synchronous write completes.
+    // No pointer escapes this scope and the writer never mutates a queued record.
+    static func writeRecord(_ record: [UInt8], descriptor: Int32, range: Range<Int>) throws {
+        guard range.lowerBound >= 0, range.upperBound <= record.count else {
+            throw ProbeError.invalid("stage C write range")
+        }
+        guard !range.isEmpty else { return }
+        try record.withUnsafeBufferPointer { buffer in
+            var offset = range.lowerBound
+            while offset < range.upperBound {
+                let written = write(descriptor, buffer.baseAddress!.advanced(by: offset),
+                                    range.upperBound - offset)
+                if written < 0 {
+                    let error = errno
+                    if error == EINTR { continue }
+                    throw ProbeError.invalid("stage C record write errno \(error)")
+                }
+                guard written > 0 else { throw ProbeError.invalid("stage C record write made no progress") }
+                offset += written
+            }
+        }
+    }
 
     static func appendLE<T: FixedWidthInteger>(_ value: T, into data: inout Data) {
         var little = value.littleEndian

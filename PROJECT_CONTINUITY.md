@@ -8,9 +8,16 @@ at cleanup only (DYLD observer inherited by arm64e rm); measurement commands,
 Debug/Release builds, exact A/B reuse and before/after guards completed.
 Artifact 11344981195 is preserved with ZIP SHA-256
 c52baa28d44246931581d073782afe455b241d71c642f0fa30f4e9d5d912c812.
-Next: recover existing small JSONs from that verified artifact on CI without
-remeasuring; scope DYLD_INSERT_LIBRARIES to probe commands. Five saves cannot close C.
-Do not optimize until the micro artifact is read. All thresholds remain unchanged.
+Recovery run 37309407651 SUCCESS; artifact 11345341757 SHA-256
+5594657c03d6ea67a99621a2b672c42b5b3bb48f96f8b38d5d34d94acb875769. Original micro
+source remains 1abc2fa and its run stays FAILED. S diagnostic ratio=1.444214155,
+H=1.229320289; zero paired allocation violations. Copy alone is insufficient.
+Next candidate: bind sink only for unsaved chunks, write immutable record storage
+without a second payload copy, notify one utility writer instead of empty-queue
+Task.yield. See daily execution report for pre-change estimates and exact scope.
+Run Debug/Release transport lifecycle + S/H 100k restore and fresh 5-save micro;
+do not run full C until data supports it. Five saves cannot close C.
+All thresholds remain unchanged.
 See Docs/Daily/2026-10-05-R005-EXECUTION.md for owners, paths, estimates and evidence reuse.
 No production changes/merge/IPA or device acceptance. Earlier failures stay FAILED.
 

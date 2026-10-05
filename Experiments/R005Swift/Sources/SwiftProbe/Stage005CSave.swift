@@ -29,6 +29,7 @@ struct StageCRecordQueueState: Sendable {
 
 final class StageCRecordQueue: Sendable {
     private let state: Mutex<StageCRecordQueueState>
+    private let available = DispatchSemaphore(value: 0)
 
     init(capacity: Int) {
         precondition(capacity > 0)
@@ -42,6 +43,7 @@ final class StageCRecordQueue: Sendable {
             value.slots[value.tail] = record
             value.tail += 1
         }
+        available.signal()
     }
 
     func pop() -> [UInt8]? {
@@ -56,6 +58,21 @@ final class StageCRecordQueue: Sendable {
 
     func finish() {
         state.withLock { $0.finished = true }
+        available.signal()
+    }
+
+    func waitAndPop() -> [UInt8]? {
+        available.wait()
+        return state.withLock { value in
+            guard value.head < value.tail else {
+                precondition(value.finished)
+                return nil
+            }
+            let record = value.slots[value.head]
+            value.slots[value.head] = nil
+            value.head += 1
+            return record
+        }
     }
 
     var isDrained: Bool {
@@ -75,9 +92,9 @@ final class SnapshotSink: Sendable {
         let queue = StageCRecordQueue(capacity: capacity)
         self.counters = counters
         self.queue = queue
-        Task.detached(priority: .utility) {
+        DispatchQueue.global(qos: .utility).async {
             do {
-                let result = try await StageCSnapshotWriter.run(queue, counters: counters,
+                let result = try StageCSnapshotWriter.run(queue, counters: counters,
                     directory: directory, epoch: epoch, expectedCounts: expectedCounts)
                 counters.bytes.store(result.bytes, ordering: .releasing)
                 counters.chunks.store(result.chunks, ordering: .releasing)
@@ -134,7 +151,7 @@ enum StageCSnapshotWriter {
 
     static func run(_ queue: StageCRecordQueue, counters: StageCWriterCounters,
                     directory: String, epoch: UInt32,
-                    expectedCounts: [UInt32]) async throws -> StageCSnapshotFileResult {
+                    expectedCounts: [UInt32]) throws -> StageCSnapshotFileResult {
         guard expectedCounts.count == 4, expectedCounts[0] == 1 else {
             throw ProbeError.invalid("stage C expected record counts")
         }
@@ -154,11 +171,7 @@ enum StageCSnapshotWriter {
         digests.reserveCapacity(expectedCounts.reduce(0) { $0 + Int($1) })
 
         while true {
-            guard let record = queue.pop() else {
-                if queue.isDrained { break }
-                await Task.yield()
-                continue
-            }
+            guard let record = queue.waitAndPop() else { break }
             let parsed = try parseRecord(record)
             let key = parsed.0
             guard key.kind < 4, key.index < expectedCounts[Int(key.kind)],
@@ -167,14 +180,13 @@ enum StageCSnapshotWriter {
             }
             digests[key] = parsed.2
             counts[Int(key.kind)] += 1
-            let recordData = Data(record)
             if key.kind > 0 {
-                let split = max(16, recordData.count / 2)
-                try handle.write(contentsOf: recordData.prefix(split))
+                let split = max(16, record.count / 2)
+                try Snapshot.writeRecord(record, descriptor: handle.fileDescriptor, range: 0..<split)
                 nx_kill_point("c.k3.mid_record")
-                try handle.write(contentsOf: recordData.suffix(recordData.count - split))
+                try Snapshot.writeRecord(record, descriptor: handle.fileDescriptor, range: split..<record.count)
             } else {
-                try handle.write(contentsOf: recordData)
+                try Snapshot.writeRecord(record, descriptor: handle.fileDescriptor, range: 0..<record.count)
             }
             try handle.write(contentsOf: parsed.2)
             bytesWritten += UInt64(record.count + parsed.2.count)
@@ -294,9 +306,9 @@ final class StageCState {
     }
 
     @inline(__always) func willWriteAsset(_ world: SwiftWorld, index: Int) {
-        guard capturing, let sink else { return }
+        guard capturing else { return }
         let chunk = index >> 8
-        if assetSaved[chunk] != epoch {
+        if assetSaved[chunk] != epoch, let sink {
             let start = nx_now()
             let record = Snapshot.assetRecord(world, chunk: chunk)
             sink.emit(record)
@@ -309,9 +321,9 @@ final class StageCState {
     }
 
     @inline(__always) func willWriteNode(_ wheel: TimingWheel, index: Int) {
-        guard capturing, let sink else { return }
+        guard capturing else { return }
         let chunk = index >> 9
-        if nodeSaved[chunk] != epoch {
+        if nodeSaved[chunk] != epoch, let sink {
             let start = nx_now()
             let record = Snapshot.nodeRecord(wheel, chunk: chunk)
             sink.emit(record)
@@ -324,9 +336,9 @@ final class StageCState {
     }
 
     @inline(__always) func willWriteGroup(_ world: SwiftWorld, index: Int) {
-        guard capturing, let sink else { return }
+        guard capturing else { return }
         let chunk = index >> 11
-        if groupSaved[chunk] != epoch {
+        if groupSaved[chunk] != epoch, let sink {
             let start = nx_now()
             let record = Snapshot.groupRecord(world, chunk: chunk)
             sink.emit(record)
@@ -338,9 +350,9 @@ final class StageCState {
         }
     }
     @inline(__always) func willWriteAsset(_ world: HybridWorld, index: Int) {
-        guard capturing, let sink else { return }
+        guard capturing else { return }
         let chunk=index>>8
-        if assetSaved[chunk] != epoch {
+        if assetSaved[chunk] != epoch, let sink {
             let start=nx_now();let record=Snapshot.assetRecord(world,chunk:chunk);sink.emit(record)
             barrierNS += nx_now()-start;barrierBytes += record.count+32
             assetSaved[chunk]=epoch;barrierEmits += 1
@@ -348,9 +360,9 @@ final class StageCState {
         }
     }
     @inline(__always) func willWriteNode(_ wheel: HybridTimingWheel, index: Int) {
-        guard capturing, let sink else { return }
+        guard capturing else { return }
         let chunk=index>>9
-        if nodeSaved[chunk] != epoch {
+        if nodeSaved[chunk] != epoch, let sink {
             let start=nx_now();let record=Snapshot.nodeRecord(wheel,chunk:chunk);sink.emit(record)
             barrierNS += nx_now()-start;barrierBytes += record.count+32
             nodeSaved[chunk]=epoch;barrierEmits += 1
@@ -358,9 +370,9 @@ final class StageCState {
         }
     }
     @inline(__always) func willWriteGroup(_ world: HybridWorld, index: Int) {
-        guard capturing, let sink else { return }
+        guard capturing else { return }
         let chunk=index>>11
-        if groupSaved[chunk] != epoch {
+        if groupSaved[chunk] != epoch, let sink {
             let start=nx_now();let record=Snapshot.groupRecord(world,chunk:chunk);sink.emit(record)
             barrierNS += nx_now()-start;barrierBytes += record.count+32
             groupSaved[chunk]=epoch;barrierEmits += 1

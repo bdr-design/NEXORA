@@ -1,6 +1,56 @@
 #if STAGE_C
 import Foundation
 import ProbePlatform
+import Synchronization
+
+func stageCMicroTransportChecks(_ directory: String) throws -> [String: Any] {
+    try FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
+    let empty = StageCRecordQueue(capacity: 1)
+    empty.finish()
+    try require(empty.waitAndPop() == nil && empty.isDrained, "micro empty finish wake")
+
+    let queue = StageCRecordQueue(capacity: 10000)
+    let group = DispatchGroup(), started = DispatchSemaphore(value: 0)
+    let failures = Atomic<Int>(0), consumed = Atomic<Int>(0)
+    group.enter()
+    DispatchQueue.global(qos: .utility).async {
+        defer { group.leave() }
+        started.signal()
+        for i in 0..<10000 {
+            guard let r = queue.waitAndPop(), r.count == 2,
+                  (Int(r[0]) | (Int(r[1]) << 8)) == i else {
+                failures.store(1, ordering: .releasing)
+                return
+            }
+            _ = consumed.add(1, ordering: .relaxed)
+        }
+        if queue.waitAndPop() != nil { failures.store(1, ordering: .releasing) }
+    }
+    try require(started.wait(timeout: .now() + 5) == .success, "micro consumer startup")
+    for i in 0..<10000 { queue.push([UInt8(truncatingIfNeeded: i), UInt8(truncatingIfNeeded: i >> 8)]) }
+    queue.finish()
+    try require(group.wait(timeout: .now() + 5) == .success, "micro queue completion")
+    try require(failures.load(ordering: .acquiring) == 0 &&
+                consumed.load(ordering: .acquiring) == 10000 && queue.isDrained, "micro queue FIFO")
+
+    let path = directory + "/transport.bin"
+    try require(FileManager.default.createFile(atPath: path, contents: nil), "micro writer file")
+    let handle = try FileHandle(forWritingTo: URL(fileURLWithPath: path))
+    defer { try? handle.close() }
+    let bytes = (0..<10000).map { UInt8(truncatingIfNeeded: $0) }
+    for range in [0..<17, 17..<9999, 9999..<10000] {
+        try Snapshot.writeRecord(bytes, descriptor: handle.fileDescriptor, range: range)
+    }
+    try handle.synchronize()
+    try require(try Data(contentsOf: URL(fileURLWithPath: path)) == Data(bytes), "micro exact writer bytes")
+    var rejected = 0
+    do { try Snapshot.writeRecord(bytes, descriptor: -1, range: 0..<1) } catch { rejected += 1 }
+    do { try Snapshot.writeRecord(bytes, descriptor: handle.fileDescriptor, range: 0..<10001) } catch { rejected += 1 }
+    try require(rejected == 2, "micro writer error/range rejection")
+    return ["status":"pass","fifoRecords":10000,"emptyFinish":true,
+            "exactWrittenBytes":10000,"rejectedMisuse":rejected,
+            "scope":"queue/writer lifecycle checks, not Stage C acceptance"]
+}
 
 // Diagnostic only. No micro result may close C or select a production layout.
 private func microDrain(_ world: SwiftWorld, sink: SnapshotSink? = nil) throws -> [String: Any] {
