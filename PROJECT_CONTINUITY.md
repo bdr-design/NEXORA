@@ -1,3 +1,15 @@
+# Execution candidate — 2026-10-05
+
+Owner authorized the recommended bounded path with «نفذ بدقه».
+Base live HEAD: 647d9c2559222f094b01f1341f4c5444c1b1e96b. Existing branch only.
+A/C evidence gates and before/always-after CI guards are corrected as candidates.
+A 1M/5-save micro on S and H is the next action; it cannot close C.
+Do not optimize until the micro artifact is read. All thresholds remain unchanged.
+See Docs/Daily/2026-10-05-R005-EXECUTION.md for owners, paths, estimates and evidence reuse.
+No production changes/merge/IPA or device acceptance. Earlier failures stay FAILED.
+
+---
+
 # Current review checkpoint — 2026-10-05
 
 Repository bdr-design/NEXORA, branch diagnostic/r005-design-1m-20260930.

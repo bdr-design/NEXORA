@@ -46,6 +46,15 @@ import Glibc
             guard args.count==2 else {throw ProbeError.invalid("stage-b-recover-crash directory")}
             result=try stageBRecoverCrash(args[1])
 #if STAGE_C
+        case "stage-c-micro-components":
+            guard args.count == 2 else { throw ProbeError.invalid("stage-c-micro-components directory") }
+            result = try stageCMicroComponents(args[1])
+        case "stage-c-micro":
+            guard args.count == 3, ["S", "H"].contains(args[2]) else {
+                throw ProbeError.invalid("stage-c-micro directory S|H")
+            }
+            result = args[2] == "H" ? try stageCHybridRun(args[1], requestedSaves: 5, diagnosticOnly: true) :
+                try stageCRun(args[1], requestedSaves: 5, diagnosticOnly: true)
         case "stage-c-allocation-probes":
             guard args.count==2,["S","H"].contains(args[1]) else {
                 throw ProbeError.invalid("stage-c-allocation-probes S|H")

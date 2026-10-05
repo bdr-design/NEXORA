@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json, os, statistics, subprocess, sys
 from pathlib import Path
+from proof_gates import stage_a_failures
 
 binary = Path(sys.argv[1]).resolve()
 out = Path(sys.argv[2]).resolve()
@@ -73,11 +74,12 @@ def row(variant,assets):
     return next(x for x in rows if x["variant"]==variant and x["assets"]==assets)
 s1=row("S",1000000); h1=row("H",1000000)
 ratio=h1["nsPerEvent"]["median"]/s1["nsPerEvent"]["median"]
-health_ok=all(x["allocationsMaxPerCall"]==0 for x in rows) and all(
-    health[v][k]["status"]=="pass" for v in ("S","H") for k in ("order100k","order1M"))
-chosen="H" if ratio <= 0.75 and h1["bytesPerAsset"]["owned"] <= 128.0 and health_ok else "S"
+failures=stage_a_failures(rows, health)
+health_ok=not failures
+chosen=("H" if ratio <= 0.75 and h1["bytesPerAsset"]["owned"] <= 128.0 else "S") if health_ok else None
 result={
-    "status":"pass",
+    "status":"failure" if failures else "pass",
+    "gateFailures":failures,
     "scope":"R005 proof-only Stage A; Apple CI VM, not iPhone acceptance",
     "A":rows,
     "decisionA":{"chosen":chosen,"ratioHtoS1M":ratio,
@@ -85,6 +87,9 @@ result={
     "health":health
 }
 out.write_text(json.dumps(result,indent=2)+"\n")
-print(json.dumps({"status":"pass","chosen":chosen,"ratioHtoS1M":ratio,
+print(json.dumps({"status":result["status"],"chosen":chosen,"ratioHtoS1M":ratio,
                   "S1M_ns":s1["nsPerEvent"]["median"],"H1M_ns":h1["nsPerEvent"]["median"],
                   "H1M_owned":h1["bytesPerAsset"]["owned"]},indent=2))
+
+if failures:
+    raise AssertionError("; ".join(failures))

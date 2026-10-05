@@ -6,6 +6,7 @@ permissions:
   contents: read
 jobs:
   swift-model:
+    if: ${{ !contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-c-targeted]') }}
     runs-on: macos-15
     timeout-minutes: 240
     env:
@@ -24,6 +25,11 @@ jobs:
           xcodebuild -version >> swift-results/environment.txt
           uname -a >> swift-results/environment.txt
           sysctl hw.model hw.memsize >> swift-results/environment.txt
+      - name: Production guard before experiments
+        run: |
+          set -euo pipefail
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > swift-results/original-source-guard-before.txt
+          python3 -B -m unittest discover -s Experiments/R005Swift/tests -v > swift-results/proof-gates.txt 2>&1
       - name: Swift 6 Debug and Release builds
         run: |
           set -euo pipefail
@@ -94,6 +100,7 @@ jobs:
           python3 -B stage005_c_crash.py .build-stagec-tsan/debug/nxr-swift-probe ../../swift-results/STAGE005-C-KILLS-tsan.json "$variant" 2>&1 | tee ../../swift-results/stage005-c-kills-tsan.txt
           python3 -B stage005_c.py .build-stagec-release/release/nxr-swift-probe ../../swift-results/STAGE005-C.json ../../swift-results/STAGE005-A.json 2>&1 | tee ../../swift-results/stage005-c-run.txt
       - name: Production unchanged and source file digests
+        if: always()
         run: |
           set -euo pipefail
           python3 -B Checks/financial-diagnostics.py --guard --selftest > swift-results/original-source-guard.txt

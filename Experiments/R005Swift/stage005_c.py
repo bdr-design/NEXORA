@@ -5,12 +5,7 @@ from pathlib import Path
 binary=Path(sys.argv[1]).resolve()
 output=Path(sys.argv[2]).resolve()
 stage_a=Path(sys.argv[3]).resolve()
-THRESHOLDS={
-    "beginSaveP99NS":100_000,
-    "advanceDuringSaveP99NS":1_100_000,
-    "overheadRatio":1.10,
-    "idleAllocationsPerAdvance":0,
-}
+from proof_gates import THRESHOLDS, stage_c_failures
 DIAGNOSTIC_ONLY=[
     "snapshotBytes","writeNS","restoreNS","peakQueuedBytes",
     "barrierCopy.bytesPerSave","barrierCopy.nsPerSave",
@@ -35,21 +30,7 @@ with tempfile.TemporaryDirectory(prefix="nxr-stage005-c-") as temp:
     result=json.loads(cp.stdout)
 
 assert result["status"]=="measured" and result["variant"]==chosen
-failures=[]
-if result["saves"] < 100: failures.append(f"saves {result['saves']} < 100")
-if result["beginSaveNS"]["p99"] > THRESHOLDS["beginSaveP99NS"]:
-    failures.append(f"beginSave p99 {result['beginSaveNS']['p99']} > {THRESHOLDS['beginSaveP99NS']}")
-if result["advanceDuringSaveNS"]["p99"] > THRESHOLDS["advanceDuringSaveP99NS"]:
-    failures.append(f"advanceDuringSave p99 {result['advanceDuringSaveNS']['p99']} > {THRESHOLDS['advanceDuringSaveP99NS']}")
-if result["overheadRatio"] > THRESHOLDS["overheadRatio"]:
-    failures.append(f"overheadRatio {result['overheadRatio']:.9f} > {THRESHOLDS['overheadRatio']:.2f}")
-if result["allocationsIdleMaxPerAdvance"] != THRESHOLDS["idleAllocationsPerAdvance"]:
-    failures.append(f"idle allocations {result['allocationsIdleMaxPerAdvance']} != 0")
-if result["allocationsWhileSavingMaxPerAdvance"] > result["barrierChunksMaxPerAdvance"]:
-    failures.append(
-        f"saving allocations {result['allocationsWhileSavingMaxPerAdvance']} > "
-        f"barrier chunks {result['barrierChunksMaxPerAdvance']}"
-    )
+failures=stage_c_failures(result)
 
 payload={
     "status":"failure" if failures else "pass",

@@ -113,8 +113,8 @@ func stageCSmoke(_ directory: String, count: Int) throws -> [String: Any] {
 }
 
 func stageCRun(_ directory: String, count: Int = 1_000_000,
-               requestedSaves: Int = 100) throws -> [String: Any] {
-    guard count == 1_000_000, requestedSaves >= 100 else {
+               requestedSaves: Int = 100, diagnosticOnly: Bool = false) throws -> [String: Any] {
+    guard count == 1_000_000, (requestedSaves >= 100 || (diagnosticOnly && requestedSaves == 5)) else {
         throw ProbeError.invalid("stage C requires 1M and >=100 saves")
     }
     let prepared = try stageCPrepareInitial(directory: directory, count: count)
@@ -141,6 +141,10 @@ func stageCRun(_ directory: String, count: Int = 1_000_000,
     var savingNS: UInt64 = 0, savingEvents = 0
     var idleMaxAlloc: UInt64 = 0, savingMaxAlloc: UInt64 = 0
     var savingMaxBarrierChunks = 0
+    var allocationPairSamples = 0, allocationPairViolations = 0
+    var allocationPairMaxExcess: UInt64 = 0
+    var firstViolationCall = -1, firstViolationChunks = 0
+    var firstViolationAllocations: UInt64 = 0
     var priorResultEpoch: UInt32 = 1
 
     while savesCommitted < requestedSaves {
@@ -168,6 +172,16 @@ func stageCRun(_ directory: String, count: Int = 1_000_000,
             savingAdvanceTimes.append(elapsed); savingNS += elapsed; savingEvents += p.events
             savingMaxAlloc = max(savingMaxAlloc, allocations.calls)
             savingMaxBarrierChunks = max(savingMaxBarrierChunks, barrierDelta)
+            allocationPairSamples += 1
+            if allocations.calls > UInt64(barrierDelta) {
+                allocationPairViolations += 1
+                allocationPairMaxExcess = max(allocationPairMaxExcess, allocations.calls - UInt64(barrierDelta))
+                if firstViolationCall == -1 {
+                    firstViolationCall = advanceCalls
+                    firstViolationAllocations = allocations.calls
+                    firstViolationChunks = barrierDelta
+                }
+            }
             try require(allocations.available == 1, "stage C allocator unavailable")
         } else {
             idleNS += elapsed; idleEvents += p.events
@@ -249,7 +263,7 @@ func stageCRun(_ directory: String, count: Int = 1_000_000,
     // Numerical acceptance gates are applied by stage005_c.py after this raw
     // measurement JSON is persisted, so a failing run retains every metric.
     return [
-        "status":"measured", "variant":"S", "assets":count, "saves":savesCommitted,
+        "status":diagnosticOnly ? "diagnostic" : "measured", "variant":"S", "assets":count, "saves":savesCommitted,
         "advanceCalls":advanceCalls,
         "thresholds":["beginSaveP99NS":stageCBeginP99LimitNS,
                       "advanceDuringSaveP99NS":stageCAdvanceP99LimitNS,
@@ -281,6 +295,10 @@ func stageCRun(_ directory: String, count: Int = 1_000_000,
         "allocationsIdleMaxPerAdvance":idleMaxAlloc,
         "allocationsWhileSavingMaxPerAdvance":savingMaxAlloc,
         "barrierChunksMaxPerAdvance":savingMaxBarrierChunks,
+        "allocationPairing":["samples":allocationPairSamples,
+            "violations":allocationPairViolations,"maxExcess":allocationPairMaxExcess,
+            "firstViolationCall":firstViolationCall,"firstViolationAllocations":firstViolationAllocations,
+            "firstViolationChunks":firstViolationChunks],
         "recoveredEpoch":restored.epoch,
         "replayedCommands":restored.replayedCommands,
         "ignoredWALTailBytes":restored.ignoredWALTailBytes,

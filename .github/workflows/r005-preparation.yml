@@ -11,6 +11,7 @@ env:
   PYTHONDONTWRITEBYTECODE: "1"
 jobs:
   contracts:
+    if: ${{ !contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-c-targeted]') }}
     runs-on: macos-15
     timeout-minutes: 30
     steps:
@@ -69,6 +70,7 @@ jobs:
         if: always()
         with: {name: r005-contract-logs, path: evidence/, if-no-files-found: error}
   layout:
+    if: ${{ !contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-c-targeted]') }}
     runs-on: macos-15
     timeout-minutes: 15
     steps:
@@ -90,6 +92,7 @@ jobs:
         if: always()
         with: {name: r005-layout-metrics, path: layout-evidence/, if-no-files-found: error}
   diagnostics:
+    if: ${{ !contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-c-targeted]') }}
     runs-on: macos-15
     timeout-minutes: 30
     steps:

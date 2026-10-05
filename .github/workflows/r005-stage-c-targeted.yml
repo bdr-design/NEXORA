@@ -1,0 +1,95 @@
+name: R005 bounded micro and targeted C proof
+on:
+  push:
+    branches: ["diagnostic/r005-design-1m-20260930"]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  stage-c:
+    if: ${{ contains(github.event.head_commit.message, '[r005-micro]') || contains(github.event.head_commit.message, '[r005-c-targeted]') }}
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Source identity and production guard before execution
+        run: |
+          set -euo pipefail
+          mkdir -p c-results
+          git rev-parse HEAD > c-results/commit.txt
+          git rev-parse HEAD^{tree} > c-results/tree.txt
+          swift --version > c-results/environment.txt
+          xcodebuild -version >> c-results/environment.txt
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > c-results/source-guard-before.txt
+          python3 -B -m unittest discover -s Experiments/R005Swift/tests -v > c-results/proof-gates.txt 2>&1
+      - name: Fetch and verify pinned unchanged A and B evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin fa9c44656d6a7544f5cd0255781c64fde3e9ce1f
+          gh api repos/bdr-design/NEXORA/actions/artifacts/11170911262/zip > c-results/prior-ab.zip
+          python3 - <<'PY'
+          import hashlib, pathlib, zipfile
+          p=pathlib.Path('c-results/prior-ab.zip')
+          assert hashlib.sha256(p.read_bytes()).hexdigest()=='6517060278e24e0a8b3bdb0db0476ebe719543eac293bcb2b903dc22fc356d71'
+          with zipfile.ZipFile(p) as z: z.extractall('c-results/prior-ab')
+          PY
+          python3 -B Experiments/R005Swift/verify_reused_ab.py c-results/prior-ab c-results/REUSED-AB.json
+          cp c-results/prior-ab/STAGE005-A.json c-results/STAGE005-A.json
+      - name: Build Debug and Release C and allocator observer
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          swift build --scratch-path .build-c-debug -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../c-results/build-debug.txt
+          swift build --scratch-path .build-c-release -c release -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../c-results/build-release.txt
+          cc -dynamiclib -O2 -Wall -Wextra -Werror AllocationObserver.c -ISources/ProbePlatform/include -o ../../c-results/AllocationObserver.dylib
+      - name: Bounded diagnostic micro only
+        if: contains(github.event.head_commit.message, '[r005-micro]')
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          export NXR_ALLOCATOR_DYLIB="$PWD/../../c-results/AllocationObserver.dylib"
+          export DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB"
+          bin=.build-c-release/release/nxr-swift-probe
+          "$bin" stage-c-micro-components ../../c-results/components-store > ../../c-results/MICRO-COMPONENTS.json
+          "$bin" stage-c-micro ../../c-results/micro-s S > ../../c-results/MICRO-S.json
+          "$bin" stage-c-micro ../../c-results/micro-h H > ../../c-results/MICRO-H.json
+          rm -rf ../../c-results/components-store ../../c-results/micro-s ../../c-results/micro-h
+      - name: Selected-layout allocation smoke, recovery and C gates
+        if: contains(github.event.head_commit.message, '[r005-c-targeted]')
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          export NXR_ALLOCATOR_DYLIB="$PWD/../../c-results/AllocationObserver.dylib"
+          variant="$(python3 -c 'import json; print(json.load(open("../../c-results/STAGE005-A.json"))["decisionA"]["chosen"])')"
+          bin=.build-c-release/release/nxr-swift-probe
+          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" stage-c-allocation-probes "$variant" > ../../c-results/allocation-probes.json
+          "$bin" stage-c-smoke ../../c-results/smoke "$variant" 100000 > ../../c-results/smoke.json
+          rm -rf ../../c-results/smoke
+          python3 -B stage005_c_crash.py .build-c-debug/debug/nxr-swift-probe ../../c-results/STAGE005-C-KILLS-debug.json "$variant" 2>&1 | tee ../../c-results/kills-debug.txt
+          python3 -B stage005_c_crash.py "$bin" ../../c-results/STAGE005-C-KILLS-release.json "$variant" 2>&1 | tee ../../c-results/kills-release.txt
+          swift build --scratch-path .build-c-tsan --sanitize=thread -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../c-results/build-tsan.txt
+          python3 -B stage005_c_crash.py .build-c-tsan/debug/nxr-swift-probe ../../c-results/STAGE005-C-KILLS-tsan.json "$variant" 2>&1 | tee ../../c-results/kills-tsan.txt
+          python3 -B stage005_c.py "$bin" ../../c-results/STAGE005-C.json ../../c-results/STAGE005-A.json 2>&1 | tee ../../c-results/c-run.txt
+      - name: Always enforce source and unsafe boundaries and retain digests
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > c-results/source-guard-after.txt
+          bad="$(grep -rnE 'Unsafe|withUnsafe' Experiments/R005Swift/Sources/SwiftProbe --include='*.swift' | grep -v '/Snapshot.swift:' || true)"
+          test -z "$bad"
+          ! grep -rnE '@unchecked Sendable|nonisolated\(unsafe\)|unowned\(unsafe\)|Unmanaged|UnsafeMutable|unsafeBitCast' Experiments/R005Swift/Sources/SwiftProbe --include='*.swift'
+          git diff --exit-code
+          find Experiments/R005Swift/Sources -type f -exec shasum -a 256 {} \; > c-results/source-sha256.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r005-targeted-c-results
+          path: c-results/
+          if-no-files-found: error
