@@ -1,0 +1,8 @@
+{
+  "emptyFinish" : true,
+  "exactWrittenBytes" : 10000,
+  "fifoRecords" : 10000,
+  "rejectedMisuse" : 2,
+  "scope" : "queue\/writer lifecycle checks, not Stage C acceptance",
+  "status" : "pass"
+}

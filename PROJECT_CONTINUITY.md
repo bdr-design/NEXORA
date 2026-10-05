@@ -19,7 +19,15 @@ Debug/Release transport lifecycle + S/H 100k restore PASS; zero paired allocatio
 violations. S diagnostic ratio=1.347911485, advance p99=1747583 ns; H=1.617218224,
 p99=1755709 ns. Thus C is OPEN on both layouts despite workflow SUCCESS.
 Candidate transport is functionally tested but NOT accepted as a performance fix.
-Next: bounded TSan transport + S/H 100k restore only, then present alternatives.
+Bounded TSan run 37311166676 SUCCESS on 2f8bd8b8b749562b5b88a84b3858c8a44dcb4b88;
+artifact 11346245823 SHA-256
+96f24e025c67875c5a8075f8b5da241433f97f09cc64affa3e16cbc371fb0f8a.
+Queue/writer lifecycle + S/H 100k restore and guards PASS, empty TSan stderr.
+This is not 1M K1-K10 or 100-save C acceptance for the candidate.
+Next: owner chooses bounded profiling (recommended), chunk ownership/size redesign,
+or rollback of unproven transport while retaining fixed gates. Costs and scope are
+in Docs/Daily/2026-10-05-R005-EXECUTION.md; raw JSONs in
+Experiments/R005Swift/Evidence/20261005 and review-20261005.json.
 No more overhead attempts or 100-save campaign until the owner chooses a next path.
 Keep candidate source and raw metrics reviewable; do not merge into production.
 All thresholds remain unchanged.

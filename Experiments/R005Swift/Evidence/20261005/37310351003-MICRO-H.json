@@ -1,0 +1,80 @@
+{
+  "advanceCalls" : 10316,
+  "advanceDuringSaveNS" : {
+    "marginNS" : -655709,
+    "max" : 25780542,
+    "p50" : 412583,
+    "p99" : 1755709,
+    "samples" : 1539
+  },
+  "allocationPairing" : {
+    "firstViolationAllocations" : 0,
+    "firstViolationCall" : -1,
+    "firstViolationChunks" : 0,
+    "maxExcess" : 0,
+    "samples" : 1539,
+    "violations" : 0
+  },
+  "allocationsIdleMaxPerAdvance" : 0,
+  "allocationsWhileSavingMaxPerAdvance" : 364,
+  "assets" : 1000000,
+  "barrierChunksMaxPerAdvance" : 364,
+  "barrierCopy" : {
+    "bytesPerSave" : [
+      57118864,
+      52640144,
+      56492496,
+      60647072,
+      57348912
+    ],
+    "nsMax" : 19469011,
+    "nsP50" : 15812408,
+    "nsP99" : 19469011,
+    "nsPerSave" : [
+      10729467,
+      11250137,
+      19469011,
+      17359092,
+      15812408
+    ],
+    "samples" : 5
+  },
+  "beginSaveNS" : {
+    "marginNS" : 83250,
+    "max" : 16750,
+    "p50" : 12417,
+    "p99" : 16750,
+    "samples" : 5
+  },
+  "exactRecoveredDigest" : "6f5a0bdeef0b10f8ef316c8e886eedd0acace6b5aa91e35bf2433319e90853ed",
+  "idleEvents" : 7995106,
+  "idleNSPerEvent" : 474.17124225745101,
+  "ignoredWALTailBytes" : 0,
+  "limits" : "Apple CI process\/SIGKILL proof; WAL full-record process persistence, not physical power-cut certification; not iPhone acceptance",
+  "overheadRatio" : 1.6172182240914499,
+  "overheadRatioMargin" : -0.5172182240914498,
+  "peakQueuedBytes" : 87008144,
+  "recoveredEpoch" : 6,
+  "replayedCommands" : 317,
+  "restoreNS" : 499753875,
+  "saveNSPerEvent" : 766.8383743188316,
+  "saves" : 5,
+  "savingEvents" : 1227670,
+  "snapshotBytes" : 100801772,
+  "snapshotBytesMax" : 100801772,
+  "snapshotBytesMin" : 100801772,
+  "status" : "diagnostic",
+  "thresholds" : {
+    "advanceDuringSaveP99NS" : 1100000,
+    "beginSaveP99NS" : 100000,
+    "idleAllocationsPerAdvance" : 0,
+    "overheadRatio" : 1.1000000000000001
+  },
+  "variant" : "H",
+  "writeNS" : {
+    "max" : 381715709,
+    "p50" : 310530625,
+    "p99" : 381715709,
+    "samples" : 5
+  }
+}

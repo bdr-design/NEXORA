@@ -1,0 +1,215 @@
+{
+  "status": "C-open",
+  "date": "2026-10-05",
+  "scope": "R005 source audit and bounded execution, not final Stage C acceptance",
+  "repository": "bdr-design/NEXORA",
+  "branch": "diagnostic/r005-design-1m-20260930",
+  "main": "38ce39cf9322f47e4def5f6eddb425c5a66ea7f9",
+  "originalC": {
+    "source": "fa9c44656d6a7544f5cd0255781c64fde3e9ce1f",
+    "tree": "13d773e230a8858dedc083280b80d35127b0a2b8",
+    "run": 36875130222,
+    "status": "failure",
+    "layout": "S",
+    "saves": 100,
+    "overheadRatio": 1.5162503372173357,
+    "artifact": 11170911262,
+    "artifactSHA256": "6517060278e24e0a8b3bdb0db0476ebe719543eac293bcb2b903dc22fc356d71"
+  },
+  "gateFixes": {
+    "source": "1abc2fa11bd2160672b1467ed6c392e528fd7ecd",
+    "localNegativeTests": 12,
+    "A": "reject all nonzero per-advance allocations instead of falling back to S success",
+    "C": "compare allocations with barrier chunks in every saving advance",
+    "CI": "source guards before execution and always after failure"
+  },
+  "candidate": {
+    "source": "1c0c87151a0a3f39c0967da4c0f5ba6c5ab68547",
+    "tree": "f4b8c08a4aba271c56a316827b39567ccca66b76",
+    "run": 37310351003,
+    "workflowConclusion": "success",
+    "acceptance": "not accepted as a performance fix",
+    "artifact": 11345188872,
+    "artifactSHA256": "0db7ad3cee68594f73c936884b68b8bab54bd24344c8409950ccfb2240f2b0b4",
+    "functionalChecks": [
+      "Debug/Release",
+      "10000 FIFO records and empty-finish wake",
+      "writer error/range rejection and exact bytes",
+      "S/H 100k exact restore in Debug/Release"
+    ],
+    "TSan": {
+      "source": "2f8bd8b8b749562b5b88a84b3858c8a44dcb4b88",
+      "tree": "67186f5da61494f86534adf191f6933ba831e144",
+      "run": 37311166676,
+      "workflowConclusion": "success",
+      "artifact": 11346245823,
+      "artifactSHA256": "96f24e025c67875c5a8075f8b5da241433f97f09cc64affa3e16cbc371fb0f8a",
+      "scope": "queue transport lifecycle and S/H 100k exact restore only; no 1M K1-K10 performance acceptance"
+    }
+  },
+  "thresholds": {
+    "beginSaveP99NS": 100000,
+    "advanceDuringSaveP99NS": 1100000,
+    "overheadRatio": 1.1,
+    "idleAllocationsPerAdvance": 0,
+    "savingAllocations": "<= paired barrier chunks in each advance"
+  },
+  "diagnosticResults": [
+    {
+      "run": 37308440794,
+      "layout": "S",
+      "saves": 5,
+      "status": "diagnostic",
+      "overheadRatio": 1.4442141548290686,
+      "beginSaveP99NS": 12084,
+      "advanceP99NS": 1840667,
+      "advanceSamples": 1526,
+      "allocationPairing": {
+        "firstViolationAllocations": 0,
+        "firstViolationCall": -1,
+        "firstViolationChunks": 0,
+        "maxExcess": 0,
+        "samples": 1526,
+        "violations": 0
+      },
+      "idleAllocationsMax": 0,
+      "snapshotBytes": 95801772
+    },
+    {
+      "run": 37308440794,
+      "layout": "H",
+      "saves": 5,
+      "status": "diagnostic",
+      "overheadRatio": 1.2293202891244133,
+      "beginSaveP99NS": 9292,
+      "advanceP99NS": 1009000,
+      "advanceSamples": 1729,
+      "allocationPairing": {
+        "firstViolationAllocations": 0,
+        "firstViolationCall": -1,
+        "firstViolationChunks": 0,
+        "maxExcess": 0,
+        "samples": 1729,
+        "violations": 0
+      },
+      "idleAllocationsMax": 0,
+      "snapshotBytes": 100801772
+    },
+    {
+      "run": 37310351003,
+      "layout": "S",
+      "saves": 5,
+      "status": "diagnostic",
+      "overheadRatio": 1.3479114849942384,
+      "beginSaveP99NS": 19125,
+      "advanceP99NS": 1747583,
+      "advanceSamples": 1373,
+      "allocationPairing": {
+        "firstViolationAllocations": 0,
+        "firstViolationCall": -1,
+        "firstViolationChunks": 0,
+        "maxExcess": 0,
+        "samples": 1373,
+        "violations": 0
+      },
+      "idleAllocationsMax": 0,
+      "snapshotBytes": 95801772
+    },
+    {
+      "run": 37310351003,
+      "layout": "H",
+      "saves": 5,
+      "status": "diagnostic",
+      "overheadRatio": 1.6172182240914499,
+      "beginSaveP99NS": 16750,
+      "advanceP99NS": 1755709,
+      "advanceSamples": 1539,
+      "allocationPairing": {
+        "firstViolationAllocations": 0,
+        "firstViolationCall": -1,
+        "firstViolationChunks": 0,
+        "maxExcess": 0,
+        "samples": 1539,
+        "violations": 0
+      },
+      "idleAllocationsMax": 0,
+      "snapshotBytes": 100801772
+    }
+  ],
+  "rawEvidence": [
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37308440794-MICRO-COMPONENTS.json",
+      "sha256": "4a504828645cf14e8900f84463674981c128326db4622ab4b4e82a1d91ad1d55",
+      "run": 37308440794,
+      "originalName": "MICRO-COMPONENTS.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37308440794-MICRO-S.json",
+      "sha256": "40490d112128e7609ddb579b516ffba6d635f7633f238636b49fa6e8b07a466d",
+      "run": 37308440794,
+      "originalName": "MICRO-S.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37308440794-MICRO-H.json",
+      "sha256": "92f2c6b8bce7a74127403692e57484d2c8a973ab2125119867e7e3497e6fee02",
+      "run": 37308440794,
+      "originalName": "MICRO-H.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37310351003-MICRO-COMPONENTS.json",
+      "sha256": "157f265441189d8906351bd7ad41147ad754b51a3cf79023111f3874d277f91b",
+      "run": 37310351003,
+      "originalName": "MICRO-COMPONENTS.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37310351003-MICRO-S.json",
+      "sha256": "8c76a3bc36903bb6a29fd75be037d6c80cd9ee0964d969bfd6f1457eb5e954e8",
+      "run": 37310351003,
+      "originalName": "MICRO-S.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37310351003-MICRO-H.json",
+      "sha256": "a0fc8ed32d5419b5aeb21832106df1a0dfbb66d097b502595ac7371340c53c98",
+      "run": 37310351003,
+      "originalName": "MICRO-H.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37311166676-transport-tsan.json",
+      "sha256": "a8d7b9caa0d089d1bbb3dcfbe6a00f72c7ce226f078a10b0c50676452363ba5d",
+      "run": 37311166676,
+      "originalName": "transport-tsan.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37311166676-smoke-tsan-S.json",
+      "sha256": "a3de5ef33ae2eefc5f359ec1edec4e3a9f81e04c508b94350e0ce53f8492b4a5",
+      "run": 37311166676,
+      "originalName": "smoke-tsan-S.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37311166676-smoke-tsan-H.json",
+      "sha256": "7c014caff38fa59789e7c29e6a0ec6c54e03ff480a0a61a41008ec8f636d7be5",
+      "run": 37311166676,
+      "originalName": "smoke-tsan-H.json"
+    }
+  ],
+  "reuse": {
+    "status": "revalidated previous A/B, not newly measured",
+    "source": "fa9c44656d6a7544f5cd0255781c64fde3e9ce1f",
+    "run": 36875130222,
+    "chosen": "S",
+    "A_B_inputs": "byte-equal, normal dispatch equal after removing STAGE_C-only code",
+    "BRecords": 60,
+    "priorTSan": "retained unchanged A/B evidence; candidate C safety separate"
+  },
+  "limits": [
+    "C remains open on S and H",
+    "5-save diagnostics do not close C",
+    "no new 1M/100-save acceptance campaign or K1-K10 for this transport candidate",
+    "no production change, main merge, IPA or iPhone acceptance",
+    "no causal improvement inferred from different hosted CI runs",
+    "manifest torn-tail resume-write risk remains source-reviewed, not fixed in this C-only scope",
+    "Chat app disconnect cause unverified; continuity persists in repository"
+  ],
+  "failureRegistry": "Experiments/R005Swift/failures.json",
+  "next": "pause further overhead attempts and present bounded alternatives to owner"
+}
