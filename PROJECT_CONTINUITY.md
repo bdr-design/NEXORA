@@ -13,16 +13,21 @@ copy/write candidate 37315706838 had S ratio 1.887304621, p99 1172542 ns and zer
 saving allocations, with ~98 MB S physical scratch cost. Priority run 37316669619
 FAILED on ec695084cba1aa63a563602549c2a96f80418cc9 / tree
 569a5c6bb43794ae9964155882fd37fe33acb397: save did not commit within 2000 advances.
-Artifact 11348271339 ZIP SHA-256
+H failed at the cadence. S completed 5 saves: ratio 1.309202510965811,
+advance p99 1267959 ns /1629 samples; both miss. Artifact 11348271339 ZIP SHA-256
 4978fd9a2040e2af497a2d3c1276d00275d169b30b8baeb84635dbf11645f53d.
-No complete S ratio or H run exists for that failure; never infer one.
+No complete H timing result exists; empty stdout retained. Initial log-only S
+attribution corrected after exact ZIP recovery; do not repeat the old claim.
 
 Both bounded candidates failed; STOP performance retries at owner limit.
 No new 100-save campaign. Four C files restored verbatim from allowed 3b3711de
 (tree 6c04893b16c17492e2b7d74a9dc4a57751f2468b); pooling/batching/background QoS
 removed from live path. SHA/K3 regressions, fixed gates and source guards retained.
-Next only: verify metadata recovery/rollback CI, save exact failure evidence,
-then owner chooses a broader ownership redesign or fixed-Mac diagnosis.
+Rollback/recovery CI 37317983436 SUCCESS on 0b2d2b9be023c74bddc7055618aec8c9ec8e74a9,
+tree 16b92b8d642578655c60a22b7b790f7146eeb0f2. Artifact 11348731266 ZIP SHA-256
+837e044786e2c4551a47785b7949074a69f6ba3a0cbda3caa95e4ec574400beb. Four restored
+files verified exactly; guards/A-B reuse passed. Metadata-only, no fresh timing.
+Next: owner chooses broader ownership redesign or fixed-Mac diagnosis.
 See Docs/Daily/2026-10-05-R005-FIX-OUTCOME.md for 3 options and costs.
 Do not produce closure files until genuine C PASS names S or H. All thresholds
 unchanged. B torn-tail resume-write finding still needs resolution before production.

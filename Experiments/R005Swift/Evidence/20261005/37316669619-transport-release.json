@@ -1,0 +1,10 @@
+{
+  "emptyFinish" : true,
+  "exactWrittenBytes" : 10000,
+  "fifoRecords" : 10000,
+  "knownSHA256" : true,
+  "legacyDigestEncoding" : true,
+  "rejectedMisuse" : 2,
+  "scope" : "queue\/writer lifecycle checks, not Stage C acceptance",
+  "status" : "pass"
+}

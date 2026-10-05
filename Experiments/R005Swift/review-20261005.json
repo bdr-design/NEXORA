@@ -31,7 +31,29 @@
     "acceptance": "failed cadence; not a performance fix",
     "artifact": 11348271339,
     "artifactSHA256": "4978fd9a2040e2af497a2d3c1276d00275d169b30b8baeb84635dbf11645f53d",
-    "failedGate": "save did not commit within 2000 advance calls"
+    "failedGate": "H save did not commit within 2000 advance calls; S completed 5 saves but ratio 1.309202510965811 and advance p99 1267959 ns both exceed limits",
+    "S": {
+      "saves": 5,
+      "status": "diagnostic",
+      "overheadRatio": 1.309202510965811,
+      "advanceP99NS": 1267959,
+      "samples": 1629,
+      "pairedAllocationViolations": 0
+    },
+    "H": {
+      "status": "runtime failure",
+      "failedGate": "save did not commit within 2000 advance calls",
+      "aggregateTimingResult": null
+    },
+    "recovery": {
+      "source": "0b2d2b9be023c74bddc7055618aec8c9ec8e74a9",
+      "tree": "16b92b8d642578655c60a22b7b790f7146eeb0f2",
+      "run": 37317983436,
+      "workflowConclusion": "success",
+      "artifact": 11348731266,
+      "artifactSHA256": "837e044786e2c4551a47785b7949074a69f6ba3a0cbda3caa95e4ec574400beb",
+      "scope": "exact artifact verification and byte-equal rollback only; no new measurement"
+    }
   },
   "thresholds": {
     "beginSaveP99NS": 100000,
@@ -180,6 +202,26 @@
       },
       "idleAllocationsMax": 0,
       "snapshotBytes": 100801772
+    },
+    {
+      "run": 37316669619,
+      "layout": "S",
+      "saves": 5,
+      "status": "diagnostic",
+      "overheadRatio": 1.309202510965811,
+      "beginSaveP99NS": 14750,
+      "advanceP99NS": 1267959,
+      "advanceSamples": 1629,
+      "allocationPairing": {
+        "firstViolationAllocations": 0,
+        "firstViolationCall": -1,
+        "firstViolationChunks": 0,
+        "maxExcess": 0,
+        "samples": 1629,
+        "violations": 0
+      },
+      "idleAllocationsMax": 0,
+      "snapshotBytes": 95801772
     }
   ],
   "rawEvidence": [
@@ -296,6 +338,117 @@
       "sha256": "647281ffb2a01b4e4153955106be00d263bf756c68b478d42c9617051770f5db",
       "run": 37316669619,
       "originalName": "GitHub failure log excerpt; full logs retained in run"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37316669619-MICRO-COMPONENTS.json",
+      "sha256": "4bfc1dd5f4747f77692fb0a51d9c612e7b7c5819b83557b33d706144ad984597",
+      "run": 37316669619,
+      "originalName": "MICRO-COMPONENTS.json",
+      "recoveryRun": 37317983436
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37316669619-MICRO-H-empty-stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "run": 37316669619,
+      "originalName": "MICRO-H.json",
+      "recoveryRun": 37317983436
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37316669619-MICRO-S.json",
+      "sha256": "58239e3de8892ba7431ff1c148bbe00d3c0019da71701b550093839a88173031",
+      "run": 37316669619,
+      "originalName": "MICRO-S.json",
+      "recoveryRun": 37317983436
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37316669619-REUSED-AB.json",
+      "sha256": "adfdb3797aeb04a9190b92d19281bfee38fb0c2f97bffdb7de941b365e53934e",
+      "run": 37316669619,
+      "originalName": "REUSED-AB.json",
+      "recoveryRun": 37317983436
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37316669619-STAGE005-A.json",
+      "sha256": "a2419f0a74b69cffaa02e9ee03fd05b08b325a69cd8387383e2e845d6a3bed72",
+      "run": 37316669619,
+      "originalName": "STAGE005-A.json",
+      "recoveryRun": 37317983436
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37316669619-allocation-probes-H.json",
+      "sha256": "c48c63660dd98242041027cc450b2cac0e5a8fc6e4a256d3c2c8d2171aecbd36",
+      "run": 37316669619,
+      "originalName": "allocation-probes-H.json",
+      "recoveryRun": 37317983436
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37316669619-allocation-probes-S.json",
+      "sha256": "56c05db25bebef48d1970a0f1b444672296ed2b2ac02831d17cc09f175788e09",
+      "run": 37316669619,
+      "originalName": "allocation-probes-S.json",
+      "recoveryRun": 37317983436
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37316669619-mid-record-debug.json",
+      "sha256": "6b5c66029e9e1aeea0a02efa1198a8d313e33c280dcc4b13c2c1ce9762285ad7",
+      "run": 37316669619,
+      "originalName": "mid-record-debug.json",
+      "recoveryRun": 37317983436
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37316669619-mid-record-release.json",
+      "sha256": "6b5c66029e9e1aeea0a02efa1198a8d313e33c280dcc4b13c2c1ce9762285ad7",
+      "run": 37316669619,
+      "originalName": "mid-record-release.json",
+      "recoveryRun": 37317983436
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37316669619-smoke-debug-H.json",
+      "sha256": "7c014caff38fa59789e7c29e6a0ec6c54e03ff480a0a61a41008ec8f636d7be5",
+      "run": 37316669619,
+      "originalName": "smoke-debug-H.json",
+      "recoveryRun": 37317983436
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37316669619-smoke-debug-S.json",
+      "sha256": "a3de5ef33ae2eefc5f359ec1edec4e3a9f81e04c508b94350e0ce53f8492b4a5",
+      "run": 37316669619,
+      "originalName": "smoke-debug-S.json",
+      "recoveryRun": 37317983436
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37316669619-smoke-release-H.json",
+      "sha256": "7c014caff38fa59789e7c29e6a0ec6c54e03ff480a0a61a41008ec8f636d7be5",
+      "run": 37316669619,
+      "originalName": "smoke-release-H.json",
+      "recoveryRun": 37317983436
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37316669619-smoke-release-S.json",
+      "sha256": "a3de5ef33ae2eefc5f359ec1edec4e3a9f81e04c508b94350e0ce53f8492b4a5",
+      "run": 37316669619,
+      "originalName": "smoke-release-S.json",
+      "recoveryRun": 37317983436
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37316669619-transport-debug.json",
+      "sha256": "5cedaaea4205628f3d43ffde01086b6ceecb3c215537e374c5dcdc069935bb08",
+      "run": 37316669619,
+      "originalName": "transport-debug.json",
+      "recoveryRun": 37317983436
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37316669619-transport-release.json",
+      "sha256": "5cedaaea4205628f3d43ffde01086b6ceecb3c215537e374c5dcdc069935bb08",
+      "run": 37316669619,
+      "originalName": "transport-release.json",
+      "recoveryRun": 37317983436
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261005/37317983436-RECOVERED-QOS.json",
+      "sha256": "a1b7c511de150d6c6b13601ea4b0e6b179c8677b10995f92786545e51422d150",
+      "run": 37317983436,
+      "originalName": "RECOVERED-QOS.json"
     }
   ],
   "reuse": {
@@ -385,7 +538,16 @@
       "Stage005CRunner.swift",
       "Stage005CHybridRunner.swift"
     ],
-    "status": "local blob hashes verified; CI byte-equality check pending",
+    "status": "CI byte-equality verified for all four files, run 37317983436",
     "scope": "no new performance evidence; original C remains open"
+  },
+  "rollback": {
+    "source": "0b2d2b9be023c74bddc7055618aec8c9ec8e74a9",
+    "tree": "16b92b8d642578655c60a22b7b790f7146eeb0f2",
+    "run": 37317983436,
+    "workflowConclusion": "success",
+    "artifact": 11348731266,
+    "artifactSHA256": "837e044786e2c4551a47785b7949074a69f6ba3a0cbda3caa95e4ec574400beb",
+    "scope": "exact artifact verification and byte-equal rollback only; no new measurement"
   }
 }

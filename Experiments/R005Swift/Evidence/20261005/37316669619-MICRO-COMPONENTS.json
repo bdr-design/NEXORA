@@ -1,0 +1,132 @@
+{
+  "advanceModes" : [
+    {
+      "activeWriterCalls" : 0,
+      "calls" : 984,
+      "events" : 1000000,
+      "maxAllocations" : 0,
+      "mode" : "no-state",
+      "nsPerEvent" : 230.746498,
+      "run" : 0
+    },
+    {
+      "activeWriterCalls" : 0,
+      "calls" : 984,
+      "events" : 1000000,
+      "maxAllocations" : 0,
+      "mode" : "idle-state",
+      "nsPerEvent" : 228.416246,
+      "run" : 0
+    },
+    {
+      "activeWriterCalls" : 984,
+      "calls" : 984,
+      "events" : 1000000,
+      "maxAllocations" : 0,
+      "mode" : "idle-with-writer",
+      "nsPerEvent" : 212.778828,
+      "run" : 0
+    },
+    {
+      "activeWriterCalls" : 0,
+      "calls" : 984,
+      "events" : 1000000,
+      "maxAllocations" : 0,
+      "mode" : "no-state",
+      "nsPerEvent" : 267.36395700000003,
+      "run" : 1
+    },
+    {
+      "activeWriterCalls" : 0,
+      "calls" : 984,
+      "events" : 1000000,
+      "maxAllocations" : 0,
+      "mode" : "idle-state",
+      "nsPerEvent" : 238.447833,
+      "run" : 1
+    },
+    {
+      "activeWriterCalls" : 984,
+      "calls" : 984,
+      "events" : 1000000,
+      "maxAllocations" : 0,
+      "mode" : "idle-with-writer",
+      "nsPerEvent" : 294.521725,
+      "run" : 1
+    },
+    {
+      "activeWriterCalls" : 0,
+      "calls" : 984,
+      "events" : 1000000,
+      "maxAllocations" : 0,
+      "mode" : "no-state",
+      "nsPerEvent" : 369.58766200000002,
+      "run" : 2
+    },
+    {
+      "activeWriterCalls" : 0,
+      "calls" : 984,
+      "events" : 1000000,
+      "maxAllocations" : 0,
+      "mode" : "idle-state",
+      "nsPerEvent" : 171.91425000000001,
+      "run" : 2
+    },
+    {
+      "activeWriterCalls" : 984,
+      "calls" : 984,
+      "events" : 1000000,
+      "maxAllocations" : 0,
+      "mode" : "idle-with-writer",
+      "nsPerEvent" : 312.65793300000001,
+      "run" : 2
+    }
+  ],
+  "assets" : 1000000,
+  "copy" : [
+    {
+      "allocations" : 5892,
+      "bytes" : 95594272,
+      "checksum" : 221932,
+      "ns" : 10929759,
+      "records" : 5892,
+      "run" : 0,
+      "warmup" : true
+    },
+    {
+      "allocations" : 5892,
+      "bytes" : 95594272,
+      "checksum" : 221932,
+      "ns" : 7416174,
+      "records" : 5892,
+      "run" : 1,
+      "warmup" : false
+    },
+    {
+      "allocations" : 5892,
+      "bytes" : 95594272,
+      "checksum" : 221932,
+      "ns" : 8812860,
+      "records" : 5892,
+      "run" : 2,
+      "warmup" : false
+    },
+    {
+      "allocations" : 5892,
+      "bytes" : 95594272,
+      "checksum" : 221932,
+      "ns" : 8355310,
+      "records" : 5892,
+      "run" : 3,
+      "warmup" : false
+    }
+  ],
+  "queue" : {
+    "allocations" : 0,
+    "ns" : 150542,
+    "pushes" : 10000
+  },
+  "scope" : "bounded components; not Stage C acceptance",
+  "status" : "diagnostic",
+  "variant" : "S"
+}

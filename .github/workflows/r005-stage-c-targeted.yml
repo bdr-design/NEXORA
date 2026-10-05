@@ -7,7 +7,7 @@ permissions:
   actions: read
 jobs:
   stage-c:
-    if: ${{ contains(github.event.head_commit.message, '[r005-micro]') || contains(github.event.head_commit.message, '[r005-c-targeted]') }}
+    if: ${{ (contains(github.event.head_commit.message, '[r005-micro]') || contains(github.event.head_commit.message, '[r005-c-targeted]')) && !contains(github.event.head_commit.message, '[r005-evidence-only]') }}
     runs-on: macos-15
     timeout-minutes: 60
     env:

@@ -7,7 +7,8 @@
     "Initial ad-hoc raw artifact inspection looked for records at the top level rather than fixture.records; read path corrected, original bytes unchanged.",
     "Post-Stage-A directive review found the measured S variant still used the earlier thin 45-byte asset columns and had not added the five required UInt32 columns contract/changeEpoch/entity/policy/origin. The successful run is preserved as invalid for the A design decision; S was corrected to the required 65-byte full-column layout, the full typed checkpoint was extended accordingly, and A must be remeasured before B/C acceptance.",
     "Pre-acceptance Stage C adversarial review found that SwiftWorld.advance had save barriers on schedule/invalidate paths but not before its asset/group mutations. Corrected by emitting the asset and group pre-write chunks after all recoverable checks and before the first mutation; no threshold or result was reclassified.",
-    "Pre-acceptance Stage C recovery review found that fallback from an incomplete current snapshot replayed only the previous snapshot's matching WAL, but the directive requires previous snapshot + previous WAL + current WAL. Recovery now replays every contiguous WAL from the restored snapshot epoch through the current epoch, rejects gaps/tails followed by newer WALs, and adds an exact SIGKILL chain-fallback regression."
+    "Pre-acceptance Stage C recovery review found that fallback from an incomplete current snapshot replayed only the previous snapshot's matching WAL, but the directive requires previous snapshot + previous WAL + current WAL. Recovery now replays every contiguous WAL from the restored snapshot epoch through the current epoch, rejects gaps/tails followed by newer WALs, and adds an exact SIGKILL chain-fallback regression.",
+    "2026-10-05 metadata classification: the log-only cadence error was initially attributed to S and S output was assumed absent. Exact failed ZIP recovery proved S completed 5 saves (ratio 1.309202510965811, p99 1267959 ns) and H was the cadence failure. Current registry/review/continuity/report corrected before final delivery; original raw files and failed workflow status preserved."
   ],
   "apple": [
     {
@@ -152,9 +153,18 @@
       "artifact": 11348271339,
       "artifactSHA256": "4978fd9a2040e2af497a2d3c1276d00275d169b30b8baeb84635dbf11645f53d",
       "scope": "bounded priority micro, not 100-save C acceptance",
-      "passedBeforeFailure": "Debug/Release builds, unchanged A/B revalidation, transport/known SHA and S/H 100k exact restore, S/H zero-reuse allocation probes, real K3 1M exact recovery in Debug/Release, component micro; always-after source guard passed.",
-      "failedGate": "S micro aborted: stage C save did not commit within 2000 advance calls. Background-enforced writer priority does not satisfy the unchanged cadence. No S ratio or H run is inferred from this failure.",
-      "correction": "Reverted Snapshot/Stage005CSave/Stage005CRunner/Stage005CHybridRunner byte-for-byte to allowed source 3b3711de; removed pooling, batching and background-priority experiments from live path. Retained exact failed evidence, repaired gates and known-SHA/K3 regressions. Stop performance attempts after two bounded candidate runs; do not start a 100-save campaign. Recover metadata from large ZIP in CI without remeasurement."
+      "passedBeforeFailure": "Debug/Release builds, unchanged A/B revalidation, transport/known SHA and S/H 100k exact restore, S/H zero-reuse allocation probes, real K3 1M exact recovery in Debug/Release, component micro; always-after source guard passed. S completed 1M/5 saves and emitted complete raw JSON, including exact recovered digest and zero paired allocation violations; S timing thresholds still missed.",
+      "failedGate": "H micro aborted: stage C save did not commit within 2000 advance calls. S finished 5 saves but overheadRatio=1.309202510965811 >1.10 and advance p99=1267959 ns (1629 samples) >1100000 ns. H emitted no aggregate timing JSON.",
+      "correction": "Reverted Snapshot/Stage005CSave/Stage005CRunner/Stage005CHybridRunner byte-for-byte to allowed source 3b3711de; removed pooling, batching and background-priority experiments from live path. Retained exact failed evidence, repaired gates and known-SHA/K3 regressions. Stop performance attempts after two bounded candidate runs; do not start a 100-save campaign. Recover metadata from large ZIP in CI without remeasurement.",
+      "retrievedFrom": {
+        "source": "0b2d2b9be023c74bddc7055618aec8c9ec8e74a9",
+        "tree": "16b92b8d642578655c60a22b7b790f7146eeb0f2",
+        "run": 37317983436,
+        "workflowConclusion": "success",
+        "artifact": 11348731266,
+        "artifactSHA256": "837e044786e2c4551a47785b7949074a69f6ba3a0cbda3caa95e4ec574400beb",
+        "scope": "exact artifact verification and byte-equal rollback only; no new measurement"
+      }
     }
   ],
   "diagnosticThresholdMisses": [
@@ -350,6 +360,38 @@
         "idleAllocationsMax": 0
       },
       "correction": "No performance closure. All original gates retained; no 100-save campaign. Owner-authorized bounded path, with one final writer-priority micro pending."
+    },
+    {
+      "commit": "ec695084cba1aa63a563602549c2a96f80418cc9",
+      "tree": "569a5c6bb43794ae9964155882fd37fe33acb397",
+      "run": 37316669619,
+      "workflowConclusion": "failure",
+      "scope": "1M/5-save diagnostics, not C acceptance",
+      "artifact": 11348271339,
+      "artifactSHA256": "4978fd9a2040e2af497a2d3c1276d00275d169b30b8baeb84635dbf11645f53d",
+      "retrievedFrom": {
+        "source": "0b2d2b9be023c74bddc7055618aec8c9ec8e74a9",
+        "tree": "16b92b8d642578655c60a22b7b790f7146eeb0f2",
+        "run": 37317983436,
+        "workflowConclusion": "success",
+        "artifact": 11348731266,
+        "artifactSHA256": "837e044786e2c4551a47785b7949074a69f6ba3a0cbda3caa95e4ec574400beb",
+        "scope": "exact artifact verification and byte-equal rollback only; no new measurement"
+      },
+      "S": {
+        "saves": 5,
+        "status": "diagnostic",
+        "overheadRatio": 1.309202510965811,
+        "advanceP99NS": 1267959,
+        "samples": 1629,
+        "pairedAllocationViolations": 0
+      },
+      "H": {
+        "status": "runtime failure",
+        "failedGate": "save did not commit within 2000 advance calls",
+        "aggregateTimingResult": null
+      },
+      "correction": "Both candidates rejected and live C transport restored byte-for-byte. No new performance attempt at owner limit."
     }
   ]
 }

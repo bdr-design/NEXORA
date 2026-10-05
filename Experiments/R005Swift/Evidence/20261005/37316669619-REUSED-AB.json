@@ -1,0 +1,15 @@
+{
+  "status": "pass",
+  "scope": "revalidated prior A/B evidence, not new measurements",
+  "source": "fa9c44656d6a7544f5cd0255781c64fde3e9ce1f",
+  "run": 36875130222,
+  "artifact": 11170911262,
+  "chosen": "S",
+  "unchangedInputFiles": 85,
+  "A": {
+    "chosen": "S",
+    "ratioHtoS1M": 0.7855310255832999,
+    "rule": "H only if H median ns/event <= 0.75*S at 1M, H owned <=128 B/asset, and all health gates pass"
+  },
+  "BRecords": 60
+}

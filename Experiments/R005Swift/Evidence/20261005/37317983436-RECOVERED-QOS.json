@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "scope": "evidence extraction and byte-equal rollback, not new measurement",
+  "failedRun": 37316669619,
+  "failedRunStatus": "failure",
+  "artifact": 11348271339,
+  "artifactSHA256": "4978fd9a2040e2af497a2d3c1276d00275d169b30b8baeb84635dbf11645f53d",
+  "restoredTransportSource": "3b3711de3123f85980dd100e35cae2b3e998a4de",
+  "reusedFiles": 4,
+  "extractedFiles": 24
+}
