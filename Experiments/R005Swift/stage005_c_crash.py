@@ -70,6 +70,18 @@ def main():
             results.append({"point":point,"signal":"SIGKILL","expectedEpoch":epoch,
                             "restoredEpoch":restored["epoch"],"exactDigest":True,
                             "ignoredWALTailBytes":restored["ignoredWALTailBytes"]})
+            if point=="c.k9.mid_wal_record":
+                assert restored["ignoredWALTailBytes"]>0,restored
+                continued=run(binary,"stage-c-resume-append",case,args.variant,timeout=1800)
+                second=run(binary,recover_cmd,case,timeout=1800)
+                assert continued["priorTailBytes"]==restored["ignoredWALTailBytes"],continued
+                assert continued["priorWALSequence"]==0 and continued["finalWALSequence"]==1,continued
+                assert continued["priorDigest"]==baseline and continued["exactDigest"]==second["digest"],(continued,second)
+                assert second["epoch"]==epoch and second["ignoredWALTailBytes"]==0,second
+                assert second["processed"]==restored["processed"]+1,second
+                results[-1]["continuedSameEpoch"]={"walEpoch":continued["walEpoch"],
+                    "priorTailBytes":continued["priorTailBytes"],
+                    "finalWALSequence":continued["finalWALSequence"],"secondRecoveryExact":True}
             shutil.rmtree(case)
 
         reference=root/"chain-reference";shutil.copytree(base,reference)

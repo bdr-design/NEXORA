@@ -397,4 +397,127 @@ func stageCRecoverCrash(_ directory: String) throws -> [String: Any] {
             "ignoredWALTailBytes":recovered.ignoredWALTailBytes,
             "restoreNS":elapsed]
 }
+
+func stageCWALResumeAppend(_ directory: String) throws -> [String: Any] {
+    let recovered = try StageCSnapshotRestore.recoverLatest(directory)
+    try require(recovered.ignoredWALTailBytes > 0, "stage C resume requires torn terminal WAL")
+    let oldSequence = recovered.terminalWALReplay.commands
+    let priorDigest = stageCDigestString(Snapshot.worldDigest(recovered.world))
+    let walPath = directory + "/wal-\(recovered.terminalWALEpoch).log"
+    let originalWAL = try Data(contentsOf: URL(fileURLWithPath: walPath))
+    let expectedTail = Data(originalWAL.suffix(recovered.ignoredWALTailBytes))
+    let wal = try StageCWAL.resume(directory: directory, epoch: recovered.terminalWALEpoch,
+                                  replay: recovered.terminalWALReplay)
+    try require(wal.sequence == oldSequence, "stage C WAL resume sequence")
+    guard let discardedTailPath = wal.discardedTailPath else {
+        throw ProbeError.invariant("stage C missing discarded WAL tail archive")
+    }
+    try require(try Data(contentsOf: URL(fileURLWithPath: discardedTailPath)) == expectedTail,
+                "stage C discarded WAL tail exact archive")
+    let p = try recovered.world.advance(to: 600, budget: 1)
+    try require(p.events == 1 && p.units > 0, "stage C resume next event")
+    try wal.appendAdvance(target: 600, budget: 1, units: p.units, events: p.events)
+    try wal.synchronize()
+    try wal.close()
+    let expectedDigest = stageCDigestString(Snapshot.worldDigest(recovered.world))
+    let again = try StageCSnapshotRestore.recoverLatest(directory)
+    try require(again.epoch == recovered.epoch &&
+                again.terminalWALEpoch == recovered.terminalWALEpoch &&
+                again.terminalWALReplay.commands == oldSequence + 1 &&
+                again.replayedCommands == recovered.replayedCommands + 1 &&
+                again.ignoredWALTailBytes == 0 &&
+                again.terminalWALReplay.validBytes == recovered.terminalWALReplay.validBytes + 72 &&
+                stageCDigestString(Snapshot.worldDigest(again.world)) == expectedDigest,
+                "stage C resume append second recovery")
+    return ["status":"pass", "variant":"S", "assets":recovered.world.count,
+            "snapshotEpoch":recovered.epoch, "walEpoch":recovered.terminalWALEpoch,
+            "priorDigest":priorDigest, "exactDigest":expectedDigest,
+            "priorTailBytes":recovered.ignoredWALTailBytes,
+            "discardedTailArchived":true,
+            "priorWALSequence":oldSequence, "finalWALSequence":again.terminalWALReplay.commands,
+            "secondRecoveryExact":true]
+}
+
+// A prefix of a real second frame, used only by the continuation fixtures.
+func stageCWALPartialAdvanceFrame(sequence: UInt64, prefixBytes: Int) -> [UInt8] {
+    var frame = Data(capacity: 72)
+    Snapshot.appendLE(UInt32(72), into: &frame)
+    frame.append(StageCWALKind.advance.rawValue)
+    frame.append(contentsOf: [0, 0, 0])
+    Snapshot.appendLE(sequence, into: &frame)
+    Snapshot.appendLE(UInt64(600), into: &frame)
+    Snapshot.appendLE(UInt32(1), into: &frame)
+    Snapshot.appendLE(UInt32(1), into: &frame)
+    Snapshot.appendLE(UInt32(1), into: &frame)
+    Snapshot.appendLE(UInt32(0), into: &frame)
+    let digest = Snapshot.digestData(frame)
+    frame.append(digest)
+    precondition(frame.count == 72 && prefixBytes > 0 && prefixBytes < frame.count)
+    return [UInt8](frame.prefix(prefixBytes))
+}
+
+func stageCWALContinuationFixture(_ directory: String) throws -> [String: Any] {
+    try FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
+    let tails: [(String, [UInt8])] = [
+        ("short-header", stageCWALPartialAdvanceFrame(sequence: 2, prefixBytes: 2)),
+        ("short-body", stageCWALPartialAdvanceFrame(sequence: 2, prefixBytes: 8)),
+        ("short-digest", stageCWALPartialAdvanceFrame(sequence: 2, prefixBytes: 54))
+    ]
+    var cases: [[String: Any]] = []
+    for (name, tail) in tails {
+        let path = directory + "/" + name
+        let prepared = try stageCPrepareInitial(directory: path, count: 4_096)
+        let first = try prepared.0.advance(to: 600, budget: 1)
+        try require(first.events == 1, "stage C continuation first event")
+        try prepared.2.appendAdvance(target: 600, budget: 1, units: first.units, events: first.events)
+        try prepared.2.close()
+        let file = path + "/wal-1.log"
+        let h = try FileHandle(forWritingTo: URL(fileURLWithPath: file))
+        try h.seekToEnd()
+        try h.write(contentsOf: Data(tail))
+        try h.synchronize()
+        try h.close()
+        let before = try StageCSnapshotRestore.recoverLatest(path)
+        try require(before.terminalWALReplay.commands == 1 &&
+                    before.ignoredWALTailBytes == tail.count &&
+                    stageCDigestString(Snapshot.worldDigest(before.world)) ==
+                        stageCDigestString(Snapshot.worldDigest(prepared.0)),
+                    "stage C continuation valid prefix")
+        let result = try stageCWALResumeAppend(path)
+        try require(result["finalWALSequence"] as? UInt64 == 2,
+                    "stage C continuation sequence after append")
+        cases.append(["tail":name, "discardedBytes":tail.count,
+                      "secondRecoveryExact":true, "finalSequence":2])
+    }
+
+    let corruptPath = directory + "/complete-frame-corrupt"
+    let prepared = try stageCPrepareInitial(directory: corruptPath, count: 4_096)
+    let first = try prepared.0.advance(to: 600, budget: 1)
+    try prepared.2.appendAdvance(target: 600, budget: 1, units: first.units, events: first.events)
+    try prepared.2.close()
+    let lengthPath = directory + "/complete-length-corrupt"
+    try FileManager.default.copyItem(atPath: corruptPath, toPath: lengthPath)
+    let file = corruptPath + "/wal-1.log"
+    var bytes = [UInt8](try Data(contentsOf: URL(fileURLWithPath: file)))
+    try require(bytes.count == 16 + 72, "stage C complete WAL frame size")
+    bytes[16 + 20] ^= 1
+    try Data(bytes).write(to: URL(fileURLWithPath: file), options: .atomic)
+    var rejected = false
+    do { _ = try StageCSnapshotRestore.recoverLatest(corruptPath) }
+    catch ProbeError.corruption { rejected = true }
+    try require(rejected, "stage C complete frame corruption must fail closed")
+    let lengthFile = lengthPath + "/wal-1.log"
+    var lengthBytes = [UInt8](try Data(contentsOf: URL(fileURLWithPath: lengthFile)))
+    lengthBytes[16] = 73 // Header declares more than the complete 72-byte frame.
+    try Data(lengthBytes).write(to: URL(fileURLWithPath: lengthFile), options: .atomic)
+    var rejectedLength = false
+    do { _ = try StageCSnapshotRestore.recoverLatest(lengthPath) }
+    catch ProbeError.corruption { rejectedLength = true }
+    let unchangedLengthFile = try Data(contentsOf: URL(fileURLWithPath: lengthFile))
+    try require(rejectedLength && unchangedLengthFile == Data(lengthBytes),
+                "stage C corrupt complete length cannot become torn tail")
+    return ["status":"pass", "variant":"S", "population":4_096,
+            "continuationCases":cases, "completeFrameCorruptionRejected":rejected,
+            "completeLengthCorruptionRejected":rejectedLength]
+}
 #endif

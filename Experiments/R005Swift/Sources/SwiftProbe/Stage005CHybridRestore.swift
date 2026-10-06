@@ -6,6 +6,8 @@ struct StageCHybridRestored {
     let epoch: UInt32
     let replayedCommands: UInt64
     let ignoredWALTailBytes: Int
+    let terminalWALEpoch: UInt32
+    let terminalWALReplay: StageCWALReplayResult
 }
 
 enum StageCHybridSnapshotRestore {
@@ -169,6 +171,8 @@ enum StageCHybridSnapshotRestore {
                 var expected = epoch
                 var commands: UInt64 = 0
                 var ignoredTail = 0
+                var terminalEpoch = epoch
+                var terminalReplay: StageCWALReplayResult? = nil
                 for (position, walEpoch) in replayEpochs.enumerated() {
                     guard walEpoch == expected else { throw ProbeError.corruption("stage C WAL epoch gap") }
                     let replay = try StageCWALReplay.replay(
@@ -177,6 +181,8 @@ enum StageCHybridSnapshotRestore {
                     guard !sum.overflow else { throw ProbeError.corruption("stage C replay count overflow") }
                     commands = sum.partialValue
                     ignoredTail = replay.ignoredTailBytes
+                    terminalEpoch = walEpoch
+                    terminalReplay = replay
                     if ignoredTail > 0 {
                         guard position == replayEpochs.count - 1 else {
                             throw ProbeError.corruption("stage C WAL after torn current WAL")
@@ -191,8 +197,12 @@ enum StageCHybridSnapshotRestore {
                         expected += 1
                     }
                 }
+                guard let terminalReplay else {
+                    throw ProbeError.corruption("stage C hybrid missing terminal WAL")
+                }
                 return StageCHybridRestored(world: world, epoch: epoch,
-                    replayedCommands: commands, ignoredWALTailBytes: ignoredTail)
+                    replayedCommands: commands, ignoredWALTailBytes: ignoredTail,
+                    terminalWALEpoch: terminalEpoch, terminalWALReplay: terminalReplay)
             } catch {
                 lastError = error
             }

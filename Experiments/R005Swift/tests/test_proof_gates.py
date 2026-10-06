@@ -43,6 +43,30 @@ class ProofGateTests(unittest.TestCase):
     def test_c_limits_are_inclusive(self):
         self.assertEqual(stage_c_failures(self.c()), [])
 
+    def test_c_counts_cover_every_save_and_advance(self):
+        c = self.c()
+        c["saves"] = 101
+        c["beginSaveNS"]["samples"] = 101
+        c["advanceDuringSaveNS"]["samples"] = 101
+        c["allocationPairing"]["samples"] = 101
+        self.assertEqual(stage_c_failures(c), [])
+
+        for count in (1, 99, 101):
+            c = self.c(); c["beginSaveNS"]["samples"] = count
+            self.assertTrue(any("beginSaveNS samples" in failure for failure in stage_c_failures(c)))
+        for count in (1, 99):
+            c = self.c(); c["advanceDuringSaveNS"]["samples"] = count
+            c["allocationPairing"]["samples"] = count
+            self.assertTrue(any("advanceDuringSaveNS samples" in failure for failure in stage_c_failures(c)))
+
+    def test_c_rejects_malformed_sample_counts(self):
+        for field in ("saves", "beginSaveNS", "advanceDuringSaveNS", "allocationPairing"):
+            for count in (0, -1, 100.0, True, "100", None):
+                c = self.c()
+                if field == "saves": c[field] = count
+                else: c[field]["samples"] = count
+                self.assertTrue(stage_c_failures(c), (field, count))
+
     def test_c_independent_maxima_cannot_hide_violation(self):
         c = self.c(); c.update(allocationsWhileSavingMaxPerAdvance=457, barrierChunksMaxPerAdvance=457)
         c["allocationPairing"].update(violations=1, maxExcess=1)

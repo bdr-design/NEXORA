@@ -105,8 +105,71 @@ jobs:
           name: r005-full-b-results
           path: b-results/
           if-no-files-found: error
+  stage-c-functional:
+    if: ${{ contains(github.event.head_commit.message, '[r005-c-functional]') && !contains(github.event.head_commit.message, '[r005-evidence-only]') }}
+    runs-on: macos-15
+    timeout-minutes: 120
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Pin source and check production boundary
+        run: |
+          set -euo pipefail
+          mkdir -p c-functional-results
+          git rev-parse HEAD > c-functional-results/commit.txt
+          git rev-parse HEAD^{tree} > c-functional-results/tree.txt
+          swift --version > c-functional-results/environment.txt
+          xcodebuild -version >> c-functional-results/environment.txt
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > c-functional-results/source-guard-before.txt
+          python3 -B -m unittest discover -s Experiments/R005Swift/tests -v > c-functional-results/proof-gates.txt 2>&1
+      - name: Build Debug Release and TSan C
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          swift build --scratch-path .build-c-functional-debug -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../c-functional-results/build-debug.txt
+          swift build --scratch-path .build-c-functional-release -c release -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../c-functional-results/build-release.txt
+          swift build --scratch-path .build-c-functional-tsan --sanitize=thread -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../c-functional-results/build-tsan.txt
+      - name: WAL resume and 1M K1-K10 in Debug Release TSan S and H
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          for mode in debug release tsan; do
+            bin=".build-c-functional-$mode/$([ "$mode" = release ] && echo release || echo debug)/nxr-swift-probe"
+            for variant in S H; do
+              fixture="../../c-functional-results/wal-$mode-$variant"
+              if [ "$mode" = tsan ]; then
+                TSAN_OPTIONS=halt_on_error=1 "$bin" stage-c-wal-continuation "$fixture" "$variant" > "../../c-functional-results/wal-$mode-$variant.json" 2> "../../c-functional-results/wal-$mode-$variant-stderr.txt"
+                TSAN_OPTIONS=halt_on_error=1 python3 -B stage005_c_crash.py "$bin" "../../c-functional-results/kills-$mode-$variant.json" "$variant" 2>&1 | tee "../../c-functional-results/kills-$mode-$variant.txt"
+              else
+                "$bin" stage-c-wal-continuation "$fixture" "$variant" > "../../c-functional-results/wal-$mode-$variant.json"
+                python3 -B stage005_c_crash.py "$bin" "../../c-functional-results/kills-$mode-$variant.json" "$variant" 2>&1 | tee "../../c-functional-results/kills-$mode-$variant.txt"
+              fi
+              rm -rf "$fixture"
+            done
+          done
+          echo 'Functional WAL continuation, Debug/Release/TSan S/H 1M K1-K10 only; no 100-save timing or C acceptance.' > ../../c-functional-results/scope.txt
+      - name: Always verify source and preserve digests
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > c-functional-results/source-guard-after.txt
+          bad="$(grep -rnE 'Unsafe|withUnsafe' Experiments/R005Swift/Sources/SwiftProbe --include='*.swift' | grep -v '/Snapshot.swift:' || true)"
+          test -z "$bad"
+          ! grep -rnE '@unchecked Sendable|nonisolated\(unsafe\)|unowned\(unsafe\)|Unmanaged|UnsafeMutable|unsafeBitCast' Experiments/R005Swift/Sources/SwiftProbe --include='*.swift'
+          git diff --exit-code
+          find Experiments/R005Swift/Sources -type f -exec shasum -a 256 {} \; > c-functional-results/source-sha256.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r005-c-functional-results
+          path: c-functional-results/
+          if-no-files-found: error
   stage-c:
-    if: ${{ (contains(github.event.head_commit.message, '[r005-micro]') || contains(github.event.head_commit.message, '[r005-c-targeted]')) && !contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-b-full]') }}
+    if: ${{ (contains(github.event.head_commit.message, '[r005-micro]') || contains(github.event.head_commit.message, '[r005-c-targeted]')) && !contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-b-full]') && !contains(github.event.head_commit.message, '[r005-c-functional]') }}
     runs-on: macos-15
     timeout-minutes: 60
     env:

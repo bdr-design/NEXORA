@@ -97,6 +97,16 @@ import Glibc
         case "stage-c-recover":
             guard args.count==2 else {throw ProbeError.invalid("stage-c-recover directory")}
             result=try stageCRecoverCrash(args[1])
+        case "stage-c-wal-continuation":
+            guard args.count==3,["S","H"].contains(args[2]) else {
+                throw ProbeError.invalid("stage-c-wal-continuation directory S|H")
+            }
+            result=args[2]=="H" ? try stageCHybridWALContinuationFixture(args[1]) : try stageCWALContinuationFixture(args[1])
+        case "stage-c-resume-append":
+            guard args.count==3,["S","H"].contains(args[2]) else {
+                throw ProbeError.invalid("stage-c-resume-append directory S|H")
+            }
+            result=args[2]=="H" ? try stageCHybridWALResumeAppend(args[1]) : try stageCWALResumeAppend(args[1])
         case "stage-c-chain-expected":
             guard args.count==2 else {throw ProbeError.invalid("stage-c-chain-expected directory")}
             result=try stageCWALChainExpected(args[1])
