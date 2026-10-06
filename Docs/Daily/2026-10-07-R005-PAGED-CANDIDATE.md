@@ -124,3 +124,41 @@ A100k/1M/2M×S/H و3processes×10runs بالصفر والhealth؛ ثمB30days/60
 وquotaمنحجمsnapshot1M جديد للتخطيط المختار، وكلB recovery وK1–K10/WAL
 Debug/Release/TSan علىS/H. الـ1M fixtures ليستحملة100-save. C100 ممنوعة
 فيهذاworkflow؛ لاreuseلـA/B قديمة، artifact يحتفظبsource/flags/inputs كاملة.
+
+## مراجعة الذاكرة وأهلية C — ليست قبولًا إنتاجيًا
+
+قبل نشر حملة C، أُعيدت مراجعة ADR وBUDGET-ADDENDUM وREVIEW-2. احتياطي
+الصفحات القديم المقترح1MiB ليس ما ينفذه هذا المرشح: المرشح يحضر صورة
+payload إضافية كاملة، ويُسجل ذلك صراحة. A يقيس الصورة الحية قبل تركيب
+StageCState؛ لذلك نجاح128B/asset فيA لا يثبت ميزانية الحفظ أو التطبيق.
+عند100k، القياس المحدود أعطى S live9,826,336B/prepared19,569,904B، وH
+live10,619,328B/prepared21,157,456B. هذه owned capacities منWorld؛ لا تشمل
+كل heap headers أوState أوكاتب/restore/واجهة، ولا تعني phys_footprint.
+
+payload مجرد عند1M: S95.5MB/H100.5MB. صورتا H تتطلبان201MB قبل directories
+والcontrols وبقية الحالة، فتتجاوزان وحدهما سقف200B/asset إذا حُسبت الصورة
+الإضافية ضمن الميزانية الكاملة. لا يُستثنى pool من قبول الذاكرة الإنتاجي،
+ولا يُرفع السقف. قبول الأداء التجريبي C، إذا حدث، لا يمنح هذا المرشح قبول
+Stage2 أوDevice أوشهادة السلاسة. أي دمج إنتاجي يحتاج حسابًا وقياسًا كاملين
+للذاكرة، وإعادة تصميم staging محدود إذا تجاوز الميزانية؛ لا حذف حقول أو
+حقوق مالية للحصول على رقم أقل. لا توجد الآن قراءة peak physical memory
+لـ1M أثناء الحفظ على الجهاز.
+
+مسار القياس المؤهل بعد artifact كامل: خمس عمليات حفظ فعلية على تخطيطA
+المختار، ثم paired S ABBA منfixture واحد يفصل advance/service/WAL/الكاتب/
+الحلقة. MICRO-ELIGIBILITY يبقى خمس عمليات وacceptance=false، ويحفظ أسماء
+بوابات الفشل؛ لا يعدل counts أويحوله إلىC. إذا فشل، يُجمع sample اختياري
+لمواضع التنفيذ؛ أزمنة التشغيل تحتsample ليست مؤهلة للقبول. C100 لا يعمل
+حتى تطابق42runtime inputs وflags، وثبوت A/B/S/H1M K/WAL، وartifact حقيقي
+لـmicro مؤهل. لا تغيير للعتبات أوcadence أوdeadline أوالصيغة الأصلية.
+
+نطاق الكاتب الجديد: writeNS يبدأ بعدhandoff؛ queueWaitNS هو انتظارhandoff
+قبله، بينماrecordProcessWriteNS وfinalizeNS داخلwriteNS. لا يجمع الانتظار
+معها بوصفه جزءًا داخلwriteNS، ولا تجمع wall times للكاتب والمحاكاة لأنهما
+يتداخلان. service completion وpool setup يظهران في القياس، ولا تُنقل هذه
+الكلفة إلىUI أوتُخفى تحت ادعاء تحسنadvance فقط.
+
+التصور FIRST-LOOK HTML فُحص كمصدر قراءة بلاbuttons/inputs. محاولة screenshot
+محلية توقفت قبلrender لأن Playwright لا يملك browser executable فيهذه
+البيئة. لا يوجد ادعاء screenshot أوتحقق layout مرئي أوقبول iPhone. الملف
+الأصلي يبقى متاحًا للمراجعة، ولا ربط بمحرك اللعبة أوأثر مالي له.

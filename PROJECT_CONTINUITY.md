@@ -1,5 +1,29 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Current-source review at2026-10-06T23:39Z: allowed lived415c96c/tree66842b4b,
+main38ce39cf unchanged, AGENTS/continuity read, no denied/reference code used.
+Fresh proof K1–K10 still running. Draft qualified C adds real five-save failure
+eligibility, paired S components, and advisory stacks only on micro failure;
+pins remain unresolved, no C100. Full spare-image pool is NOT the ADR1MiB
+proposal; H two payload images alone201MB/1M exceed200B/asset before overhead.
+No production memory/smoothness acceptance follows from A/C. Limits recorded
+in daily candidate doc. FIRST-LOOK screenshot blocked by missing browser;
+HTML proposal only, no fabricated render/device result.
+
+Fresh-proof progress: run37544554772/job112545301174 A SUCCESS, current-source
+bounded matrix SUCCESS, complete30day/60record B+quota SUCCESS, and B recovery
+Debug/Release/TSan SUCCESS. S/H1M K1–K10/WAL matrix still running; numeric A
+and quotas not independently verified until artifact. C workflow draft now
+requires both the source-proof ZIP and real qualifying five-save ZIP before
+C100; both pins unresolved, no C campaign started.
+
+Fresh-proof run37544554772 on lived415c96c3b05b721960b3679c02f05a2aa3024da /
+tree66842b4bcad9e9f145f956d050fcbe7cc7457aed: A Release and all A health/
+100k1M2M×S/H×3process10runs step SUCCESS; numeric decision awaits artifact.
+Full Debug/Release/TSan builds SUCCESS; current bounded matrix then B/K still
+running. Draft C workflow has deliberately unresolved prerequisite pins and
+cannot run; qualified five-save micro will precede any C100. Main unchanged.
+
 Bounded integration run37542773160 SUCCESS; artifact11449188442 ZIP SHA256
 141c0db68d817d62cf147dfab7b26606d78449d5d6f5aa8021b4b8903c5b98ea independently
 verified:44cases/132epochs/32cross-build equalities, S/H Debug Release TSan,

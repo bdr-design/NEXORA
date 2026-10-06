@@ -1,0 +1,256 @@
+name: R005 qualified paged C diagnostic or acceptance
+on:
+  push:
+    branches: ["diagnostic/r005-design-1m-20260930"]
+permissions:
+  contents: read
+  actions: read
+jobs:
+  execution-marker-guard:
+    if: ${{ contains(github.event.head_commit.message, '[r005-paged-c-micro]') || contains(github.event.head_commit.message, '[r005-paged-c-100]') }}
+    runs-on: ubuntu-latest
+    env:
+      HEAD_MESSAGE: ${{ github.event.head_commit.message }}
+    steps:
+      - name: Reject ambiguous or unqualified campaign routing
+        run: |
+          python3 -B - <<'PYCODE'
+          import os
+          m=os.environ['HEAD_MESSAGE']
+          modes=['[r005-paged-c-micro]','[r005-paged-c-100]']
+          assert sum(tag in m for tag in modes)==1,'exactly one paged C mode required'
+          assert '[r005-evidence-only]' in m,'evidence-only source boundary required'
+          excluded=['[r005-micro]','[r005-c-targeted]','[r005-b-full]',
+              '[r005-c-functional]','[r005-paired-profile]','[r005-epoch-pages]',
+              '[r005-paged-proof]','[r005-paged-candidate]']
+          assert not any(tag in m for tag in excluded),'conflicting execution marker'
+          print('PASS one bounded diagnostic or one qualified C100, never both')
+          PYCODE
+  qualified-paged-c:
+    needs: execution-marker-guard
+    if: ${{ contains(github.event.head_commit.message, '[r005-evidence-only]') && ((contains(github.event.head_commit.message, '[r005-paged-c-micro]') && !contains(github.event.head_commit.message, '[r005-paged-c-100]')) || (contains(github.event.head_commit.message, '[r005-paged-c-100]') && !contains(github.event.head_commit.message, '[r005-paged-c-micro]'))) }}
+    runs-on: macos-15
+    timeout-minutes: 180
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      SOURCE_PROOF_ARTIFACT: "0"
+      SOURCE_PROOF_SHA256: "PENDING"
+      SOURCE_PROOF_COMMIT: "d415c96c3b05b721960b3679c02f05a2aa3024da"
+      SOURCE_PROOF_TREE: "66842b4bcad9e9f145f956d050fcbe7cc7457aed"
+      MICRO_ARTIFACT: "0"
+      MICRO_SHA256: "PENDING"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Source identity and acceptance prerequisites
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p paged-c
+          git rev-parse HEAD > paged-c/commit.txt
+          git rev-parse HEAD^{tree} > paged-c/tree.txt
+          swift --version > paged-c/environment.txt
+          xcodebuild -version >> paged-c/environment.txt
+          sysctl hw.model hw.ncpu hw.memsize >> paged-c/environment.txt
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > paged-c/source-guard-before.txt
+          python3 -B -m unittest discover -s Experiments/R005Swift/tests -v > paged-c/proof-gates.txt 2>&1
+          test "$SOURCE_PROOF_ARTIFACT" != 0
+          test "$SOURCE_PROOF_SHA256" != PENDING
+          gh api "repos/bdr-design/NEXORA/actions/artifacts/$SOURCE_PROOF_ARTIFACT/zip" > paged-c/source-proof.zip
+          python3 - <<'PYCODE'
+          import hashlib,json,os,pathlib,sys,zipfile
+          p=pathlib.Path('paged-c/source-proof.zip')
+          assert hashlib.sha256(p.read_bytes()).hexdigest()==os.environ['SOURCE_PROOF_SHA256']
+          with zipfile.ZipFile(p) as z:
+              assert z.read('commit.txt').decode().strip()==os.environ['SOURCE_PROOF_COMMIT']
+              assert z.read('tree.txt').decode().strip()==os.environ['SOURCE_PROOF_TREE']
+              assert all(not pathlib.PurePosixPath(n).is_absolute() and '..' not in pathlib.PurePosixPath(n).parts for n in z.namelist())
+              z.extractall('paged-c/prior')
+          prior=pathlib.Path('paged-c/prior')
+          a=json.loads((prior/'STAGE005-A.json').read_text())
+          b=json.loads((prior/'STAGE005-B.json').read_text())
+          f=json.loads((prior/'SOURCE-FUNCTIONAL-PROOF.json').read_text())
+          q=json.loads((prior/'B-QUOTA.json').read_text())
+          sys.path.insert(0,'Experiments/R005Swift')
+          from proof_gates import stage_a_failures
+          assert a['status']==b['status']==f['status']==q['status']=='pass'
+          assert not stage_a_failures(a['A'],a['health']) and not a['gateFailures']
+          assert a['decisionA']['chosen'] in ('S','H')
+          assert f['C100']=='NOT_RUN' and f['layoutsWithFreshFunctionalProof']==['S','H']
+          assert len(b['B'])==60 and all(all(r['invariants'].values()) for r in b['B'])
+          assert all(v['status']=='pass' and v['totalsExact'] for v in b['finalDiskVerification'].values())
+          assert q['selectedLayout']==a['decisionA']['chosen'] and q['G16_W7Accepted'] and q['G1_W7Rejected'] and q['G1_W3Accepted']
+          for name,digest in f['evidenceSHA256'].items():
+              assert hashlib.sha256((prior/name).read_bytes()).hexdigest()==digest,name
+          pathlib.Path('paged-c/eligibility.json').write_text(json.dumps({'status':'pass',
+              'scope':'fresh source-bound A/B and S/H Debug Release TSan 1M K1-K10 verified',
+              'proofArtifact':os.environ['SOURCE_PROOF_ARTIFACT'], 'proofZIP_SHA256':os.environ['SOURCE_PROOF_SHA256'],
+              'sourceDecisionA':a['decisionA'],'C100':'NOT_RUN'},indent=2)+'\n')
+          PYCODE
+          python3 -B Experiments/R005Swift/candidate_proof_inputs.py check paged-c/prior/runtime-inputs.json
+          cp paged-c/prior/runtime-inputs.json paged-c/runtime-inputs.json
+          cp paged-c/prior/STAGE005-A.json paged-c/STAGE005-A.json
+          printf '%s\n' 'C: STAGE_C EPOCH_PAGES Release' 'thresholds unchanged; source-proof manifest exact' > paged-c/build-flags.txt
+      - name: Build the qualified source with immutable epoch ownership
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          swift build --scratch-path .build-paged-c-release -c release -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../paged-c/build-release.txt
+          cc -dynamiclib -O2 -Wall -Wextra -Werror AllocationObserver.c -ISources/ProbePlatform/include -o ../../paged-c/AllocationObserver.dylib
+      - name: Bounded five-save diagnostic on the A-selected layout
+        if: contains(github.event.head_commit.message, '[r005-paged-c-micro]')
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          variant="$(python3 -c 'import json; print(json.load(open("../../paged-c/STAGE005-A.json"))["decisionA"]["chosen"])')"
+          export NXR_ALLOCATOR_DYLIB="$PWD/../../paged-c/AllocationObserver.dylib"
+          bin=.build-paged-c-release/release/nxr-swift-probe
+          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" stage-c-allocation-probes "$variant" > ../../paged-c/allocation-probes.json
+          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" stage-c-micro ../../paged-c/micro-store "$variant" > ../../paged-c/CANDIDATE-MICRO.json 2> ../../paged-c/micro.stderr.txt
+          rm -rf ../../paged-c/micro-store
+          python3 - <<'PYCODE'
+          import json,math,pathlib
+          r=json.loads(pathlib.Path('../../paged-c/CANDIDATE-MICRO.json').read_text())
+          assert r['status']=='diagnostic' and r['saves']==5 and r['assets']==1000000
+          assert r['peakQueuedBytes']==0
+          assert r['allocationsIdleMaxPerAdvance']==0 and r['allocationPairing']['violations']==0
+          gates={
+              'beginP99':r['beginSaveNS']['p99']<=100000,
+              'advanceP99':r['advanceDuringSaveNS']['p99']<=1100000,
+              'overhead':math.isfinite(r['overheadRatio']) and r['overheadRatio']<=1.10,
+              'beginSamples':r['beginSaveNS']['samples']==5,
+              'advanceSamples':r['advanceDuringSaveNS']['samples']>=5,
+              'pairedCoverage':r['allocationPairing']['samples']==r['advanceDuringSaveNS']['samples'],
+              'pairedBound':r['allocationPairing']['violations']==r['allocationPairing']['maxExcess']==0,
+              'idleZero':r['allocationsIdleMaxPerAdvance']==0,
+              'queueZero':r['peakQueuedBytes']==0}
+          pathlib.Path('../../paged-c/MICRO-ELIGIBILITY.json').write_text(json.dumps({
+              'status':'pass' if all(gates.values()) else 'failure','acceptance':False,
+              'scope':'real five-save candidate eligibility only; C100 NOT_RUN',
+              'gates':gates,'failedGates':[k for k,v in gates.items() if not v]},indent=2)+'\n')
+          pathlib.Path('../../paged-c/scope.txt').write_text('Qualified-source bounded five-save diagnosis only. Never C acceptance; all failed runs retained and 1.10 unchanged.\n')
+          print(json.dumps({k:r[k] for k in ('variant','saves','beginSaveNS','advanceDuringSaveNS','overheadRatio','allocationPairing','simulationPhases')}))
+          PYCODE
+      - name: Paired S component profile from one fixture on the same runner
+        if: contains(github.event.head_commit.message, '[r005-paged-c-micro]')
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          export NXR_ALLOCATOR_DYLIB="$PWD/../../paged-c/AllocationObserver.dylib"
+          bin=.build-paged-c-release/release/nxr-swift-probe
+          trap 'rm -rf ../../paged-c/paired-smoke-store ../../paged-c/paired-store' EXIT
+          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" stage-c-paired-profile-smoke ../../paged-c/paired-smoke-store S > ../../paged-c/PAIRED-SMOKE-S.json 2> ../../paged-c/paired-smoke.stderr.txt
+          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" stage-c-paired-profile ../../paged-c/paired-store S > ../../paged-c/PAIRED-PROFILE-S.json 2> ../../paged-c/paired.stderr.txt
+          python3 - <<'PYCODE'
+          import json,pathlib
+          p=pathlib.Path('../../paged-c')
+          components=('advance','service','reschedule','walAdvance','walReschedule')
+          transcript=('ordinal','events','workUnits','stop','reached')
+          for name,count,pairs in (('PAIRED-SMOKE-S.json',4096,1),('PAIRED-PROFILE-S.json',1000000,2)):
+              r=json.loads((p/name).read_text())
+              assert r['status']=='diagnostic' and r['acceptance'] is False and r['variant']=='S'
+              assert r['assets']==count and len(r['pairs'])==pairs and r['fixture']['deadline']=='none'
+              assert r['fixture']['budget']==1024 and r['fixture']['workBudget']==65536
+              assert [pair['order'] for pair in r['pairs']]==[['no-save','save'],['save','no-save']][:pairs]
+              for pair in r['pairs']:
+                  arms={leg['label']:leg for leg in pair['legs']}
+                  a,b=arms['save'],arms['no-save']
+                  assert all(pair[k] for k in ('logicalTranscriptExact','outputHashExact','finalDigestExact','stateInstallAligned'))
+                  assert a['saveEnabled'] and not b['saveEnabled'] and b['postBoundaryControlStateInstalled']
+                  assert a['advanceCalls']==b['advanceCalls']==len(a['calls'])==len(b['calls'])
+                  assert all(all(x[k]==y[k] for k in transcript) for x,y in zip(a['calls'],b['calls']))
+                  assert a['finalDigest']==b['finalDigest'] and a['outputHash']==b['outputHash']
+                  for leg in (a,b):
+                      assert leg['events']==sum(c['events'] for c in leg['calls'])==count
+                      assert leg['initialDigest']==r['fixture']['digest'] and leg['recoveryExact'] and leg['recoveryDigest']==leg['finalDigest']
+                      assert leg['stateInstallAfterAdvanceCalls']==r['fixture']['saveStartCall']
+                      assert sum(c['advanceNS'] for c in leg['calls'])==leg['simulationThread']['advance']['ns']
+                      assert sum(leg['simulationThread'][k]['ns'] for k in components)<=leg['fullLoopNS']
+                      assert leg['simulationThread']['advance']['allocations']==leg['simulationThread']['service']['allocations']==0
+                  w=a['writer']
+                  assert w['allocationObserverAvailable'] and w['peakQueuedBytes']==0
+                  assert w['bytes']==r['fixture']['snapshotBytes'] and w['chunks']>0
+                  assert w['recordProcessWriteNS']+w['finalizeNS']<=w['runNS']
+                  assert b['writer']=={'started':False}
+          (p/'paired-scope.txt').write_text('S only, fixed-work ABBA diagnostic with separate advance/service/WAL/writer/full-loop. In immutable mode queueWaitNS is pre-write handoff wait outside runNS; recordProcessWriteNS and finalizeNS are inside runNS. Writer overlaps simulation: never add their wall times. Neither this nor the five-save diagnostic is C acceptance or device smoothness.\n')
+          PYCODE
+      - name: Advisory call stacks only when the candidate eligibility fails
+        if: contains(github.event.head_commit.message, '[r005-paged-c-micro]')
+        run: |
+          set -euo pipefail
+          if python3 -c 'import json,sys;sys.exit(0 if json.load(open("paged-c/MICRO-ELIGIBILITY.json"))["status"]=="pass" else 1)'; then
+            echo 'No repeated timing diagnosis: the first bounded candidate is eligible.' > paged-c/sampler-scope.txt
+            exit 0
+          fi
+          cd Experiments/R005Swift
+          trap 'rm -rf ../../paged-c/sampled-store' EXIT
+          export NXR_ALLOCATOR_DYLIB="$PWD/../../paged-c/AllocationObserver.dylib"
+          variant="$(python3 -c 'import json; print(json.load(open("../../paged-c/STAGE005-A.json"))["decisionA"]["chosen"])')"
+          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" .build-paged-c-release/release/nxr-swift-probe stage-c-micro ../../paged-c/sampled-store "$variant" > ../../paged-c/SAMPLED-MICRO.json 2> ../../paged-c/sampled.stderr.txt &
+          probe_pid=$!
+          if sample "$probe_pid" 3 1 -mayDie -file ../../paged-c/profile-stacks.txt > ../../paged-c/sampler-log.txt 2>&1; then
+            echo 0 > ../../paged-c/sampler-exit-status.txt
+          else
+            echo $? > ../../paged-c/sampler-exit-status.txt
+          fi
+          if wait "$probe_pid"; then
+            echo 0 > ../../paged-c/sampled-process-exit-status.txt
+          else
+            echo $? > ../../paged-c/sampled-process-exit-status.txt
+          fi
+          echo 'Advisory sample after a failed bounded candidate, for hot-frame diagnosis only. Sampled timings cannot qualify C100 and do not replace or reclassify the original micro.' > ../../paged-c/sampler-scope.txt
+      - name: Unchanged 1M 100-save acceptance on the A-selected layout
+        if: contains(github.event.head_commit.message, '[r005-paged-c-100]')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$MICRO_ARTIFACT" != 0
+          test "$MICRO_SHA256" != PENDING
+          gh api "repos/bdr-design/NEXORA/actions/artifacts/$MICRO_ARTIFACT/zip" > paged-c/micro-proof.zip
+          python3 - <<'PYCODE'
+          import hashlib,json,os,pathlib,zipfile
+          p=pathlib.Path('paged-c/micro-proof.zip')
+          assert hashlib.sha256(p.read_bytes()).hexdigest()==os.environ['MICRO_SHA256']
+          with zipfile.ZipFile(p) as z:
+              r=json.loads(z.read('CANDIDATE-MICRO.json'))
+              e=json.loads(z.read('MICRO-ELIGIBILITY.json'))
+              m=json.loads(z.read('runtime-inputs.json'))
+              assert m==json.loads(pathlib.Path('paged-c/runtime-inputs.json').read_text())
+              assert e['status']=='pass' and e['acceptance'] is False and not e['failedGates'] and all(e['gates'].values())
+          a=json.loads(pathlib.Path('paged-c/STAGE005-A.json').read_text())
+          assert r['status']=='diagnostic' and r['saves']==5 and r['assets']==1000000 and r['variant']==a['decisionA']['chosen']
+          assert r['beginSaveNS']['samples']==5 and r['advanceDuringSaveNS']['samples']>=5
+          assert r['beginSaveNS']['p99']<=100000 and r['advanceDuringSaveNS']['p99']<=1100000
+          assert r['overheadRatio']<=1.10 and r['allocationsIdleMaxPerAdvance']==0
+          assert r['allocationPairing']['violations']==0 and r['allocationPairing']['maxExcess']==0
+          assert r['peakQueuedBytes']==0
+          # This is an eligibility check on real five-save data. Its counts and
+          # diagnostic status remain unchanged; it is never a C PASS.
+          PYCODE
+          cd Experiments/R005Swift
+          export NXR_ALLOCATOR_DYLIB="$PWD/../../paged-c/AllocationObserver.dylib"
+          python3 -B stage005_c.py .build-paged-c-release/release/nxr-swift-probe ../../paged-c/STAGE005-C.json ../../paged-c/STAGE005-A.json 2>&1 | tee ../../paged-c/c-run.txt
+          echo 'Actual layout-specific C evaluator result; owner decision and iPhone acceptance remain separate.' > ../../paged-c/scope.txt
+      - name: Always enforce source boundaries and identity
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > paged-c/source-guard-after.txt
+          if test -f paged-c/runtime-inputs.json; then
+            python3 -B Experiments/R005Swift/candidate_proof_inputs.py check paged-c/runtime-inputs.json
+          fi
+          bad="$(grep -rnE 'Unsafe|withUnsafe' Experiments/R005Swift/Sources/SwiftProbe --include='*.swift' | grep -v '/Snapshot.swift:' || true)"
+          test -z "$bad"
+          ! grep -rnE '@unchecked Sendable|nonisolated\(unsafe\)|unowned\(unsafe\)|Unmanaged|UnsafeMutable|unsafeBitCast' Experiments/R005Swift/Sources/SwiftProbe --include='*.swift'
+          git diff --exit-code
+          find Experiments/R005Swift/Sources -type f -exec shasum -a 256 {} \; > paged-c/source-sha256.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r005-paged-c-result
+          path: paged-c/
+          if-no-files-found: error
