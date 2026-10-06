@@ -30,7 +30,9 @@ def source_guard():
                 "Tests": "83602394c3db51e9d6f43682dcb34a0a11f51c41",
                 "Checks": "35903e43258a90f019f395035dab310436b177ec",
                 "Package.swift": "9772a69021caed24dd9dac48c3aa32eb5d63207f",
-                "AGENTS.md": "4b740a2712318dec0d9d9e3040447bb26f105e2b",
+                # Owner-authorized product rules, remote b2fb3bb5. Code trees
+                # remain pinned to the original baseline objects above.
+                "AGENTS.md": "453bd7d01591df11ad4daec674a11b649efb5b55",
                 ".github/workflows/restart.yml": "01668399e948242ebfd44ba3a89587dd1d647904"}
     def object_hash(kind, content):
         return hashlib.sha1(kind.encode() + b" " + str(len(content)).encode() + b"\0" + content).digest()
@@ -56,7 +58,7 @@ def source_guard():
         return object_hash("blob", content)
     for name, wanted in expected.items():
         check(digest(ROOT / name).hex() == wanted, f"changed baseline object: {name}")
-    print("PASS baseline Sources/Tests/Checks/Package/AGENTS/legacy-workflow objects and file modes; only diagnostic extension/dispatch")
+    print("PASS baseline Sources/Tests/Checks/Package/legacy-workflow objects and file modes; owner AGENTS rules pinned to b2fb3bb5; only diagnostic extension/dispatch")
 
 
 

@@ -181,6 +181,26 @@ class ProofGateTests(unittest.TestCase):
         legacy = (root / ".github/workflows/r005-swift-executable.yml").read_text()
         self.assertIn("!contains(github.event.head_commit.message, '[r005-paired-profile]')", legacy)
 
+    def test_epoch_pages_micro_cannot_start_an_acceptance_campaign(self):
+        root = Path(__file__).resolve().parents[3]
+        targeted = (root / ".github/workflows/r005-stage-c-targeted.yml").read_text()
+        job = targeted[targeted.index("  epoch-pages-micro:"):targeted.index("  stage-c-paired-profile:")]
+        self.assertNotIn("stage005_c.py", job)
+        self.assertIn("4096", job)
+        self.assertIn("100000", job)
+        self.assertIn("--sanitize=thread", job)
+        self.assertIn("verify_epoch_micro.py", job)
+        self.assertIn("if: always()", job)
+        for name in ("r005-swift-executable.yml", "r005-preparation.yml"):
+            self.assertIn("!contains(github.event.head_commit.message, '[r005-epoch-pages]')",
+                          (root / ".github/workflows" / name).read_text())
+        full = targeted[targeted.index("  stage-c:\n"):]
+        self.assertIn("!contains(github.event.head_commit.message, '[r005-epoch-pages]')", full)
+        source = (root / "Experiments/R005Swift/Sources/SwiftProbe/EpochPagesMicro.swift").read_text()
+        self.assertIn("count == 4096 || count == 100_000", source)
+        self.assertNotIn("@unchecked", source)
+        self.assertNotIn("withUnsafe", source)
+
 
 if __name__ == "__main__":
     unittest.main()

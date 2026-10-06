@@ -54,6 +54,11 @@ import Glibc
             guard args.count==2 else {throw ProbeError.invalid("stage-b-recover-crash directory")}
             result=try stageBRecoverCrash(args[1])
 #if STAGE_C
+        case "epoch-pages-micro":
+            guard args.count == 3, let count = Int(args[2]) else {
+                throw ProbeError.invalid("epoch-pages-micro directory 4096|100000")
+            }
+            result = try epochPagesMicro(args[1], count: count)
         case "stage-c-transport-checks":
             guard args.count == 2 else { throw ProbeError.invalid("stage-c-transport-checks directory") }
             result = try stageCMicroTransportChecks(args[1])

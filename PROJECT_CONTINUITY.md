@@ -1,5 +1,28 @@
 # NEXORA — current checkpoint / 2026-10-06
 
+Paired evidence verified 2026-10-07: run37534787303 SUCCESS, source756d2e92,
+tree200520a6, artifact11446371022; downloaded ZIP SHA256
+d5fcf8fe72607cabbc717448299c0903193f462085299ce81158de8b38703c7c.
+Exact984-call/1M-event transcripts and final/recovered digests across both S
+ABBA pairs. Capture adds work/allocations; advance+service allocates95,782,816B
+per save. Writer-only matched delta varies+51.977/−3.461ms, so causality is
+limited; diagnostic full-loop ratios1.9047/1.1629 are NOT C ratios. Raw ZIP,
+independent analyzer and analysis doc are preserved. Next: safe Swift immutable
+page ownership/pool micro at4096, optional100k, without changing S/H. Owner
+rules published atb2fb3bb5; main unchanged, all failures/1.10 retained, C OPEN.
+
+Owner AGENTS addition exposed a stale documentation hash in the production
+source guard: local validation FAILED at AGENTS.md, preserved in failures.json.
+Only AGENTS pin advanced to the byte-exact published453bd7d0 rules; production
+code tree pins stayed fixed and local guard/selftest then PASS. Preparation
+run37534787220 on756d2e92 completed SUCCESS: contracts, diagnostics and layout;
+library compilation is not iOS app/device proof. Epoch asset micro is isolated
+safe Swift with preallocated root/leaf/page replacement buffers, immutable
+writer view, early/overlapping release rejects and three epochs; Apple pending.
+Micro publication checks: unchanged S/H hot files,16/16 gate tests and92/92
+existing review tests, source guard/selftest, YAML/Python syntax and diff-check
+PASS locally. Swift/TSan micro execution is still pending on Apple; no C proof.
+
 ## Latest owner rules and Apple diagnostic — 2026-10-07 / Asia-Riyadh
 
 Owner at00:36 requires ideas only from the reference, no copied code or methods,

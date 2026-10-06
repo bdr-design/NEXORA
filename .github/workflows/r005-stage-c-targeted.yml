@@ -7,15 +7,15 @@ permissions:
   actions: read
 jobs:
   r005-marker-conflict:
-    if: ${{ !contains(github.event.head_commit.message, '[r005-evidence-only]') && contains(github.event.head_commit.message, '[r005-paired-profile]') && (contains(github.event.head_commit.message, '[r005-micro]') || contains(github.event.head_commit.message, '[r005-c-targeted]') || contains(github.event.head_commit.message, '[r005-b-full]') || contains(github.event.head_commit.message, '[r005-c-functional]')) }}
+    if: ${{ !contains(github.event.head_commit.message, '[r005-evidence-only]') && contains(github.event.head_commit.message, '[r005-paired-profile]') && (contains(github.event.head_commit.message, '[r005-micro]') || contains(github.event.head_commit.message, '[r005-c-targeted]') || contains(github.event.head_commit.message, '[r005-b-full]') || contains(github.event.head_commit.message, '[r005-c-functional]')) || (!contains(github.event.head_commit.message, '[r005-evidence-only]') && contains(github.event.head_commit.message, '[r005-epoch-pages]') && (contains(github.event.head_commit.message, '[r005-micro]') || contains(github.event.head_commit.message, '[r005-c-targeted]') || contains(github.event.head_commit.message, '[r005-b-full]') || contains(github.event.head_commit.message, '[r005-c-functional]') || contains(github.event.head_commit.message, '[r005-paired-profile]'))) }}
     runs-on: macos-15
     steps:
       - name: Reject conflicting bounded-run markers
         run: |
-          echo 'r005-paired-profile is diagnostic-only and must be the only execution marker on its commit.'
+          echo 'paired-profile and epoch-pages are diagnostic-only and each must be the only execution marker on its commit.'
           exit 1
   stage-b-full:
-    if: ${{ contains(github.event.head_commit.message, '[r005-b-full]') && !contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-paired-profile]') }}
+    if: ${{ contains(github.event.head_commit.message, '[r005-b-full]') && !contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-paired-profile]') && !contains(github.event.head_commit.message, '[r005-epoch-pages]') }}
     runs-on: macos-15
     timeout-minutes: 120
     env:
@@ -114,7 +114,7 @@ jobs:
           path: b-results/
           if-no-files-found: error
   stage-c-functional:
-    if: ${{ contains(github.event.head_commit.message, '[r005-c-functional]') && !contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-paired-profile]') }}
+    if: ${{ contains(github.event.head_commit.message, '[r005-c-functional]') && !contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-paired-profile]') && !contains(github.event.head_commit.message, '[r005-epoch-pages]') }}
     runs-on: macos-15
     timeout-minutes: 120
     env:
@@ -176,8 +176,78 @@ jobs:
           name: r005-c-functional-results
           path: c-functional-results/
           if-no-files-found: error
+  epoch-pages-micro:
+    if: ${{ contains(github.event.head_commit.message, '[r005-epoch-pages]') && !contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-c-targeted]') && !contains(github.event.head_commit.message, '[r005-b-full]') && !contains(github.event.head_commit.message, '[r005-c-functional]') && !contains(github.event.head_commit.message, '[r005-paired-profile]') }}
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Pin source and unchanged hot layouts
+        run: |
+          set -euo pipefail
+          mkdir -p epoch-results
+          git rev-parse HEAD > epoch-results/commit.txt
+          git rev-parse HEAD^{tree} > epoch-results/tree.txt
+          swift --version > epoch-results/environment.txt
+          xcodebuild -version >> epoch-results/environment.txt
+          sw_vers >> epoch-results/environment.txt
+          sysctl hw.model hw.memsize hw.ncpu >> epoch-results/environment.txt
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > epoch-results/source-guard-before.txt
+          python3 -B -m unittest discover -s Experiments/R005Swift/tests -v > epoch-results/proof-gates.txt 2>&1
+          shasum -a 256 Experiments/R005Swift/Sources/SwiftProbe/{Core,Hybrid,Snapshot,Stage005CSave,Stage005CRunner,Stage005CHybridRunner,Stage005CWAL}.swift > epoch-results/hot-layout-source.txt
+      - name: Build isolated ownership micro in Debug Release TSan
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          swift build --scratch-path .build-epoch-debug -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../epoch-results/build-debug.txt
+          swift build --scratch-path .build-epoch-release -c release -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../epoch-results/build-release.txt
+          swift build --scratch-path .build-epoch-tsan --sanitize=thread -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../epoch-results/build-tsan.txt
+          cc -dynamiclib -O2 -Wall -Wextra -Werror AllocationObserver.c -ISources/ProbePlatform/include -o ../../epoch-results/AllocationObserver.dylib
+      - name: Bounded 4096 ownership and allocator micro first
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          export NXR_ALLOCATOR_DYLIB="$PWD/../../epoch-results/AllocationObserver.dylib"
+          for mode in debug release tsan; do
+            config=debug
+            if test "$mode" = release; then config=release; fi
+            bin=".build-epoch-$mode/$config/nxr-swift-probe"
+            TSAN_OPTIONS=halt_on_error=1 DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" epoch-pages-micro "../../epoch-results/store-$mode" 4096 > "../../epoch-results/EPOCH-4096-$mode.json" 2> "../../epoch-results/EPOCH-4096-$mode.stderr.txt"
+            rm -rf "../../epoch-results/store-$mode"
+          done
+          python3 -B verify_epoch_micro.py ../../epoch-results/EPOCH-4096-{debug,release,tsan}.json > ../../epoch-results/micro-4096-validation.txt
+      - name: Release 100k only after bounded ownership validation
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          export NXR_ALLOCATOR_DYLIB="$PWD/../../epoch-results/AllocationObserver.dylib"
+          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" .build-epoch-release/release/nxr-swift-probe epoch-pages-micro ../../epoch-results/store-100k 100000 > ../../epoch-results/EPOCH-100k-release.json 2> ../../epoch-results/EPOCH-100k-release.stderr.txt
+          python3 -B verify_epoch_micro.py ../../epoch-results/EPOCH-100k-release.json > ../../epoch-results/micro-100k-validation.txt
+          rm -rf ../../epoch-results/store-100k
+      - name: Always verify source and retain the diagnostic scope
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > epoch-results/source-guard-after.txt
+          bad="$(grep -rnE 'Unsafe|withUnsafe' Experiments/R005Swift/Sources/SwiftProbe --include='*.swift' | grep -v '/Snapshot.swift:' || true)"
+          test -z "$bad"
+          ! grep -rnE '@unchecked Sendable|nonisolated\(unsafe\)|unowned\(unsafe\)|Unmanaged|UnsafeMutable|unsafeBitCast' Experiments/R005Swift/Sources/SwiftProbe --include='*.swift'
+          git diff --exit-code
+          find Experiments/R005Swift/Sources -type f -exec shasum -a 256 {} \; > epoch-results/source-sha256.txt
+          echo 'Isolated asset-page ownership micro only; no S/H state changes, A/B reuse, C acceptance or 1M100-save campaign. All historical failures and 1.10 stay unchanged.' > epoch-results/scope.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r005-epoch-pages-micro
+          path: epoch-results/
+          if-no-files-found: error
   stage-c-paired-profile:
-    if: ${{ contains(github.event.head_commit.message, '[r005-paired-profile]') && !contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-c-targeted]') && !contains(github.event.head_commit.message, '[r005-b-full]') && !contains(github.event.head_commit.message, '[r005-c-functional]') }}
+    if: ${{ contains(github.event.head_commit.message, '[r005-paired-profile]') && !contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-c-targeted]') && !contains(github.event.head_commit.message, '[r005-b-full]') && !contains(github.event.head_commit.message, '[r005-c-functional]') && !contains(github.event.head_commit.message, '[r005-epoch-pages]') }}
     runs-on: macos-15
     timeout-minutes: 120
     env:
@@ -276,7 +346,7 @@ jobs:
           path: paired-results/
           if-no-files-found: error
   stage-c:
-    if: ${{ (contains(github.event.head_commit.message, '[r005-micro]') || contains(github.event.head_commit.message, '[r005-c-targeted]')) && !contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-b-full]') && !contains(github.event.head_commit.message, '[r005-c-functional]') && !contains(github.event.head_commit.message, '[r005-paired-profile]') }}
+    if: ${{ (contains(github.event.head_commit.message, '[r005-micro]') || contains(github.event.head_commit.message, '[r005-c-targeted]')) && !contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-b-full]') && !contains(github.event.head_commit.message, '[r005-c-functional]') && !contains(github.event.head_commit.message, '[r005-paired-profile]') && !contains(github.event.head_commit.message, '[r005-epoch-pages]') }}
     runs-on: macos-15
     timeout-minutes: 60
     env:
