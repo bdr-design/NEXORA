@@ -328,6 +328,482 @@ func stageCRun(_ directory: String, count: Int = 1_000_000,
     ]
 }
 
+// Diagnostic-only fixed-work telemetry.  This deliberately does not share the
+// deadline-shaped C acceptance loop or its evaluator.
+private struct StageCPairedScriptCall: Equatable {
+    let events: Int
+    let units: Int
+    let stop: String
+    let reached: UInt64
+}
+
+private struct StageCPairedMeasurement {
+    let elapsedNS: UInt64
+    let allocations: UInt64
+    let allocationBytes: UInt64
+
+    func json() -> [String: Any] {
+        ["ns": elapsedNS, "allocations": allocations, "allocationBytes": allocationBytes]
+    }
+}
+
+private func stageCPairedMeasure<T>(_ name: String, _ body: () throws -> T)
+    throws -> (value: T, measurement: StageCPairedMeasurement) {
+    nx_alloc_begin()
+    let start = nx_now()
+    let value: T
+    do {
+        value = try body()
+    } catch {
+        _ = nx_alloc_end()
+        throw error
+    }
+    let elapsed = nx_now() - start
+    let allocation = nx_alloc_end()
+    try require(allocation.available == 1, "paired profile \(name) allocator unavailable")
+    return (value, StageCPairedMeasurement(elapsedNS: elapsed,
+                                            allocations: allocation.calls,
+                                            allocationBytes: allocation.bytes))
+}
+
+private struct StageCPairedServiceSample {
+    let phase: String
+    let elapsedNS: UInt64
+    let allocations: UInt64
+    let allocationBytes: UInt64
+    let barrierEmits: Int
+}
+
+private struct StageCPairedCallSample {
+    let ordinal: Int
+    let script: StageCPairedScriptCall
+    let stateMode: String
+    let saveActive: Bool
+    let advanceNS: UInt64
+    let advanceAllocations: UInt64
+    let advanceAllocationBytes: UInt64
+    let walAdvanceNS: UInt64
+    let walAdvanceAllocations: UInt64
+    let walAdvanceAllocationBytes: UInt64
+    let service: StageCPairedServiceSample?
+
+    func json() -> [String: Any] {
+        var result: [String: Any] = [
+            "ordinal": ordinal,
+            "events": script.events,
+            "workUnits": script.units,
+            "stop": script.stop,
+            "reached": script.reached,
+            "stateMode": stateMode,
+            "saveActive": saveActive,
+            "advanceNS": advanceNS,
+            "advanceAllocations": advanceAllocations,
+            "advanceAllocationBytes": advanceAllocationBytes,
+            "walAdvanceNS": walAdvanceNS,
+            "walAdvanceAllocations": walAdvanceAllocations,
+            "walAdvanceAllocationBytes": walAdvanceAllocationBytes
+        ]
+        if let service {
+            result["service"] = [
+                "phase": service.phase,
+                "ns": service.elapsedNS,
+                "allocations": service.allocations,
+                "allocationBytes": service.allocationBytes,
+                "barrierEmits": service.barrierEmits
+            ]
+        }
+        return result
+    }
+}
+
+private struct StageCPairedLegResult {
+    let script: [StageCPairedScriptCall]
+    let outputHash: String
+    let finalDigest: String
+    let stateInstallAfterAdvanceCalls: Int
+    let json: [String: Any]
+}
+
+private func stageCPairedService(_ state: StageCState, world: SwiftWorld) throws -> StageCPairedServiceSample {
+    let phase = state.capturing ? "capturing" : (state.inFlight ? "writerOnly" : "committed")
+    let barrierBefore = state.barrierEmits
+    let measured = try stageCPairedMeasure("service") {
+        try state.service(world: world, budgetNS: 500_000)
+    }
+    return StageCPairedServiceSample(phase: phase, elapsedNS: measured.measurement.elapsedNS,
+        allocations: measured.measurement.allocations,
+        allocationBytes: measured.measurement.allocationBytes,
+        barrierEmits: state.barrierEmits - barrierBefore)
+}
+
+private func stageCPairedLeg(fixtureDirectory: String, directory: String,
+                             count: Int, saveStartCall: Int, save: Bool,
+                             label: String, fixtureDigest: String) throws -> StageCPairedLegResult {
+    let legStart = nx_now()
+    let (_, fixtureCopy) = try stageCPairedMeasure("fixture copy") {
+        try FileManager.default.copyItem(atPath: fixtureDirectory, toPath: directory)
+    }
+    let fixtureRecovery = try stageCPairedMeasure("fixture recovery") {
+        try StageCSnapshotRestore.recoverLatest(directory)
+    }
+    let restored = fixtureRecovery.value
+    guard restored.epoch == 1, restored.terminalWALEpoch == 1,
+          restored.ignoredWALTailBytes == 0 else {
+        throw ProbeError.invariant("paired profile fixture epoch")
+    }
+    let world = restored.world
+    let initialDigest = stageCDigestString(Snapshot.worldDigest(world))
+    try require(initialDigest == fixtureDigest, "paired profile fixture digest")
+
+    let budget = 1_024
+    let target: UInt64 = 600
+    let profileStart = nx_now()
+    let resumedWAL = try stageCPairedMeasure("WAL resume") {
+        try StageCWAL.resume(directory: directory, epoch: restored.terminalWALEpoch,
+                             replay: restored.terminalWALReplay)
+    }
+    var wal = resumedWAL.value
+    var walTransitionClose: StageCPairedMeasurement? = nil
+    var walTransitionOpen: StageCPairedMeasurement? = nil
+    var walTransitioned = false
+    var state: StageCState? = nil
+    var stateInstall: StageCPairedMeasurement? = nil
+    var sinkSetup: StageCPairedMeasurement? = nil
+    var beginSave: StageCPairedMeasurement? = nil
+    var stateInstallAfterAdvanceCalls = -1
+    var advanceNS: UInt64 = 0
+    var advanceAllocations: UInt64 = 0
+    var advanceAllocationBytes: UInt64 = 0
+    var walAdvanceNS: UInt64 = 0
+    var walAdvanceAllocations: UInt64 = 0
+    var walAdvanceAllocationBytes: UInt64 = 0
+    var serviceNS: UInt64 = 0
+    var serviceAllocations: UInt64 = 0
+    var serviceAllocationBytes: UInt64 = 0
+    var serviceCaptureNS: UInt64 = 0
+    var serviceWriterOnlyNS: UInt64 = 0
+    var serviceBarrierEmits = 0
+    var rescheduleNS: UInt64 = 0
+    var rescheduleAllocations: UInt64 = 0
+    var rescheduleAllocationBytes: UInt64 = 0
+    var rescheduleBarrierEmits = 0
+    var walRescheduleNS: UInt64 = 0
+    var walRescheduleAllocations: UInt64 = 0
+    var walRescheduleAllocationBytes: UInt64 = 0
+    var writerWaitNS: UInt64 = 0
+    var drainServiceCalls = 0
+    var cycleEvents = 0
+    var advanceCalls = 0
+    var outputHash: UInt64 = 14695981039346656037
+    var script: [StageCPairedScriptCall] = []
+    var calls: [StageCPairedCallSample] = []
+    let estimatedCalls = max(64, count / budget + 128)
+    script.reserveCapacity(estimatedCalls)
+    calls.reserveCapacity(estimatedCalls)
+
+    func accumulateService(_ sample: StageCPairedServiceSample) {
+        serviceNS &+= sample.elapsedNS
+        serviceAllocations &+= sample.allocations
+        serviceAllocationBytes &+= sample.allocationBytes
+        serviceBarrierEmits += sample.barrierEmits
+        if sample.phase == "capturing" { serviceCaptureNS &+= sample.elapsedNS }
+        if sample.phase == "writerOnly" { serviceWriterOnlyNS &+= sample.elapsedNS }
+    }
+
+    while true {
+        if advanceCalls == saveStartCall {
+            let closedWAL = try stageCPairedMeasure("WAL transition close") {
+                try wal.close()
+            }
+            walTransitionClose = closedWAL.measurement
+            let nextWAL = try stageCPairedMeasure("WAL transition open") {
+                try StageCWAL(directory: directory, epoch: 2)
+            }
+            wal = nextWAL.value
+            walTransitionOpen = nextWAL.measurement
+            walTransitioned = true
+            let installedState = try stageCPairedMeasure("state install") {
+                let nextState = StageCState(world: world)
+                world.stageCInstall(nextState)
+                return nextState
+            }
+            state = installedState.value
+            stateInstall = installedState.measurement
+            stateInstallAfterAdvanceCalls = advanceCalls
+            if save {
+                guard let installedState = state else {
+                    throw ProbeError.invariant("paired profile state install")
+                }
+                let preparedSink = try stageCPairedMeasure("snapshot sink setup") {
+                    SnapshotSink(directory: directory, epoch: 2, expectedCounts: installedState.expectedCounts)
+                }
+                sinkSetup = preparedSink.measurement
+                let beganSave = try stageCPairedMeasure("begin save") {
+                    try installedState.begin(world: world, preparedSink: preparedSink.value)
+                }
+                beginSave = beganSave.measurement
+            }
+        }
+
+        let stateMode: String
+        if let state {
+            stateMode = state.capturing ? "capturing" : (state.inFlight ? "writerOnly" : "idleInstalled")
+        } else {
+            stateMode = "notInstalled"
+        }
+        let saveActive = state?.inFlight ?? false
+        nx_alloc_begin()
+        let advanceStart = nx_now()
+        let progress = try world.advance(to: target, budget: budget, workBudget: 65_536,
+                                         deadlineNS: UInt64.max)
+        let elapsed = nx_now() - advanceStart
+        let allocation = nx_alloc_end()
+        try require(allocation.available == 1, "paired profile advance allocator unavailable")
+        advanceNS &+= elapsed
+        advanceAllocations &+= allocation.calls
+        advanceAllocationBytes &+= allocation.bytes
+
+        nx_alloc_begin()
+        let walStart = nx_now()
+        try wal.appendAdvance(target: target, budget: budget, units: progress.units, events: progress.events)
+        let walElapsed = nx_now() - walStart
+        let walAllocation = nx_alloc_end()
+        try require(walAllocation.available == 1, "paired profile WAL allocator unavailable")
+        walAdvanceNS &+= walElapsed
+        walAdvanceAllocations &+= walAllocation.calls
+        walAdvanceAllocationBytes &+= walAllocation.bytes
+
+        for i in 0..<progress.events {
+            let completion = world.output(i)
+            outputHash = (outputHash ^ completion.event.operation) &* 1099511628211
+            outputHash = (outputHash ^ UInt64(completion.event.asset)) &* 1099511628211
+            outputHash = (outputHash ^ completion.completed) &* 1099511628211
+            cycleEvents += 1
+        }
+
+        var serviceSample: StageCPairedServiceSample? = nil
+        if let state {
+            let sample = try stageCPairedService(state, world: world)
+            accumulateService(sample)
+            serviceSample = sample
+        }
+        advanceCalls += 1
+        let scriptCall = StageCPairedScriptCall(events: progress.events, units: progress.units,
+                                                stop: progress.stop.rawValue, reached: progress.reached)
+        script.append(scriptCall)
+        calls.append(StageCPairedCallSample(ordinal: advanceCalls, script: scriptCall,
+            stateMode: stateMode, saveActive: saveActive, advanceNS: elapsed, advanceAllocations: allocation.calls,
+            advanceAllocationBytes: allocation.bytes, walAdvanceNS: walElapsed,
+            walAdvanceAllocations: walAllocation.calls,
+            walAdvanceAllocationBytes: walAllocation.bytes, service: serviceSample))
+
+        if progress.stop == .target {
+            try require(world.wheel.pending == 0 && cycleEvents == count,
+                        "paired profile target cycle count")
+            guard let installedState = state else {
+                throw ProbeError.invariant("paired profile state missing at target")
+            }
+            let barrierBefore = installedState.barrierEmits
+            nx_alloc_begin()
+            let rescheduleStart = nx_now()
+            try stageCRescheduleAll(world, baseNow: target, firstOperation: UInt64(count * 2 + 1))
+            rescheduleNS = nx_now() - rescheduleStart
+            let rescheduleAllocation = nx_alloc_end()
+            try require(rescheduleAllocation.available == 1, "paired profile reschedule allocator unavailable")
+            rescheduleAllocations = rescheduleAllocation.calls
+            rescheduleAllocationBytes = rescheduleAllocation.bytes
+            rescheduleBarrierEmits = installedState.barrierEmits - barrierBefore
+
+            nx_alloc_begin()
+            let walRescheduleStart = nx_now()
+            try wal.appendRescheduleAll(baseNow: target, firstOperation: UInt64(count * 2 + 1))
+            walRescheduleNS = nx_now() - walRescheduleStart
+            let walRescheduleAllocation = nx_alloc_end()
+            try require(walRescheduleAllocation.available == 1, "paired profile WAL reschedule allocator unavailable")
+            walRescheduleAllocations = walRescheduleAllocation.calls
+            walRescheduleAllocationBytes = walRescheduleAllocation.bytes
+            break
+        }
+        try require(progress.stop != .blocked, "paired profile advance blocked")
+        try require(advanceCalls < count * 4, "paired profile advance bound")
+    }
+
+    try require(walTransitioned, "paired profile save boundary not reached")
+    if let state {
+        while state.inFlight {
+            let sample = try stageCPairedService(state, world: world)
+            accumulateService(sample)
+            drainServiceCalls += 1
+            try require(drainServiceCalls <= 5_000_000, "paired profile writer timeout")
+            if state.inFlight {
+                let waitStart = nx_now()
+                Thread.sleep(forTimeInterval: 0.00005)
+                writerWaitNS &+= nx_now() - waitStart
+            }
+        }
+    }
+    let (_, walFinalClose) = try stageCPairedMeasure("WAL final close") {
+        try wal.close()
+    }
+    let profileLoopNS = nx_now() - profileStart
+
+    let finalDigest = stageCDigestString(Snapshot.worldDigest(world))
+    let finalRecovery = try stageCPairedMeasure("final recovery") {
+        try StageCSnapshotRestore.recoverLatest(directory)
+    }
+    let recovered = finalRecovery.value
+    let recoveryDigest = stageCDigestString(Snapshot.worldDigest(recovered.world))
+    try require(recoveryDigest == finalDigest, "paired profile recovery digest")
+    let endToEndNS = nx_now() - legStart
+    guard let installedState = state,
+          let stateInstallMeasurement = stateInstall,
+          let walTransitionCloseMeasurement = walTransitionClose,
+          let walTransitionOpenMeasurement = walTransitionOpen else {
+        throw ProbeError.invariant("paired profile missing boundary measurements")
+    }
+    let writer = installedState.lastResult
+    if save { try require(writer != nil, "paired profile save did not commit") }
+    let outputHashString = String(format: "%016llx", outputHash)
+
+    var result: [String: Any] = [
+        "label": label,
+        "saveEnabled": save,
+        "postBoundaryControlStateInstalled": !save,
+        "stateInstallAfterAdvanceCalls": stateInstallAfterAdvanceCalls,
+        "initialDigest": initialDigest,
+        "finalDigest": finalDigest,
+        "recoveryDigest": recoveryDigest,
+        "recoveryExact": true,
+        "recoveryNS": finalRecovery.measurement.elapsedNS,
+        "advanceCalls": advanceCalls,
+        "events": cycleEvents,
+        "outputHash": outputHashString,
+        "calls": calls.map { $0.json() },
+        "fixtureTransport": ["copy": fixtureCopy.json(),
+                             "recovery": fixtureRecovery.measurement.json(),
+                             "finalRecovery": finalRecovery.measurement.json()],
+        "simulationThread": [
+            "setup": ["stateInstall": stateInstallMeasurement.json(),
+                      "snapshotSink": sinkSetup?.json() ?? ["started": false],
+                      "beginSave": beginSave?.json() ?? ["started": false]],
+            "advance": ["ns": advanceNS, "allocations": advanceAllocations,
+                        "allocationBytes": advanceAllocationBytes],
+            "walAdvance": ["ns": walAdvanceNS, "allocations": walAdvanceAllocations,
+                           "allocationBytes": walAdvanceAllocationBytes],
+            "service": ["ns": serviceNS, "capturingNS": serviceCaptureNS,
+                        "writerOnlyNS": serviceWriterOnlyNS, "allocations": serviceAllocations,
+                        "allocationBytes": serviceAllocationBytes,
+                        "barrierEmits": serviceBarrierEmits, "drainCalls": drainServiceCalls],
+            "reschedule": ["ns": rescheduleNS, "allocations": rescheduleAllocations,
+                           "allocationBytes": rescheduleAllocationBytes,
+                           "barrierEmits": rescheduleBarrierEmits],
+            "walReschedule": ["ns": walRescheduleNS, "allocations": walRescheduleAllocations,
+                              "allocationBytes": walRescheduleAllocationBytes]
+        ],
+        "walLifecycle": ["resume": resumedWAL.measurement.json(),
+                         "transitionClose": walTransitionCloseMeasurement.json(),
+                         "transitionOpen": walTransitionOpenMeasurement.json(),
+                         "finalClose": walFinalClose.json()],
+        "fullLoopNS": profileLoopNS,
+        "endToEndNS": endToEndNS,
+        "writerPollSleepNS": writerWaitNS,
+        "barrier": ["emits": installedState.barrierEmits,
+                    "bytes": installedState.barrierBytes,
+                    "copyNS": installedState.barrierNS]
+    ]
+    if let writer {
+        result["writer"] = [
+            "runNS": writer.writeNS,
+            "dispatchToRunNS": writer.dispatchToRunNS,
+            "queueWaitNS": writer.queueWaitNS,
+            "recordProcessWriteNS": writer.recordProcessWriteNS,
+            "finalizeNS": writer.finalizeNS,
+            "bytes": writer.bytes,
+            "chunks": writer.chunks,
+            "peakQueuedBytes": writer.peakQueuedBytes,
+            "allocations": writer.writerAllocations,
+            "allocationBytes": writer.writerAllocationBytes,
+            "allocationObserverAvailable": writer.writerAllocationObserverAvailable
+        ]
+    } else {
+        result["writer"] = ["started": false]
+    }
+    return StageCPairedLegResult(script: script, outputHash: outputHashString,
+                                 finalDigest: finalDigest,
+                                 stateInstallAfterAdvanceCalls: stateInstallAfterAdvanceCalls,
+                                 json: result)
+}
+
+private func stageCPairedProfileRun(_ directory: String, count: Int,
+                                    smoke: Bool) throws -> [String: Any] {
+    guard count == 4_096 || count == 1_000_000 else {
+        throw ProbeError.invalid("paired profile requires 4096 or 1M assets")
+    }
+    guard !FileManager.default.fileExists(atPath: directory) else {
+        throw ProbeError.invalid("paired profile directory already exists")
+    }
+    try FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: false)
+    let fixtureDirectory = directory + "/fixture"
+    let prepared = try stageCPrepareInitial(directory: fixtureDirectory, count: count)
+    try prepared.2.close()
+    let fixtureDigest = stageCDigestString(Snapshot.worldDigest(prepared.0))
+    let saveStartCall = count == 1_000_000 ? 64 : 2
+    let orders: [[Bool]] = smoke ? [[false, true]] : [[false, true], [true, false]]
+    var pairs: [[String: Any]] = []
+
+    for (pairIndex, order) in orders.enumerated() {
+        var legs: [StageCPairedLegResult] = []
+        for (ordinal, save) in order.enumerated() {
+            let name = save ? "save" : "no-save"
+            let legDirectory = directory + "/pair-\(pairIndex + 1)-\(ordinal + 1)-\(name)"
+            legs.append(try stageCPairedLeg(fixtureDirectory: fixtureDirectory, directory: legDirectory,
+                                            count: count, saveStartCall: saveStartCall, save: save,
+                                            label: name, fixtureDigest: fixtureDigest))
+        }
+        try require(legs.count == 2, "paired profile pair shape")
+        let logicalTranscriptExact = legs[0].script == legs[1].script
+        let outputHashExact = legs[0].outputHash == legs[1].outputHash
+        let finalDigestExact = legs[0].finalDigest == legs[1].finalDigest
+        let stateInstallAligned = legs[0].stateInstallAfterAdvanceCalls == saveStartCall &&
+            legs[1].stateInstallAfterAdvanceCalls == saveStartCall
+        try require(logicalTranscriptExact && outputHashExact && finalDigestExact && stateInstallAligned,
+                    "paired profile exactness mismatch")
+        pairs.append([
+            "pair": pairIndex + 1,
+            "order": order.map { $0 ? "save" : "no-save" },
+            "logicalTranscriptExact": logicalTranscriptExact,
+            "outputHashExact": outputHashExact,
+            "finalDigestExact": finalDigestExact,
+            "stateInstallAligned": stateInstallAligned,
+            "legs": legs.map { $0.json }
+        ])
+    }
+    return [
+        "status": "diagnostic",
+        "acceptance": false,
+        "scope": smoke ? "4096 paired smoke; not Stage C acceptance" :
+                          "1M paired S diagnostic; not Stage C acceptance",
+        "instrumentation": "Writer telemetry uses per-record clocks and allocator observation; paired timings are diagnostic only, not uninstrumented production-C timing.",
+        "variant": "S",
+        "assets": count,
+        "fixture": ["initialEpoch": 1, "digest": fixtureDigest,
+                    "snapshotBytes": prepared.3.bytes, "target": 600,
+                    "budget": 1_024, "workBudget": 65_536,
+                    "saveStartCall": saveStartCall, "deadline": "none",
+                    "postBoundaryNoSave": "installed idle StageCState"],
+        "pairs": pairs,
+        "limits": "Fixed-work paired diagnosis keeps WAL/reschedule in both arms. It changes no official C timer, deadline, cadence, formula or gate and is not a 100-save result."
+    ]
+}
+
+func stageCPairedProfileSmoke(_ directory: String) throws -> [String: Any] {
+    try stageCPairedProfileRun(directory, count: 4_096, smoke: true)
+}
+
+func stageCPairedProfile(_ directory: String) throws -> [String: Any] {
+    try stageCPairedProfileRun(directory, count: 1_000_000, smoke: false)
+}
+
 func stageCCrashBootstrap(_ directory: String, count: Int) throws -> [String: Any] {
     guard count == 1_000_000 else { throw ProbeError.invalid("stage C crash population") }
     let prepared = try stageCPrepareInitial(directory: directory, count: count)

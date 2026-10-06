@@ -144,6 +144,43 @@ class ProofGateTests(unittest.TestCase):
                     runpy.run_path(str(Path(__file__).resolve().parents[1]/"stage005_c.py"), run_name="__main__")
             self.assertEqual(json.loads(output.read_text())["status"], "failure")
 
+    def test_paired_profile_is_diagnostic_and_cannot_route_to_full_c(self):
+        root = Path(__file__).resolve().parents[3]
+        runner = (root / "Experiments/R005Swift/Sources/SwiftProbe/Stage005CRunner.swift").read_text()
+        diagnostic = runner[runner.index("private struct StageCPairedScriptCall"):runner.index("func stageCCrashBootstrap")]
+        paired = runner[runner.index("private func stageCPairedProfileRun"):runner.index("func stageCCrashBootstrap")]
+        self.assertIn('"status": "diagnostic"', paired)
+        self.assertIn('"acceptance": false', paired)
+        self.assertIn('"deadline": "none"', paired)
+        self.assertIn('"postBoundaryNoSave": "installed idle StageCState"', paired)
+        self.assertIn('"outputHashExact"', paired)
+        self.assertIn('"finalDigestExact"', paired)
+        self.assertIn('"stateInstallAligned"', paired)
+        self.assertIn('"dispatchToRunNS"', diagnostic)
+        self.assertNotIn("stage005_c.py", paired)
+
+        targeted = (root / ".github/workflows/r005-stage-c-targeted.yml").read_text()
+        self.assertIn("r005-marker-conflict", targeted)
+        self.assertIn("Reject conflicting bounded-run markers", targeted)
+        job = targeted[targeted.index("  stage-c-paired-profile:"):targeted.index("  stage-c:\n")]
+        self.assertIn("[r005-paired-profile]", job)
+        self.assertIn("PAIRED-PROFILE-S.json", job)
+        self.assertNotIn("stage005_c.py", job)
+        self.assertIn("!contains(github.event.head_commit.message, '[r005-micro]')", job)
+        self.assertIn("!contains(github.event.head_commit.message, '[r005-c-targeted]')", job)
+        self.assertIn("!contains(github.event.head_commit.message, '[r005-b-full]')", job)
+        self.assertIn("!contains(github.event.head_commit.message, '[r005-c-functional]')", job)
+        self.assertIn("outputHashExact", job)
+        self.assertIn("finalDigestExact", job)
+        self.assertIn("allocationObserverAvailable", job)
+        self.assertIn("PAIRED-PROFILE-S.stderr.txt", job)
+
+        full_c = targeted[targeted.index("  stage-c:\n"):]
+        self.assertIn("!contains(github.event.head_commit.message, '[r005-paired-profile]')", full_c)
+
+        legacy = (root / ".github/workflows/r005-swift-executable.yml").read_text()
+        self.assertIn("!contains(github.event.head_commit.message, '[r005-paired-profile]')", legacy)
+
 
 if __name__ == "__main__":
     unittest.main()

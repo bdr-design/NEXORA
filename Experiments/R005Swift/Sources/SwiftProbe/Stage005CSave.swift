@@ -7,6 +7,13 @@ struct StageCSnapshotFileResult: Sendable {
     let bytes: UInt64
     let chunks: Int
     let writeNS: UInt64
+    let dispatchToRunNS: UInt64
+    let queueWaitNS: UInt64
+    let recordProcessWriteNS: UInt64
+    let finalizeNS: UInt64
+    let writerAllocations: UInt64
+    let writerAllocationBytes: UInt64
+    let writerAllocationObserverAvailable: Bool
     let peakQueuedBytes: Int
 }
 
@@ -18,6 +25,13 @@ final class StageCWriterCounters: Sendable {
     let bytes = Atomic<UInt64>(0)
     let chunks = Atomic<Int>(0)
     let writeNS = Atomic<UInt64>(0)
+    let dispatchToRunNS = Atomic<UInt64>(0)
+    let queueWaitNS = Atomic<UInt64>(0)
+    let recordProcessWriteNS = Atomic<UInt64>(0)
+    let finalizeNS = Atomic<UInt64>(0)
+    let writerAllocations = Atomic<UInt64>(0)
+    let writerAllocationBytes = Atomic<UInt64>(0)
+    let writerAllocationObserverAvailable = Atomic<Int>(0)
 }
 
 struct StageCRecordQueueState: Sendable {
@@ -92,14 +106,31 @@ final class SnapshotSink: Sendable {
         let queue = StageCRecordQueue(capacity: capacity)
         self.counters = counters
         self.queue = queue
+        let dispatchSubmittedNS = nx_now()
         DispatchQueue.global(qos: .utility).async {
+            let writerStartNS = nx_now()
+            counters.dispatchToRunNS.store(writerStartNS >= dispatchSubmittedNS ?
+                                           writerStartNS - dispatchSubmittedNS : 0,
+                                           ordering: .releasing)
+            nx_alloc_begin()
             do {
                 let result = try StageCSnapshotWriter.run(queue, counters: counters,
                     directory: directory, epoch: epoch, expectedCounts: expectedCounts)
+                let allocation = nx_alloc_end()
                 counters.bytes.store(result.bytes, ordering: .releasing)
                 counters.chunks.store(result.chunks, ordering: .releasing)
                 counters.writeNS.store(result.writeNS, ordering: .releasing)
+                counters.queueWaitNS.store(result.queueWaitNS, ordering: .releasing)
+                counters.recordProcessWriteNS.store(result.recordProcessWriteNS, ordering: .releasing)
+                counters.finalizeNS.store(result.finalizeNS, ordering: .releasing)
+                counters.writerAllocations.store(allocation.calls, ordering: .releasing)
+                counters.writerAllocationBytes.store(allocation.bytes, ordering: .releasing)
+                counters.writerAllocationObserverAvailable.store(Int(allocation.available), ordering: .releasing)
             } catch {
+                let allocation = nx_alloc_end()
+                counters.writerAllocations.store(allocation.calls, ordering: .releasing)
+                counters.writerAllocationBytes.store(allocation.bytes, ordering: .releasing)
+                counters.writerAllocationObserverAvailable.store(Int(allocation.available), ordering: .releasing)
                 counters.failed.store(1, ordering: .releasing)
             }
             counters.done.store(1, ordering: .releasing)
@@ -131,6 +162,13 @@ final class SnapshotSink: Sendable {
         return StageCSnapshotFileResult(bytes: counters.bytes.load(ordering: .acquiring),
             chunks: counters.chunks.load(ordering: .acquiring),
             writeNS: counters.writeNS.load(ordering: .acquiring),
+            dispatchToRunNS: counters.dispatchToRunNS.load(ordering: .acquiring),
+            queueWaitNS: counters.queueWaitNS.load(ordering: .acquiring),
+            recordProcessWriteNS: counters.recordProcessWriteNS.load(ordering: .acquiring),
+            finalizeNS: counters.finalizeNS.load(ordering: .acquiring),
+            writerAllocations: counters.writerAllocations.load(ordering: .acquiring),
+            writerAllocationBytes: counters.writerAllocationBytes.load(ordering: .acquiring),
+            writerAllocationObserverAvailable: counters.writerAllocationObserverAvailable.load(ordering: .acquiring) == 1,
             peakQueuedBytes: counters.peak.load(ordering: .acquiring))
     }
 }
@@ -169,9 +207,17 @@ enum StageCSnapshotWriter {
         var counts = [UInt32](repeating: 0, count: 4)
         var digests: [StageCRecordKey: Data] = [:]
         digests.reserveCapacity(expectedCounts.reduce(0) { $0 + Int($1) })
+        var queueWaitNS: UInt64 = 0
+        var recordProcessWriteNS: UInt64 = 0
 
         while true {
-            guard let record = queue.waitAndPop() else { break }
+            let waitStart = nx_now()
+            guard let record = queue.waitAndPop() else {
+                queueWaitNS &+= nx_now() - waitStart
+                break
+            }
+            queueWaitNS &+= nx_now() - waitStart
+            let recordStart = nx_now()
             let parsed = try parseRecord(record)
             let key = parsed.0
             guard key.kind < 4, key.index < expectedCounts[Int(key.kind)],
@@ -191,8 +237,10 @@ enum StageCSnapshotWriter {
             try handle.write(contentsOf: parsed.2)
             bytesWritten += UInt64(record.count + parsed.2.count)
             _ = counters.queued.subtract(record.count + parsed.2.count, ordering: .relaxed)
+            recordProcessWriteNS &+= nx_now() - recordStart
         }
 
+        let finalizeStart = nx_now()
         guard counts == expectedCounts else { throw ProbeError.corruption("stage C missing record") }
         nx_kill_point("c.k4.before_footer")
         var canonical = Data(capacity: digests.count * 38)
@@ -237,7 +285,11 @@ enum StageCSnapshotWriter {
             guard nx_sync_dir(directory) == 0 else { throw ProbeError.invalid("stage C generation cleanup sync") }
         }
         return StageCSnapshotFileResult(bytes: totalBytes, chunks: digests.count,
-            writeNS: nx_now() - start, peakQueuedBytes: counters.peak.load(ordering: .relaxed))
+            writeNS: nx_now() - start, dispatchToRunNS: 0, queueWaitNS: queueWaitNS,
+            recordProcessWriteNS: recordProcessWriteNS, finalizeNS: nx_now() - finalizeStart,
+            writerAllocations: 0, writerAllocationBytes: 0,
+            writerAllocationObserverAvailable: false,
+            peakQueuedBytes: counters.peak.load(ordering: .relaxed))
     }
 }
 

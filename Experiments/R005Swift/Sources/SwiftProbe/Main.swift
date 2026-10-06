@@ -66,6 +66,16 @@ import Glibc
             }
             result = args[2] == "H" ? try stageCHybridRun(args[1], requestedSaves: 5, diagnosticOnly: true) :
                 try stageCRun(args[1], requestedSaves: 5, diagnosticOnly: true)
+        case "stage-c-paired-profile-smoke":
+            guard args.count == 3, args[2] == "S" else {
+                throw ProbeError.invalid("stage-c-paired-profile-smoke directory S")
+            }
+            result = try stageCPairedProfileSmoke(args[1])
+        case "stage-c-paired-profile":
+            guard args.count == 3, args[2] == "S" else {
+                throw ProbeError.invalid("stage-c-paired-profile directory S")
+            }
+            result = try stageCPairedProfile(args[1])
         case "stage-c-allocation-probes":
             guard args.count==2,["S","H"].contains(args[1]) else {
                 throw ProbeError.invalid("stage-c-allocation-probes S|H")

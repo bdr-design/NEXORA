@@ -1,5 +1,76 @@
 # NEXORA — current checkpoint / 2026-10-06
 
+## Owner overnight continuation — 2026-10-07 / Asia-Riyadh
+
+Latest explicit owner instruction at00:32 Riyadh: resume implementation for
+6–7hours, target1M assets, and prepare an original initial product design for
+morning review. Earlier discussion pauses are superseded. The supplied
+GlobalHoldings reference branch may contribute product ideas only: no source,
+schema, contracts or implementation methods may be copied or used. C/owner
+acceptance boundaries remain; no assumption of completed gameplay/IPA from
+probe results. Continuity is durable; automatic chat creation/background
+execution capability is not assumed.
+
+Execution resumed after the owner discussion. `AGENTS.md` was read in full;
+live allowed branch `diagnostic/r005-design-1m-20260930` is still
+`af046d9fe32f627f71818d956ca7ad827d03593c`, tree
+`e2d34510e9e0f68c47d63891ac94b27802a39293`; main is still
+`38ce39cf9322f47e4def5f6eddb425c5a66ea7f9`. Local reviewed diagnostic work is
+at `6fdf319d0e63f002e7b4d931201b7d743cf323d9`, tree
+`5abb404509ef8783c9e65e62770ecb086c230f8f`, clean before this checkpoint.
+The GitHub connector is now available for atomic publication from the current
+remote tree with an expected-head lease; HTTPS/SSH publication failures remain
+history. No forbidden branch was opened. Next: isolated Apple Debug/Release
+4096 micro and 1M paired S diagnosis, preserve artifact identity, then use its
+evidence to decide whether an epoch-page micro is justified. C is OPEN on S/H;
+all historical failures and the 1.10 gate remain unchanged. No main merge,
+production result or iPhone/IPA acceptance is authorized by this checkpoint.
+
+## Live continuation preflight — 2026-10-06 / Asia-Riyadh
+
+Before any new edit, the live permitted repository was cloned directly from
+`bdr-design/NEXORA`; `AGENTS.md`, this continuity file, the required C/B
+evidence and preserved failure registry were read.  Working branch is
+`diagnostic/r005-design-1m-20260930` at
+`af046d9fe32f627f71818d956ca7ad827d03593c`, tree
+`e2d34510e9e0f68c47d63891ac94b27802a39293`; live `main` remains
+`38ce39cf9322f47e4def5f6eddb425c5a66ea7f9`.  The permitted branch is the
+only implementation source used and the three denied branches were not opened
+or used.  Worktree started clean.  This is a preflight only: C remains OPEN
+for S and H, `36875130222` remains FAILED at `1.5162503372173357 > 1.10`, and
+`37505451077` remains FAILED with no valid C metrics.  Next bounded action is
+a fixed-fixture 1M paired save/no-save diagnostic with separate advance,
+service/WAL/writer and whole-loop measurements; it is not a 100-save C
+acceptance campaign.
+
+## Paired diagnostic implementation checkpoint — 2026-10-06 / Apple run pending
+
+On the permitted branch, based on the live preflight source above, a new
+diagnostic-only S command and isolated Apple job were added for a fixed 1M
+fixture.  It runs ABBA no-save/save legs; both install `StageCState` at the
+same boundary, while only save begins epoch 2.  It records separately
+simulation `advance`, service, reschedule, WAL lifecycle/append, setup
+allocations, writer dispatch-to-run/run/queue/process/finalize, profile loop
+and end-to-end transport.  It requires equal transcript, output hash, final
+digest and recovered digest per pair; its artifact validator also rejects a
+missing save writer or allocator observation.  It cannot run `stage005_c.py`:
+the new marker is mutually exclusive with C/micro/B/functional markers and a
+conflict job fails an ambiguous commit.  Per-record writer clocks and allocator
+interposition make this diagnostic telemetry, not uninstrumented C timing.
+Local static validation passed 15/15 Python gate tests, Python syntax, YAML
+parse and `git diff --check`; Swift/Xcode is unavailable locally, so Debug and
+Release compilation plus the bounded Apple diagnostic are still pending.  No
+S/H representation changed, no official C artifact was created, and all prior
+failures—including `36875130222` and `37505451077`—remain unchanged.
+
+Publication checkpoint: the isolated diagnostic commit exists locally but has
+not reached the remote branch.  HTTPS `git push` stopped because this runtime
+has no usable GitHub credential; no GitHub CLI is installed, and the SSH
+fallback could not resolve GitHub.  Therefore no Apple run, artifact or
+performance observation exists yet.  Preserve this as an infrastructure block,
+not as a C or functional test result; publish only this marker commit once
+authorized credentials are available.
+
 Latest verified live HEAD before this evidence checkpoint:
 `2f319a14c35e318267a01dbbac0bb93f5ea8b4a7`, tree
 `7eb5d93c074d8858c373fee791640fca23e4ece6`; recheck live HEAD before

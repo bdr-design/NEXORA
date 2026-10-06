@@ -6,8 +6,16 @@ permissions:
   contents: read
   actions: read
 jobs:
+  r005-marker-conflict:
+    if: ${{ !contains(github.event.head_commit.message, '[r005-evidence-only]') && contains(github.event.head_commit.message, '[r005-paired-profile]') && (contains(github.event.head_commit.message, '[r005-micro]') || contains(github.event.head_commit.message, '[r005-c-targeted]') || contains(github.event.head_commit.message, '[r005-b-full]') || contains(github.event.head_commit.message, '[r005-c-functional]')) }}
+    runs-on: macos-15
+    steps:
+      - name: Reject conflicting bounded-run markers
+        run: |
+          echo 'r005-paired-profile is diagnostic-only and must be the only execution marker on its commit.'
+          exit 1
   stage-b-full:
-    if: ${{ contains(github.event.head_commit.message, '[r005-b-full]') && !contains(github.event.head_commit.message, '[r005-evidence-only]') }}
+    if: ${{ contains(github.event.head_commit.message, '[r005-b-full]') && !contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-paired-profile]') }}
     runs-on: macos-15
     timeout-minutes: 120
     env:
@@ -106,7 +114,7 @@ jobs:
           path: b-results/
           if-no-files-found: error
   stage-c-functional:
-    if: ${{ contains(github.event.head_commit.message, '[r005-c-functional]') && !contains(github.event.head_commit.message, '[r005-evidence-only]') }}
+    if: ${{ contains(github.event.head_commit.message, '[r005-c-functional]') && !contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-paired-profile]') }}
     runs-on: macos-15
     timeout-minutes: 120
     env:
@@ -168,8 +176,107 @@ jobs:
           name: r005-c-functional-results
           path: c-functional-results/
           if-no-files-found: error
+  stage-c-paired-profile:
+    if: ${{ contains(github.event.head_commit.message, '[r005-paired-profile]') && !contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-c-targeted]') && !contains(github.event.head_commit.message, '[r005-b-full]') && !contains(github.event.head_commit.message, '[r005-c-functional]') }}
+    runs-on: macos-15
+    timeout-minutes: 120
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Pin source and guard the diagnostic scope
+        run: |
+          set -euo pipefail
+          mkdir -p paired-results
+          git rev-parse HEAD > paired-results/commit.txt
+          git rev-parse HEAD^{tree} > paired-results/tree.txt
+          swift --version > paired-results/environment.txt
+          xcodebuild -version >> paired-results/environment.txt
+          sw_vers >> paired-results/environment.txt
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > paired-results/source-guard-before.txt
+          python3 -B -m unittest discover -s Experiments/R005Swift/tests -v > paired-results/proof-gates.txt 2>&1
+      - name: Build and run bounded paired S diagnostic
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          swift build --scratch-path .build-paired-debug -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../paired-results/build-debug.txt
+          swift build --scratch-path .build-paired-release -c release -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../paired-results/build-release.txt
+          cc -dynamiclib -O2 -Wall -Wextra -Werror AllocationObserver.c -ISources/ProbePlatform/include -o ../../paired-results/AllocationObserver.dylib
+          trap 'rm -rf ../../paired-results/smoke-debug-store ../../paired-results/smoke-release-store ../../paired-results/profile-s-store' EXIT
+          export NXR_ALLOCATOR_DYLIB="$PWD/../../paired-results/AllocationObserver.dylib"
+          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" .build-paired-debug/debug/nxr-swift-probe stage-c-paired-profile-smoke ../../paired-results/smoke-debug-store S > ../../paired-results/PAIRED-PROFILE-SMOKE-debug.json 2> ../../paired-results/PAIRED-PROFILE-SMOKE-debug.stderr.txt
+          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" .build-paired-release/release/nxr-swift-probe stage-c-paired-profile-smoke ../../paired-results/smoke-release-store S > ../../paired-results/PAIRED-PROFILE-SMOKE-release.json 2> ../../paired-results/PAIRED-PROFILE-SMOKE-release.stderr.txt
+          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" .build-paired-release/release/nxr-swift-probe stage-c-paired-profile ../../paired-results/profile-s-store S > ../../paired-results/PAIRED-PROFILE-S.json 2> ../../paired-results/PAIRED-PROFILE-S.stderr.txt
+          python3 - <<'PYCODE'
+          import json, pathlib
+          p=pathlib.Path('../../paired-results')
+          for name,assets,pairs in (('PAIRED-PROFILE-SMOKE-debug.json',4096,1),
+                                    ('PAIRED-PROFILE-SMOKE-release.json',4096,1),
+                                    ('PAIRED-PROFILE-S.json',1000000,2)):
+              value=json.loads((p/name).read_text())
+              assert value['status']=='diagnostic' and value['acceptance'] is False
+              assert value['variant']=='S' and value['assets']==assets
+              assert 'diagnostic only' in value['instrumentation']
+              assert len(value['pairs'])==pairs
+              boundary=value['fixture']['saveStartCall']
+              assert value['fixture']['postBoundaryNoSave']=='installed idle StageCState'
+              for pair in value['pairs']:
+                  assert pair['logicalTranscriptExact'] is True
+                  assert pair['outputHashExact'] is True
+                  assert pair['finalDigestExact'] is True
+                  assert pair['stateInstallAligned'] is True
+                  legs=pair['legs']
+                  assert len(legs)==2 and {leg['saveEnabled'] for leg in legs}=={False,True}
+                  no_save=next(leg for leg in legs if not leg['saveEnabled'])
+                  save=next(leg for leg in legs if leg['saveEnabled'])
+                  assert no_save['postBoundaryControlStateInstalled'] is True
+                  assert save['postBoundaryControlStateInstalled'] is False
+                  assert all(leg['stateInstallAfterAdvanceCalls']==boundary for leg in legs)
+                  assert all(leg['recoveryExact'] is True for leg in legs)
+                  assert no_save['finalDigest']==save['finalDigest']==no_save['recoveryDigest']==save['recoveryDigest']
+                  assert no_save['outputHash']==save['outputHash']
+                  assert no_save['writer']=={'started':False}
+                  assert save['writer']['allocationObserverAvailable'] is True
+                  for field in ('runNS','dispatchToRunNS','queueWaitNS','recordProcessWriteNS','finalizeNS'):
+                      assert isinstance(save['writer'][field],int) and save['writer'][field]>=0
+                  for leg in legs:
+                      setup=leg['simulationThread']['setup']
+                      assert isinstance(setup['stateInstall']['allocations'],int)
+                      assert set(leg['walLifecycle'])=={'resume','transitionClose','transitionOpen','finalClose'}
+                      assert all(isinstance(leg['walLifecycle'][phase]['allocations'],int)
+                                 for phase in leg['walLifecycle'])
+                  assert no_save['simulationThread']['setup']['snapshotSink']=={'started':False}
+                  assert no_save['simulationThread']['setup']['beginSave']=={'started':False}
+                  assert 'allocations' in save['simulationThread']['setup']['snapshotSink']
+                  assert 'allocations' in save['simulationThread']['setup']['beginSave']
+                  assert all(call['stateMode']=='notInstalled' for call in no_save['calls'][:boundary])
+                  assert all(call['stateMode']=='idleInstalled' for call in no_save['calls'][boundary:])
+          (p/'paired-profile-scope.txt').write_text(
+              'Fixed-fixture S paired diagnostic only: Debug/Release 4096 smoke then Release 1M ABBA save/no-save pairs. '
+              'Writer timings include per-record clocks and allocation observation, so are not uninstrumented production-C timing. '
+              'No Stage C 100-save evaluator, A/B reuse, K1-K10, or acceptance claim ran. C remains open on S and H.\\n')
+          PYCODE
+      - name: Always verify source and preserve diagnostic identity
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > paired-results/source-guard-after.txt
+          bad="$(grep -rnE 'Unsafe|withUnsafe' Experiments/R005Swift/Sources/SwiftProbe --include='*.swift' | grep -v '/Snapshot.swift:' || true)"
+          test -z "$bad"
+          ! grep -rnE '@unchecked Sendable|nonisolated\(unsafe\)|unowned\(unsafe\)|Unmanaged|UnsafeMutable|unsafeBitCast' Experiments/R005Swift/Sources/SwiftProbe --include='*.swift'
+          git diff --exit-code
+          find Experiments/R005Swift/Sources -type f -exec shasum -a 256 {} \; > paired-results/source-sha256.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r005-paired-profile-results
+          path: paired-results/
+          if-no-files-found: error
   stage-c:
-    if: ${{ (contains(github.event.head_commit.message, '[r005-micro]') || contains(github.event.head_commit.message, '[r005-c-targeted]')) && !contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-b-full]') && !contains(github.event.head_commit.message, '[r005-c-functional]') }}
+    if: ${{ (contains(github.event.head_commit.message, '[r005-micro]') || contains(github.event.head_commit.message, '[r005-c-targeted]')) && !contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-b-full]') && !contains(github.event.head_commit.message, '[r005-c-functional]') && !contains(github.event.head_commit.message, '[r005-paired-profile]') }}
     runs-on: macos-15
     timeout-minutes: 60
     env:
