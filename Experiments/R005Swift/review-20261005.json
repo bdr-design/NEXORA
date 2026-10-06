@@ -831,7 +831,7 @@
     "BRecords": 60,
     "priorTSan": "retained unchanged A/B evidence; candidate C safety separate",
     "BReuseAfter20261006Repair": false,
-    "BMeasurementOnRepairedSource": "pending"
+    "BMeasurementOnRepairedSource": "PASS run37504841364 / source f4f8e167 / artifact11431716398"
   },
   "limits": [
     "C remains open on S and H",
@@ -1168,6 +1168,140 @@
       "SIGKILL is not a physical power-cut test",
       "This run did not execute 30-day Stage B/quota campaign",
       "This run did not measure C overhead or close C"
+    ]
+  },
+  "bFull20261006": {
+    "status": "pass",
+    "scope": "Fresh Stage B 30-day 60-record and three quota cases; C not measured",
+    "repository": "bdr-design/NEXORA",
+    "branch": "diagnostic/r005-design-1m-20260930",
+    "source": "f4f8e167feebb9c0908281f8720a5a3235e520bf",
+    "tree": "e7c1b69da2974974fb076a7dee38e360b09f8b5a",
+    "run": 37504841364,
+    "workflowConclusion": "success",
+    "artifact": 11431716398,
+    "artifactSHA256": "0981a0dc3526aae985786aa1dc890fa7732c62ec941c4cbda8d5b1d8a293bf26",
+    "records": 60,
+    "cases": {
+      "G16_W7": {
+        "BdayMax": 8000016,
+        "S30": 99840,
+        "Omax": 120016,
+        "peakBytes": 64341472
+      },
+      "G1_W7": {
+        "BdayMax": 128000016,
+        "S30": 99840,
+        "Omax": 1920016,
+        "peakBytes": 1027941472
+      },
+      "G1_W3": {
+        "BdayMax": 128000016,
+        "S30": 148480,
+        "Omax": 10240016,
+        "peakBytes": 532630304
+      }
+    },
+    "finalDiskVerification": {
+      "G16": {
+        "committedSegment": 22,
+        "status": "pass",
+        "totalsExact": true
+      },
+      "G1": {
+        "committedSegment": 22,
+        "status": "pass",
+        "totalsExact": true
+      },
+      "G1_W3": {
+        "committedSegment": 26,
+        "status": "pass",
+        "totalsExact": true
+      }
+    },
+    "quotaMiB": {
+      "G16_W7": 320,
+      "G1_W7": 1408,
+      "G1_W3": 832
+    },
+    "snapshotBytesInput": 95801772,
+    "priorBRecovery": {
+      "source": "a65a5912be0116564f2a5d075da5c83b0c6b9e12",
+      "run": 37503555309,
+      "artifact": 11430977253,
+      "sourceFilesByteIdentical": 12
+    },
+    "rawEvidence": [
+      {
+        "path": "Experiments/R005Swift/Evidence/20261006/37504841364-B-QUOTA.json",
+        "sha256": "625732e5897801d4aa4da013d93372d96f9fa528904a95fa0e10c27d9ab54c5a",
+        "originalName": "B-QUOTA.json"
+      },
+      {
+        "path": "Experiments/R005Swift/Evidence/20261006/37504841364-PRIOR-B-CRASH-PROOF.json",
+        "sha256": "438db47b85f6ffefb171c4911a4cc640f38b2f72be8b1dddf305692b0b65d9a1",
+        "originalName": "PRIOR-B-CRASH-PROOF.json"
+      },
+      {
+        "path": "Experiments/R005Swift/Evidence/20261006/37504841364-STAGE005-B.json",
+        "sha256": "df48674e5d0b4b93468cd3e414df079f3695d0f6ddf8b88a3e0a1fbbbdd2f88e",
+        "originalName": "STAGE005-B.json"
+      },
+      {
+        "path": "Experiments/R005Swift/Evidence/20261006/37504841364-build-release.txt",
+        "sha256": "3b28a2827d679a82ffbfb21b1d0fc4b8b39eddfbff3692633f448a9b8d4fc07e",
+        "originalName": "build-release.txt"
+      },
+      {
+        "path": "Experiments/R005Swift/Evidence/20261006/37504841364-commit.txt",
+        "sha256": "064cb43b35962263eea92bd2ac863a35acb968b319120182fb2a635ebc41c110",
+        "originalName": "commit.txt"
+      },
+      {
+        "path": "Experiments/R005Swift/Evidence/20261006/37504841364-environment.txt",
+        "sha256": "75c499232ceb7259d9790a51cbf3689beeffa059978048e8d4185009dc184fad",
+        "originalName": "environment.txt"
+      },
+      {
+        "path": "Experiments/R005Swift/Evidence/20261006/37504841364-proof-gates.txt",
+        "sha256": "aa13f8c37a186ef8d805efb0f1d4c1e87ea5b3a3caca76d982dc7bda18e6bafa",
+        "originalName": "proof-gates.txt"
+      },
+      {
+        "path": "Experiments/R005Swift/Evidence/20261006/37504841364-scope.txt",
+        "sha256": "7b809db02dc0d0fca87f9f76730481ea77dcba2a8086aa41291fc4cc36d1eeb4",
+        "originalName": "scope.txt"
+      },
+      {
+        "path": "Experiments/R005Swift/Evidence/20261006/37504841364-source-guard-after.txt",
+        "sha256": "5c4f078b1ed80138eb250ecfe4fe07975f6a3c96d033cd1928dfa6eed11c86db",
+        "originalName": "source-guard-after.txt"
+      },
+      {
+        "path": "Experiments/R005Swift/Evidence/20261006/37504841364-source-guard-before.txt",
+        "sha256": "5c4f078b1ed80138eb250ecfe4fe07975f6a3c96d033cd1928dfa6eed11c86db",
+        "originalName": "source-guard-before.txt"
+      },
+      {
+        "path": "Experiments/R005Swift/Evidence/20261006/37504841364-source-sha256.txt",
+        "sha256": "798c2d3d01d77c16ef66f5c5c44d7c1a2e4706316a6fde884c95a5ddb24c62a2",
+        "originalName": "source-sha256.txt"
+      },
+      {
+        "path": "Experiments/R005Swift/Evidence/20261006/37504841364-stage005-b-run.txt",
+        "sha256": "86062046e14e48dd38f1007fd09d461543b2bf5a15b2ef35f31ad29c8488955d",
+        "originalName": "stage005-b-run.txt"
+      },
+      {
+        "path": "Experiments/R005Swift/Evidence/20261006/37504841364-tree.txt",
+        "sha256": "4dc46a8f52fcdafbe39ba353cb8b627587a065d2902f77353017105c2ff3b90e",
+        "originalName": "tree.txt"
+      }
+    ],
+    "limitations": [
+      "Quota combines fresh B inputs with historical fixed Stage C snapshot 95801772 bytes",
+      "C remains open on S and H",
+      "SIGKILL recovery proof does not simulate physical power failure"
     ]
   }
 }

@@ -1,0 +1,1 @@
+Fresh Stage B 30 days / 60 daily records; exact unchanged B crash source and pinned prior Debug/Release/TSan proof; no C timing result.

@@ -1,0 +1,27 @@
+{
+  "status": "pass",
+  "scope": "byte-identical Stage B source; prior crash proof reused, no crash rerun",
+  "source": "a65a5912be0116564f2a5d075da5c83b0c6b9e12",
+  "run": 37503555309,
+  "artifact": 11430977253,
+  "artifactSHA256": "32618114c48dec880bda4dd70e9daeb282aa508dcd664ff6c4d0856c7ee014ef",
+  "matchedFiles": [
+    "Experiments/R005Swift/Sources/SwiftProbe/Stage005BStore.swift",
+    "Experiments/R005Swift/Sources/SwiftProbe/Stage005BModel.swift",
+    "Experiments/R005Swift/Sources/SwiftProbe/Stage005BRunner.swift",
+    "Experiments/R005Swift/Sources/SwiftProbe/Main.swift",
+    "Experiments/R005Swift/Sources/SwiftProbe/Retention.swift",
+    "Experiments/R005Swift/Sources/SwiftProbe/Storage.swift",
+    "Experiments/R005Swift/Sources/SwiftProbe/Checks.swift",
+    "Experiments/R005Swift/stage005_b_crash.py",
+    "Experiments/R005Swift/stage005_b.py",
+    "Experiments/R005Swift/Package.swift",
+    "Experiments/R005Swift/Sources/ProbePlatform/include/ProbePlatform.h",
+    "Experiments/R005Swift/Sources/ProbePlatform/platform.c"
+  ],
+  "priorModes": [
+    "debug",
+    "release",
+    "tsan"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "scope": "new B inputs plus pinned snapshot; not new C measurement",
+  "snapshotBytesInput": 95801772,
+  "quotaMiB": {
+    "G16_W7": 320,
+    "G1_W7": 1408,
+    "G1_W3": 832
+  }
+}

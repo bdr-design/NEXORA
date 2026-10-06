@@ -2,14 +2,18 @@
 
 Owner «كملها كلها الان بدقه عاليه جدًا» resumes bounded engineering after the
 two failed C writer candidates; the earlier STOP and all failures remain history.
-Live source rechecked at a65a5912be0116564f2a5d075da5c83b0c6b9e12, tree
-87512388b1ddcb35e8476f9b06872edda336384b. Stage B torn-manifest
+Live source rechecked at f4f8e167feebb9c0908281f8720a5a3235e520bf, tree
+e7c1b69da2974974fb076a7dee38e360b09f8b5a. Stage B torn-manifest
 recover→append→recover repair passed Apple Debug/Release/TSan SIGKILL proof:
 run37503555309 SUCCESS, artifact11430977253 SHA256
 32618114c48dec880bda4dd70e9daeb282aa508dcd664ff6c4d0856c7ee014ef.
 Five old kill points, eight new continuation cases, and three fail-closed cases
-passed; this is not a physical power-cut test. Complete 30-day/60-record B and
-quota remeasurement on the changed source is still pending. See
+passed; this is not a physical power-cut test. Fresh complete 30-day/60-record
+B and G16/W7, G1/W7, G1/W3 quota measurement on the repaired source passed:
+run37504841364 SUCCESS, artifact11431716398 ZIP SHA256
+0981a0dc3526aae985786aa1dc890fa7732c62ec941c4cbda8d5b1d8a293bf26.
+Quotas with pinned 95,801,772-byte snapshot:320MiB PASS,1408MiB REJECT,
+832MiB PASS respectively; all final disk verifications exact. See
 Docs/Daily/2026-10-06-R005-B-RECOVERY.md and proof metadata under
 Experiments/R005Swift/Evidence/20261006/. C remains OPEN on S/H with unchanged
 1.10 gate and no new performance result. Current repo has no iOS app/IPA project;
@@ -47,13 +51,14 @@ e975025ad4148013ece4a2fcfdef7c70ead4a60ae2f65b3ce09b650df9a67cd3.
 Debug/Release/TSan, S/H100k and exact four-file equality PASS. No timing retry.
 No thresholds/formula/cadence/workload change, production/main merge or IPA.
 No closure STAGE-R005-RESULTS.md/results.json until true 1M/100-save C PASS names layout.
-Next: finish B source-specific 30-day measurements. For C, a fixed-runner paired
-profile and broader snapshot ownership plus writer-contention redesign need a
-new A and B input proof before any C 100-save campaign; prior copy-only and
-writer candidates cannot meet the original 1.10 gate. Keep old STOP as history.
+Next: C needs a fixed-runner paired profile and broader snapshot ownership plus
+writer-contention redesign. A new A selection and B source-bound proof precede
+any C 100-save campaign after changing hot state; prior copy-only and writer
+candidates cannot meet the original 1.10 gate. Keep old STOP as history.
 Requirements now match 1M/capacity2M and iPhone17ProMax100k→250k→1M;
-full-feature gameplay is still required. B torn-tail continuation has bounded
-proof, while Stage2–4 and physical iPhone acceptance remain unimplemented.
+full-feature gameplay is still required. B torn-tail and full retention have
+source-bound proof, while Stage2–4 and physical iPhone acceptance remain
+unimplemented.
 
 Reports: Docs/Daily/2026-10-06-R005-OUTCOME.md and 2026-10-06-R005-REPO-WRITER.md.
 Raw evidence/all failures: Experiments/R005Swift/review-20261005.json and failures.json.
