@@ -434,7 +434,26 @@
         "barrierChunksMax": 390,
         "snapshotBytes": 95801772
       },
-      "correction": "STOP at two bounded repository candidates. Only overhead missed in this S 5-save diagnostic. No full C/100-save campaign. Roll back unproved writer metadata/batching/detached QoS, keep evidence and exact-file regression."
+      "correction": "STOP at two bounded repository candidates. Only overhead missed in this S 5-save diagnostic. No full C/100-save campaign. Roll back unproved writer metadata/batching/detached QoS, keep evidence and exact-file regression.",
+      "rollback": {
+        "source": "a16a4befd610a3d6d4157a29ac3fbe165f1ced60",
+        "tree": "acbb938c94fdea67e78b4e8fb254433a6d2ad744",
+        "run": 37476738141,
+        "job": 112313986484,
+        "workflowConclusion": "success",
+        "artifact": 11419118234,
+        "artifactSHA256": "e975025ad4148013ece4a2fcfdef7c70ead4a60ae2f65b3ce09b650df9a67cd3",
+        "restoredWriterSource": "37c0203569b3c8240278d80765f6aadb369e14cc",
+        "scope": "exact four-file equality, Debug/Release/TSan byte oracle, S/H 100k exact restore, A/B revalidation, source guards; no overhead retry or C acceptance",
+        "newPerformanceMeasurement": false,
+        "sourceFileSHA256Verified": 20,
+        "productionMainComparison": {
+          "main": "38ce39cf9322f47e4def5f6eddb425c5a66ea7f9",
+          "files": 24,
+          "changes": 0
+        },
+        "status": "pass"
+      }
     }
   ]
 }

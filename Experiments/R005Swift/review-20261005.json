@@ -624,6 +624,202 @@
     {
       "path": "Experiments/R005Swift/Evidence/20261006/37475368651-writer-tsan.json",
       "sha256": "d5b4eed4bc54cbca054b8ad43bbba0f38d661f96476ca50ae66ad61b41b31a96"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-build-debug.txt",
+      "sha256": "b399aa40997441b50f29a300af950e436e7c28cc6108b0ac2470a347ecd907e1"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-build-release.txt",
+      "sha256": "a38e2b3b4a2260da7972ae42da7d28784c779d9e21128eb6c8e2cd26abc51813"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-build-tsan.txt",
+      "sha256": "ee5a12dce836015b11f839f233c036fcaa3e1b4134eb5f967ed85feab4a6f8c8"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-commit.txt",
+      "sha256": "954924ea779357a95c66e47acb632174c47f745c19fa45b4d04b46b37ab0268c"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-environment.txt",
+      "sha256": "75c499232ceb7259d9790a51cbf3689beeffa059978048e8d4185009dc184fad"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-proof-gates.txt",
+      "sha256": "58b15e2a7002fe184404714d0de8722371df2554578b0ca42e78a6070fca5387"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-source-guard-after.txt",
+      "sha256": "5c4f078b1ed80138eb250ecfe4fe07975f6a3c96d033cd1928dfa6eed11c86db"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-source-guard-before.txt",
+      "sha256": "5c4f078b1ed80138eb250ecfe4fe07975f6a3c96d033cd1928dfa6eed11c86db"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-source-sha256.txt",
+      "sha256": "42b188541b072ae511d2f56e586f43609f53e9ceceeb31f21d73f7f336c2d999"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-tree.txt",
+      "sha256": "d74c5bf2b6317da776903d476160c16a349dcdae0b8d5c03cae85e4913da5c50"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-writer-tsan-smoke-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-writer-tsan-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-build-debug.txt",
+      "sha256": "36123687960fb33ceace1a96b5ac38b89898caa0f72aa43a674e7f0544571e89"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-build-release.txt",
+      "sha256": "f84864bacdf18edce1879eb3df5264d7b8fef2213a7ba778fa7a831f23943d72"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-build-tsan.txt",
+      "sha256": "037dbbc524a7f155de127d9dc56949fa708ecc0014591d29a06638a24639ae38"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-commit.txt",
+      "sha256": "a63834f0744c0f823733913d9d749c4822b3a3fabb70048ac7634e78fe05c931"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-environment.txt",
+      "sha256": "75c499232ceb7259d9790a51cbf3689beeffa059978048e8d4185009dc184fad"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-proof-gates.txt",
+      "sha256": "c91637629acc190631fd63ab4aca65ea9636dbf6e0c4b405937320350f5b9da6"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-source-guard-after.txt",
+      "sha256": "5c4f078b1ed80138eb250ecfe4fe07975f6a3c96d033cd1928dfa6eed11c86db"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-source-guard-before.txt",
+      "sha256": "5c4f078b1ed80138eb250ecfe4fe07975f6a3c96d033cd1928dfa6eed11c86db"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-source-sha256.txt",
+      "sha256": "e57497ddd3f5f8212ef2338446cbfff385142ed817e93899fb02d67560c539e5"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-tree.txt",
+      "sha256": "cb9a6fe8603650adc0b4f14a4006fb966038a23a16a1f43daae103d8992f78b1"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-writer-tsan-smoke-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-writer-tsan-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-REUSED-AB.json",
+      "sha256": "adfdb3797aeb04a9190b92d19281bfee38fb0c2f97bffdb7de941b365e53934e"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-ROLLBACK-WRITER.json",
+      "sha256": "f7615515baa900846d9e7298191a2653ef18141894fcf2681313f4b5c16eb5f1"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-STAGE005-A.json",
+      "sha256": "a2419f0a74b69cffaa02e9ee03fd05b08b325a69cd8387383e2e845d6a3bed72"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-build-debug.txt",
+      "sha256": "84d9097974bd3f86ff4985512790c3bb77b8101489d95c71693fe980d600b8aa"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-build-release.txt",
+      "sha256": "07b3b3e3bed0c2c42b664dceaf42994f16857511363f7bb9b98f771e05a61401"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-build-tsan.txt",
+      "sha256": "c2c6e68d62a8e246e73b184adb7f01851f866f82c35f858cdd2707fcec42a8cc"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-commit.txt",
+      "sha256": "1d8a1fc775c5da2ddc37af3853e95966435fed186b6f512a619e2cf60cc426db"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-environment.txt",
+      "sha256": "75c499232ceb7259d9790a51cbf3689beeffa059978048e8d4185009dc184fad"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-proof-gates.txt",
+      "sha256": "7f147f6c7eecbbf54b65e52f5409b976dcfaec86acfa2637439692ec47f727b3"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-smoke-debug-H.json",
+      "sha256": "7c014caff38fa59789e7c29e6a0ec6c54e03ff480a0a61a41008ec8f636d7be5"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-smoke-debug-S.json",
+      "sha256": "a3de5ef33ae2eefc5f359ec1edec4e3a9f81e04c508b94350e0ce53f8492b4a5"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-smoke-release-H.json",
+      "sha256": "7c014caff38fa59789e7c29e6a0ec6c54e03ff480a0a61a41008ec8f636d7be5"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-smoke-release-S.json",
+      "sha256": "a3de5ef33ae2eefc5f359ec1edec4e3a9f81e04c508b94350e0ce53f8492b4a5"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-smoke-tsan-H-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-smoke-tsan-H.json",
+      "sha256": "7c014caff38fa59789e7c29e6a0ec6c54e03ff480a0a61a41008ec8f636d7be5"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-smoke-tsan-S-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-smoke-tsan-S.json",
+      "sha256": "a3de5ef33ae2eefc5f359ec1edec4e3a9f81e04c508b94350e0ce53f8492b4a5"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-source-guard-after.txt",
+      "sha256": "5c4f078b1ed80138eb250ecfe4fe07975f6a3c96d033cd1928dfa6eed11c86db"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-source-guard-before.txt",
+      "sha256": "5c4f078b1ed80138eb250ecfe4fe07975f6a3c96d033cd1928dfa6eed11c86db"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-source-sha256.txt",
+      "sha256": "c644c1c1bfcae4385481611df8463ff0217b7dbd37de076e51539586d0b2bbc9"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-transport-debug.json",
+      "sha256": "a49cfb1faedb88e8b12747a0e8491ad370fe6351b41b28bf7e29a5eef7a0c917"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-transport-release.json",
+      "sha256": "a49cfb1faedb88e8b12747a0e8491ad370fe6351b41b28bf7e29a5eef7a0c917"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-transport-tsan-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-transport-tsan.json",
+      "sha256": "a49cfb1faedb88e8b12747a0e8491ad370fe6351b41b28bf7e29a5eef7a0c917"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37476738141-tree.txt",
+      "sha256": "73b356115b1be4cee746828322b52b59c10d3bc3228d23557908ce7acbf58e5f"
     }
   ],
   "reuse": {
@@ -645,7 +841,7 @@
     "Chat app disconnect cause unverified; continuity persists in repository"
   ],
   "failureRegistry": "Experiments/R005Swift/failures.json",
-  "next": "No further timing attempts. Verify exact writer rollback and Debug/Release/TSan functions, then owner chooses a broader ownership redesign or stable-runner diagnosis.",
+  "next": "Owner chooses stable-runner diagnosis, broader snapshot ownership redesign or continued C hold; no automatic further timing retry.",
   "candidateHistory": [
     {
       "source": "1c0c87151a0a3f39c0967da4c0f5ba6c5ab68547",
@@ -771,13 +967,27 @@
       "Stage005CRunner.swift",
       "Stage005CHybridRunner.swift"
     ],
-    "status": "local exact bytes; CI verification pending",
+    "status": "Apple CI exact four-file equality verified, run37476738141",
     "scope": "no new performance evidence; C open on S and H"
   },
   "rollback": {
-    "status": "pending Apple functional verification",
+    "source": "a16a4befd610a3d6d4157a29ac3fbe165f1ced60",
+    "tree": "acbb938c94fdea67e78b4e8fb254433a6d2ad744",
+    "run": 37476738141,
+    "job": 112313986484,
+    "workflowConclusion": "success",
+    "artifact": 11419118234,
+    "artifactSHA256": "e975025ad4148013ece4a2fcfdef7c70ead4a60ae2f65b3ce09b650df9a67cd3",
     "restoredWriterSource": "37c0203569b3c8240278d80765f6aadb369e14cc",
-    "scope": "four runtime files byte-equal to allowed source; exact-file regressions retained; no performance retry"
+    "scope": "exact four-file equality, Debug/Release/TSan byte oracle, S/H 100k exact restore, A/B revalidation, source guards; no overhead retry or C acceptance",
+    "newPerformanceMeasurement": false,
+    "sourceFileSHA256Verified": 20,
+    "productionMainComparison": {
+      "main": "38ce39cf9322f47e4def5f6eddb425c5a66ea7f9",
+      "files": 24,
+      "changes": 0
+    },
+    "status": "pass"
   },
   "repoResumption20261006": {
     "ownerInstruction": "استخدم المستودع",
@@ -848,8 +1058,27 @@
     ],
     "attempts": 2,
     "maxAttempts": 2,
-    "status": "C-open; two-candidate stop; rollback pending verification",
-    "next": "No further timing attempts. Verify exact writer rollback and Debug/Release/TSan functions, then owner chooses a broader ownership redesign or stable-runner diagnosis."
+    "status": "C-open; STOP after two bounded writer candidates; rollback functionally verified",
+    "next": "Owner chooses stable-runner diagnosis, broader snapshot ownership redesign or continued C hold; no automatic further timing retry.",
+    "rollback": {
+      "source": "a16a4befd610a3d6d4157a29ac3fbe165f1ced60",
+      "tree": "acbb938c94fdea67e78b4e8fb254433a6d2ad744",
+      "run": 37476738141,
+      "job": 112313986484,
+      "workflowConclusion": "success",
+      "artifact": 11419118234,
+      "artifactSHA256": "e975025ad4148013ece4a2fcfdef7c70ead4a60ae2f65b3ce09b650df9a67cd3",
+      "restoredWriterSource": "37c0203569b3c8240278d80765f6aadb369e14cc",
+      "scope": "exact four-file equality, Debug/Release/TSan byte oracle, S/H 100k exact restore, A/B revalidation, source guards; no overhead retry or C acceptance",
+      "newPerformanceMeasurement": false,
+      "sourceFileSHA256Verified": 20,
+      "productionMainComparison": {
+        "main": "38ce39cf9322f47e4def5f6eddb425c5a66ea7f9",
+        "files": 24,
+        "changes": 0
+      },
+      "status": "pass"
+    }
   },
   "updated": "2026-10-06",
   "rollbackHistory": [

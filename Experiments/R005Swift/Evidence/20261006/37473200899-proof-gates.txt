@@ -1,0 +1,17 @@
+test_a_allocations_cannot_fall_back_to_success (test_proof_gates.ProofGateTests.test_a_allocations_cannot_fall_back_to_success) ... ok
+test_a_clean_evidence (test_proof_gates.ProofGateTests.test_a_clean_evidence) ... ok
+test_a_launcher_persists_failure_and_exits (test_proof_gates.ProofGateTests.test_a_launcher_persists_failure_and_exits) ... ok
+test_a_missing_positive_control (test_proof_gates.ProofGateTests.test_a_missing_positive_control) ... ok
+test_c_independent_maxima_cannot_hide_violation (test_proof_gates.ProofGateTests.test_c_independent_maxima_cannot_hide_violation) ... ok
+test_c_launcher_persists_pair_failure_and_exits (test_proof_gates.ProofGateTests.test_c_launcher_persists_pair_failure_and_exits) ... ok
+test_c_limits_are_inclusive (test_proof_gates.ProofGateTests.test_c_limits_are_inclusive) ... ok
+test_c_old_unpaired_evidence_is_rejected (test_proof_gates.ProofGateTests.test_c_old_unpaired_evidence_is_rejected) ... ok
+test_c_pair_count_must_cover_all_advances (test_proof_gates.ProofGateTests.test_c_pair_count_must_cover_all_advances) ... ok
+test_c_rejects_latency_and_empty_samples (test_proof_gates.ProofGateTests.test_c_rejects_latency_and_empty_samples) ... ok
+test_c_rejects_nonfinite_ratio (test_proof_gates.ProofGateTests.test_c_rejects_nonfinite_ratio) ... ok
+test_c_rejects_overhead_idle_allocation_and_short_workload (test_proof_gates.ProofGateTests.test_c_rejects_overhead_idle_allocation_and_short_workload) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.042s
+
+OK

@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "scope": "exact rollback and functional verification, no timing retry",
+  "restoredWriterSource": "37c0203569b3c8240278d80765f6aadb369e14cc",
+  "fileSHA256": {
+    "Experiments/R005Swift/Sources/SwiftProbe/Snapshot.swift": "a40d3284973e681ce8b16f88ef7985bf3c3809e4c22ed2333cb2b5a9b6ba0a33",
+    "Experiments/R005Swift/Sources/SwiftProbe/Stage005CSave.swift": "220e1a559564f5c909b9c1cee6870ea7dc10586424f2c0e08709d89f2a4cfc8e",
+    "Experiments/R005Swift/Sources/SwiftProbe/Stage005CRunner.swift": "445851d3babf0d8983f85e091f34dc73ef64609bdee4421172d439eba13a21a6",
+    "Experiments/R005Swift/Sources/SwiftProbe/Stage005CHybridRunner.swift": "114d64c09719cf17f92e8cad78882bc422bea600afddfbd35de96468f4b98c00"
+  }
+}

@@ -26,10 +26,13 @@ Debug/Release, S100k TSan and K3 1M Debug/Release. Not full K1-K10 or C proof.
 Four C runtime files restored byte-for-byte to allowed 37c0203: Snapshot,
 Stage005CSave, Stage005CRunner, Stage005CHybridRunner. Unproved metadata/batching
 and detached-QoS changes removed; exact-file/known-SHA/K3 regressions retained.
-Rollback functional CI is pending; it has no new performance measurement.
+Rollback functional CI37476738141 SUCCESS on a16a4befd610a3d6d4157a29ac3fbe165f1ced60,
+treeacbb938c94fdea67e78b4e8fb254433a6d2ad744; artifact11419118234 SHA256
+e975025ad4148013ece4a2fcfdef7c70ead4a60ae2f65b3ce09b650df9a67cd3.
+Debug/Release/TSan, S/H100k and exact four-file equality PASS. No timing retry.
 No thresholds/formula/cadence/workload change, production/main merge or IPA.
 No closure STAGE-R005-RESULTS.md/results.json until true 1M/100-save C PASS names layout.
-Next: finish rollback functional proof, then owner reviews 2–3 alternatives/costs.
+Next: owner reviews stable-runner diagnosis, snapshot ownership redesign or C hold.
 Requirements now match 1M/capacity2M and iPhone17ProMax100k→250k→1M;
 full-feature gameplay is still required. B torn-tail recover→append→recover needs proof.
 

@@ -1,0 +1,2 @@
+PASS baseline Sources/Tests/Checks/Package/AGENTS/legacy-workflow objects and file modes; only diagnostic extension/dispatch
+PASS analysis probes: actual percentiles, valid zeros, missing/decreased/failed counters, invalid-zero rejection

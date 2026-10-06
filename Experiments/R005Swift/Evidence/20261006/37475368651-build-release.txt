@@ -1,0 +1,12 @@
+Building for production...
+[0/9] Write sources
+[5/9] Write swift-version--79AA4F9932D1E87A.txt
+[6/10] Compiling ProbePlatform platform.c
+[8/10] Compiling NexoraIdentity EntitySpace.swift
+[9/12] Compiling NexoraAviation AircraftStore.swift
+[10/12] Compiling NexoraFinance FinanceStore.swift
+[11/13] Compiling NexoraSimulation ArrivalHeap.swift
+[12/14] Compiling SwiftProbe Checks.swift
+[12/14] Write Objects.LinkFileList
+[13/14] Linking nxr-swift-probe
+Build complete! (21.31s)
