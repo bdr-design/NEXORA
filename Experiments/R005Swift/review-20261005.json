@@ -1647,5 +1647,60 @@
     "C100SavePerformance": null,
     "Cacceptance": "OPEN independently on S and H",
     "observation": "Exact matched984calls/1M events, output/final/recovery equality; capture work and 95,782,816B advance+service allocations; writer-only matched delta varies across pairs, so no stable writer causality claim."
+  },
+  "epochOwnershipMicro20261007": {
+    "status": "micro-ownership-verified",
+    "acceptance": false,
+    "source": "1a1a216884f7baf61e044011733a9f1a041b637d",
+    "tree": "8033487f3f02fe82169fcd9caac50bf6dec1fa33",
+    "run": 37538110239,
+    "job": 112524158084,
+    "artifact": 11447766089,
+    "artifactSHA256": "2d3d676501524393874fa30c7c323b53d14e1c66ba3709ded0e6b2e8bb9eb2ad",
+    "rawZIP": "Experiments/R005Swift/Evidence/20261007/37538110239-r005-epoch-pages-micro.zip",
+    "C100SavePerformance": null,
+    "Cacceptance": "OPEN independently on S and H",
+    "matrix": [
+      {
+        "status": "micro-ownership-verified",
+        "acceptance": false,
+        "assets": 4096,
+        "legs": 8,
+        "allocationPolicy": "observe",
+        "releaseAllocationGate": null,
+        "Cacceptance": "OPEN independently on S and H",
+        "file": "EPOCH-4096-debug.json"
+      },
+      {
+        "status": "micro-ownership-verified",
+        "acceptance": false,
+        "assets": 4096,
+        "legs": 8,
+        "allocationPolicy": "zero",
+        "releaseAllocationGate": "verified-zero",
+        "Cacceptance": "OPEN independently on S and H",
+        "file": "EPOCH-4096-release.json"
+      },
+      {
+        "status": "micro-ownership-verified",
+        "acceptance": false,
+        "assets": 4096,
+        "legs": 8,
+        "allocationPolicy": "functional",
+        "releaseAllocationGate": null,
+        "Cacceptance": "OPEN independently on S and H",
+        "file": "EPOCH-4096-tsan.json"
+      },
+      {
+        "status": "micro-ownership-verified",
+        "acceptance": false,
+        "assets": 100000,
+        "legs": 8,
+        "allocationPolicy": "zero",
+        "releaseAllocationGate": "verified-zero",
+        "Cacceptance": "OPEN independently on S and H",
+        "file": "EPOCH-100k-release.json"
+      }
+    ]
   }
 }

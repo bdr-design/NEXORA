@@ -84,9 +84,11 @@ private final class EpochMicroStore<T: BitwiseCopyable & Sendable> {
     let assets: Int
     let pageCount: Int
     let reservedPayloadBytes: Int
+    let bulkClone: Bool
 
-    init(assets: Int, pages: [EpochMicroPage<T>]) {
+    init(assets: Int, pages: [EpochMicroPage<T>], bulkClone: Bool) {
         self.assets = assets
+        self.bulkClone = bulkClone
         pageCount = pages.count
         root = []
         spareRoot = []
@@ -138,8 +140,12 @@ private final class EpochMicroStore<T: BitwiseCopyable & Sendable> {
                 leafEpoch[leaf] = epoch
                 leafCopies += 1
             }
-            for index in root[leaf][slot].indices {
-                sparePages[page][index] = root[leaf][slot][index]
+            if bulkClone {
+                sparePages[page].replaceSubrange(0..<root[leaf][slot].count, with: root[leaf][slot])
+            } else {
+                for index in root[leaf][slot].indices {
+                    sparePages[page][index] = root[leaf][slot][index]
+                }
             }
             swap(&root[leaf][slot], &sparePages[page])
             pageEpoch[page] = epoch
@@ -280,11 +286,97 @@ private final class EpochMicroWriter<T: BitwiseCopyable & Sendable>: Sendable {
     for byte in 0..<width { bytes[offset + byte] = UInt8(truncatingIfNeeded: value >> (byte * 8)) }
 }
 
+private enum EpochMicroWordCodec {
+    static let widths = [4, 4, 4, 8, 8, 8, 8, 1, 4, 4, 4, 4, 4]
+    static let bases = [0, 4, 8, 12, 20, 28, 36, 44, 45, 49, 53, 57, 61]
+
+    @inline(__always) static func get(_ words: ContiguousArray<UInt64>, offset: Int, width: Int) -> UInt64 {
+        let index = offset >> 3, shift = (offset & 7) * 8
+        let bits = width * 8
+        let mask: UInt64 = bits == 64 ? UInt64.max : (UInt64(1) << bits) - 1
+        var value = words[index] >> shift
+        if shift + bits > 64 { value |= words[index + 1] << (64 - shift) }
+        return value & mask
+    }
+
+    @inline(__always) static func put(_ value: UInt64, offset: Int, width: Int,
+                                     into words: inout ContiguousArray<UInt64>) {
+        let index = offset >> 3, shift = (offset & 7) * 8
+        let bits = width * 8
+        let mask: UInt64 = bits == 64 ? UInt64.max : (UInt64(1) << bits) - 1
+        words[index] = (words[index] & ~(mask << shift)) | ((value & mask) << shift)
+        if shift + bits > 64 {
+            let remainingMask = mask >> (64 - shift)
+            words[index + 1] = (words[index + 1] & ~remainingMask) | ((value & mask) >> (64 - shift))
+        }
+    }
+
+    static func pack(_ bytes: [UInt8]) -> ContiguousArray<UInt64> {
+        var words = ContiguousArray(repeating: UInt64(0), count: (bytes.count + 7) >> 3)
+        for index in bytes.indices { words[index >> 3] |= UInt64(bytes[index]) << ((index & 7) * 8) }
+        return words
+    }
+
+    static func append(_ words: ContiguousArray<UInt64>, elements: Int, into bytes: inout [UInt8]) {
+        let start = bytes.count
+        for word in words { Snapshot.appendLE(word, into: &bytes) }
+        let excess = bytes.count - start - elements * 65
+        precondition(excess >= 0 && excess < 8)
+        if excess > 0 { bytes.removeLast(excess) }
+    }
+}
+
+private func epochMicroWordBoundaries() throws -> [String: Any] {
+    let sizes = [1, 3, 7, 8, 9, 15, 255, 256, 257]
+    var checked = 0
+    for count in sizes {
+        let world = try SwiftWorld(count: count)
+        for index in 0..<count {
+            try world.restoreAsset(index, gen: UInt32.max, airport: UInt32.max,
+                destination: UInt32.max, departure: UInt64.max, fare: Int64.max,
+                trips: UInt64.max, last: UInt64.max, active: 1,
+                contract: UInt32(index / 16), assetChangeEpoch: UInt32.max,
+                entity: 31, policy: UInt32.max, origin: UInt32.max)
+        }
+        for chunk in 0..<((count + 255) >> 8) {
+            let n = min(256, count - chunk * 256)
+            var words = ContiguousArray(repeating: UInt64(0), count: (n * 65 + 7) >> 3)
+            for column in 0..<13 {
+                let width = EpochMicroWordCodec.widths[column]
+                for index in 0..<n {
+                    let global = chunk * 256 + index
+                    let value: UInt64
+                    switch column {
+                    case 3, 5, 6: value = UInt64.max
+                    case 4: value = UInt64(Int64.max)
+                    case 7: value = 1
+                    case 8: value = UInt64(global / 16)
+                    case 10: value = 31
+                    default: value = UInt64(UInt32.max)
+                    }
+                    let offset = EpochMicroWordCodec.bases[column] * n + index * width
+                    EpochMicroWordCodec.put(value, offset: offset, width: width, into: &words)
+                    try require(EpochMicroWordCodec.get(words, offset: offset, width: width) == value,
+                                "epoch word unaligned field round-trip")
+                    checked += 1
+                }
+            }
+            let record = Snapshot.record(kind: 1, index: UInt32(chunk), elements: UInt32(n), payloadBytes: n * 65) {
+                EpochMicroWordCodec.append(words, elements: n, into: &$0)
+            }
+            try require(record == Snapshot.assetRecord(world, chunk: chunk), "epoch word boundary canonical S record")
+        }
+    }
+    return ["status": "pass", "sizes": sizes, "fieldRoundTrips": checked,
+            "reference": "independent existing S Snapshot.assetRecord after typed SwiftWorld restore"]
+}
+
 private func epochMicroFixture<T: BitwiseCopyable & Sendable>(count: Int,
+                 bulkClone: Bool = false,
                  makePage: (Range<Int>) -> EpochMicroPage<T>) -> EpochMicroStore<T> {
     var pages: [EpochMicroPage<T>] = []
     for start in stride(from: 0, to: count, by: 256) { pages.append(makePage(start..<min(start + 256, count))) }
-    return EpochMicroStore(assets: count, pages: pages)
+    return EpochMicroStore(assets: count, pages: pages, bulkClone: bulkClone)
 }
 
 private func epochMicroReferenceFile(_ path: String, count: Int, completedEpochs: Int) throws -> String {
@@ -454,6 +546,7 @@ private func epochMicroLeg<T: BitwiseCopyable & Sendable>(directory: String, nam
             "setupAllocations": epochMicroObserved(setupAlloc.calls, available: setupAlloc.available == 1),
             "setupAllocationBytes": epochMicroObserved(setupAlloc.bytes, available: setupAlloc.available == 1),
             "reservedPayloadBytes": store.reservedPayloadBytes,
+            "cloneStrategy": store.bulkClone ? "replaceSubrange" : "elementLoop",
             "beforePhysicalFootprint": ["status": beforeFootprint.status, "bytes": beforeFootprint.bytes],
             "setupPhysicalFootprint": ["status": setupFootprint.status, "bytes": setupFootprint.bytes],
             "epochs": epochs]
@@ -472,6 +565,7 @@ func epochPagesMicro(_ directory: String, count: Int, requireAllocator: Bool = t
         try require(cControl > 0 && swiftControl.available == 1 && swiftControl.calls > 0,
                     "epoch micro C/Swift allocator calibration")
     }
+    let wordBoundaries = try epochMicroWordBoundaries()
     var references: [String] = []
     for epoch in 0...3 {
         let path = directory + "/reference-\(epoch).bin"
@@ -503,6 +597,32 @@ func epochPagesMicro(_ directory: String, count: Int, requireAllocator: Bool = t
         }
     }
     let packedSerialize: @Sendable (EpochMicroPage<UInt8>, Int, inout [UInt8]) -> Void = { page, _, bytes in bytes.append(contentsOf: page) }
+    let byteBulkFixture = { epochMicroFixture(count: count, bulkClone: true) { range -> EpochMicroPage<UInt8> in
+        var bytes: [UInt8] = []
+        bytes.reserveCapacity(range.count * 65)
+        for column in 0..<13 { for index in range { EpochMicroAsset.fixture(index).appendColumn(column, into: &bytes) } }
+        return EpochMicroPage(bytes)
+    } }
+    let wordFixture = { epochMicroFixture(count: count, bulkClone: true) { range -> EpochMicroPage<UInt64> in
+        var bytes: [UInt8] = []
+        bytes.reserveCapacity(range.count * 65)
+        for column in 0..<13 { for index in range { EpochMicroAsset.fixture(index).appendColumn(column, into: &bytes) } }
+        return EpochMicroWordCodec.pack(bytes)
+    } }
+    let wordMutation: (inout EpochMicroPage<UInt64>, Int, Int, UInt64) -> Void = { words, chunk, round, epoch in
+        let n = min(256, count - chunk * 256)
+        for index in 0..<n {
+            EpochMicroWordCodec.put(2, offset: n * 4 + index * 4, width: 4, into: &words)
+            EpochMicroWordCodec.put((epoch - 1) * 8 + UInt64(round + 1), offset: n * 28 + index * 8, width: 8, into: &words)
+            let operation = (epoch - 1) * UInt64(count * 8) + UInt64(round * count + chunk * 256 + index + 1)
+            EpochMicroWordCodec.put(operation, offset: n * 36 + index * 8, width: 8, into: &words)
+            EpochMicroWordCodec.put(0, offset: n * 44 + index, width: 1, into: &words)
+            EpochMicroWordCodec.put(epoch, offset: n * 49 + index * 4, width: 4, into: &words)
+        }
+    }
+    let wordSerialize: @Sendable (EpochMicroPage<UInt64>, Int, inout [UInt8]) -> Void = { words, elements, bytes in
+        EpochMicroWordCodec.append(words, elements: elements, into: &bytes)
+    }
     var legs: [[String: Any]] = []
     for mode in ["none", "direct", "paced", "none"] {
         legs.append(try epochMicroLeg(directory: directory, name: "rows", count: count,
@@ -511,9 +631,16 @@ func epochPagesMicro(_ directory: String, count: Int, requireAllocator: Bool = t
         legs.append(try epochMicroLeg(directory: directory, name: "packedSoA", count: count,
             writerMode: mode, fixture: packedFixture, requireAllocator: requireAllocator,
             mutate: packedMutation, serialize: packedSerialize, references: references))
+        legs.append(try epochMicroLeg(directory: directory, name: "byteBulk", count: count,
+            writerMode: mode, fixture: byteBulkFixture, requireAllocator: requireAllocator,
+            mutate: packedMutation, serialize: packedSerialize, references: references))
+        legs.append(try epochMicroLeg(directory: directory, name: "wordSoA", count: count,
+            writerMode: mode, fixture: wordFixture, requireAllocator: requireAllocator,
+            mutate: wordMutation, serialize: wordSerialize, references: references))
     }
     return ["status": "diagnostic", "acceptance": false, "scope": "isolated asset-page ownership micro; no S/H hot-state integration",
-            "assets": count, "epochsPerLeg": 3, "writesPerAssetPerEpoch": 8,
+            "assets": count, "epochsPerLeg": 3, "writesPerAssetPerEpoch": 8, "studySchemaVersion": 2,
+            "wordCodecBoundaries": wordBoundaries,
             "rowStride": MemoryLayout<EpochMicroAsset>.stride, "packedBytesPerAsset": 65,
             "allocatorRequired": requireAllocator, "allocationObserverAvailable": swiftControl.available == 1,
             "cAllocationPositiveControl": epochMicroObserved(cControl, available: swiftControl.available == 1),

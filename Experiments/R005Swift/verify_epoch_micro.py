@@ -40,14 +40,25 @@ def verify(value, allocation_policy='zero'):
                     check(all(observation[f] == 0 for f in fields),
                           f'preallocated Release micro unexpectedly allocates: {prefix}')
     check(value['rowStride'] == 72 and value['packedBytesPerAsset'] == 65, 'row/SoA size')
+    schema = value.get('studySchemaVersion', 1)
+    check(schema in (1, 2), 'study schema')
+    representations = ('rows', 'packedSoA') if schema == 1 else ('rows', 'packedSoA', 'byteBulk', 'wordSoA')
+    if schema == 2:
+        boundaries = value['wordCodecBoundaries']
+        check(boundaries['status'] == 'pass' and boundaries['sizes'] ==
+              [1, 3, 7, 8, 9, 15, 255, 256, 257] and boundaries['fieldRoundTrips'] > 0,
+              'word unaligned/partial-page boundary coverage')
     expected = [(rep, mode) for mode in ('none', 'direct', 'paced', 'none')
-                for rep in ('rows', 'packedSoA')]
+                for rep in representations]
     check([(leg['representation'], leg['writerMode']) for leg in value['legs']] == expected,
           'control/direct/paced/control coverage')
     pages = (value['assets'] + 255) // 256
     leaves = (pages + 63) // 64
     for leg in value['legs']:
         check(len(leg['epochs']) == 3, 'three epochs')
+        if schema == 2:
+            check(leg['cloneStrategy'] == ('replaceSubrange' if leg['representation'] in
+                  ('byteBulk', 'wordSoA') else 'elementLoop'), 'bulk-copy control')
         allocations(leg, ('setup',), require_zero=False)
         for index, epoch in enumerate(leg['epochs']):
             check(epoch['epoch'] == index + 1 and epoch['liveExact'] is True, 'live epoch')

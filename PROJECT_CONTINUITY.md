@@ -1,5 +1,18 @@
 # NEXORA — current checkpoint / 2026-10-06
 
+Latest measured checkpoint 2026-10-07: immutable asset-page micro run37538110239
+SUCCESS on live1a1a216884f7baf61e044011733a9f1a041b637d/tree8033487f. Artifact
+11447766089 ZIP SHA2562d3d676501524393874fa30c7c323b53d14e1c66ba3709ded0e6b2e8bb9eb2ad
+independently verified. Debug/Release/TSan4096 and Release100k, exact frozen/live
+digests over3epochs/8legs each, lifecycle rejects; Release scopes allocate zero,
+TSan allocation observations explicitly null. At100k row-page clone0.651–0.712ms
+for7.2MB; byte-packed SoA clone29.048–58.734ms for6.5MB is rejected as a hot
+copy candidate. Pacing prolongs writer and does not establish a contention win.
+Next bounded candidate: word-packed SoA to retain65B payload with fewer clone
+stores, including unaligned/partial-page boundaries; no S/H integration yet.
+Original read-only FIRST-LOOK and D005 lifecycle proposal prepared, not gameplay.
+37537195946 remains FAILED with its artifact; C OPEN on S/H, main unchanged.
+
 Paired evidence verified 2026-10-07: run37534787303 SUCCESS, source756d2e92,
 tree200520a6, artifact11446371022; downloaded ZIP SHA256
 d5fcf8fe72607cabbc717448299c0903193f462085299ce81158de8b38703c7c.
