@@ -1,5 +1,23 @@
 # NEXORA — current checkpoint / 2026-10-06
 
+## Latest owner rules and Apple diagnostic — 2026-10-07 / Asia-Riyadh
+
+Owner at00:36 requires ideas only from the reference, no copied code or methods,
+no department/option/button/company without a realistic complete lifecycle, and
+smoothness as a permanent acceptance rule. Published contracts now live in
+AGENTS.md, Docs/REQUIREMENTS.md and Docs/PRODUCT-RULES.md. Before editing, live
+allowed HEAD verified `756d2e92b92b1f65b8e54cf05bc40529ed81bd67`, tree
+`200520a6d5514dff5032fcc0d7dfc9913ba68fbc`; main remains
+`38ce39cf9322f47e4def5f6eddb425c5a66ea7f9`. That remote commit is byte/tree
+identical to local reviewed `4e3cfbb0a51e01454fd8605a9f3978dc2482ea94`;
+publication used a non-force expected-head lease and preserved local history.
+Apple paired diagnostic job `112512863132` in run `37534787303` SUCCESS:
+Debug/Release 4096 smoke and Release1M ABBA on S. Artifact `11446371022` is being
+downloaded for independent hash and component analysis. This is diagnostic
+success only, not C performance acceptance; S/H C remain OPEN, all failures and
+the1.10 gate unchanged. Legacy100-save job was SKIPPED. Next: preserve raw
+evidence, compare matched calls, then decide an isolated epoch-page micro.
+
 ## Owner overnight continuation — 2026-10-07 / Asia-Riyadh
 
 Latest explicit owner instruction at00:32 Riyadh: resume implementation for

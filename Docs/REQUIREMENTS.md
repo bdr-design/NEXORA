@@ -6,6 +6,14 @@ Priority: sustained smoothness and low unnecessary power/thermal load, then deep
 realistic business simulation and long-term extension. Initial real-device target
 is the owner's iPhone 17 Pro Max; CI/Mac measurements are not device certification.
 
+Permanent owner rules, reaffirmed 2026-10-07 (Asia/Riyadh): smoothness is an
+acceptance requirement for every addition, not a later polish task. Every
+player-facing department, option, button and company must have a complete,
+realistic functional lifecycle before it is added. No decorative companies or
+inert controls. The supplied GlobalHoldings repository contributes product ideas
+only; its code and implementation methods are forbidden, including rewritten
+copies. See `PRODUCT-RULES.md` and `../AGENTS.md` for the binding contract.
+
 The player operates holdings, subsidiaries, business units and facilities across
 multiple industries. Product scope includes aviation, sea and road transport,
 banking, energy, retail, manufacturing and logistics. Future car sales and
