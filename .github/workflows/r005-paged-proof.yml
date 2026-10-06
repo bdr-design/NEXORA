@@ -1,0 +1,119 @@
+name: R005 fresh paged A B and both-layout functional proof
+on:
+  push:
+    branches: ["diagnostic/r005-design-1m-20260930"]
+permissions:
+  contents: read
+jobs:
+  fresh-source-proof:
+    if: ${{ contains(github.event.head_commit.message, '[r005-paged-proof]') && contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-c-targeted]') && !contains(github.event.head_commit.message, '[r005-paged-c-100]') }}
+    runs-on: macos-15
+    timeout-minutes: 180
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Record source flags and unchanged acceptance rules
+        run: |
+          set -euo pipefail
+          mkdir -p paged-proof
+          git rev-parse HEAD > paged-proof/commit.txt
+          git rev-parse HEAD^{tree} > paged-proof/tree.txt
+          swift --version > paged-proof/environment.txt
+          xcodebuild -version >> paged-proof/environment.txt
+          sw_vers >> paged-proof/environment.txt
+          sysctl hw.model hw.ncpu hw.memsize >> paged-proof/environment.txt
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > paged-proof/source-guard-before.txt
+          python3 -B -m unittest discover -s Experiments/R005Swift/tests -v > paged-proof/proof-gates.txt 2>&1
+          python3 -B Experiments/R005Swift/candidate_proof_inputs.py write paged-proof/runtime-inputs.json
+          printf '%s\n' 'A: EPOCH_PAGES Release' 'B/K: STAGE_C EPOCH_PAGES Debug Release TSan' 'C100: NOT_RUN' 'K10 historical token targets retained epoch buffers; queue bytes=0' > paged-proof/build-flags.txt
+      - name: Fresh A Release build without saving hooks
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          swift build --scratch-path .build-paged-a -c release -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../paged-proof/build-a-release.txt
+          cc -dynamiclib -O2 -Wall -Wextra -Werror AllocationObserver.c -ISources/ProbePlatform/include -o ../../paged-proof/AllocationObserver.dylib
+      - name: Fresh A health and 3 processes by 10 runs at 100k 1M 2M on S H
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          export NXR_ALLOCATOR_DYLIB="$PWD/../../paged-proof/AllocationObserver.dylib"
+          python3 -B stage005_a.py .build-paged-a/release/nxr-swift-probe ../../paged-proof/STAGE005-A.json 2>&1 | tee ../../paged-proof/a-run.txt
+      - name: Build source-bound B and C functionality in Debug Release TSan
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          swift build --scratch-path .build-paged-full-debug -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../paged-proof/build-full-debug.txt
+          swift build --scratch-path .build-paged-full-release -c release -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../paged-proof/build-full-release.txt
+          swift build --scratch-path .build-paged-full-tsan --sanitize=thread -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../paged-proof/build-full-tsan.txt
+      - name: Current-source bounded cross-build and epoch ownership validation
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          swift build --scratch-path .build-paged-full-base -c release -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../paged-proof/build-base-release.txt
+          python3 -B paged_candidate.py .build-paged-full-base/release/nxr-swift-probe .build-paged-full-debug/debug/nxr-swift-probe .build-paged-full-release/release/nxr-swift-probe .build-paged-full-tsan/debug/nxr-swift-probe ../../paged-proof/bounded-matrix ../../paged-proof/AllocationObserver.dylib 2>&1 | tee ../../paged-proof/bounded-matrix-run.txt
+          for mode in debug release tsan; do
+            config="$mode"
+            if test "$mode" = tsan; then config=debug; fi
+            for variant in S H; do
+              TSAN_OPTIONS=halt_on_error=1 ".build-paged-full-$mode/$config/nxr-swift-probe" paged-candidate-lifecycle "../../paged-proof/lifecycle-$mode-$variant" "$variant" > "../../paged-proof/lifecycle-$mode-$variant.json" 2> "../../paged-proof/lifecycle-$mode-$variant.stderr.txt"
+              rm -rf "../../paged-proof/lifecycle-$mode-$variant"
+            done
+          done
+      - name: Fresh B 30-day 60-record retention proof and quotas on the new source
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          python3 -B stage005_b.py .build-paged-full-release/release/nxr-swift-probe ../../paged-proof/STAGE005-B.json 2>&1 | tee ../../paged-proof/b-run.txt
+          variant="$(python3 -c 'import json; print(json.load(open("../../paged-proof/STAGE005-A.json"))["decisionA"]["chosen"])')"
+          command=stage-c-crash-bootstrap
+          if test "$variant" = H; then command=stage-c-h-crash-bootstrap; fi
+          .build-paged-full-release/release/nxr-swift-probe "$command" ../../paged-proof/quota-snapshot 1000000 > ../../paged-proof/SNAPSHOT-1M-CHOSEN.json
+          rm -rf ../../paged-proof/quota-snapshot
+          python3 -B candidate_proof_inputs.py quota ../../paged-proof/STAGE005-B.json ../../paged-proof/SNAPSHOT-1M-CHOSEN.json ../../paged-proof/B-QUOTA.json
+      - name: Fresh B recovery and torn-manifest continuation in Debug Release TSan
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          for mode in debug release tsan; do
+            config="$mode"
+            if test "$mode" = tsan; then config=debug; fi
+            TSAN_OPTIONS=halt_on_error=1 python3 -B stage005_b_crash.py ".build-paged-full-$mode/$config/nxr-swift-probe" "../../paged-proof/B-RECOVERY-$mode.json" 2>&1 | tee "../../paged-proof/b-recovery-$mode.txt"
+          done
+      - name: Both changed layouts full 1M K1-K10 and WAL continuation in all three modes
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          for mode in debug release tsan; do
+            config="$mode"
+            if test "$mode" = tsan; then config=debug; fi
+            bin=".build-paged-full-$mode/$config/nxr-swift-probe"
+            for variant in S H; do
+              fixture="../../paged-proof/wal-$mode-$variant"
+              TSAN_OPTIONS=halt_on_error=1 "$bin" stage-c-wal-continuation "$fixture" "$variant" > "../../paged-proof/WAL-CONTINUATION-$mode-$variant.json" 2> "../../paged-proof/wal-$mode-$variant.stderr.txt"
+              rm -rf "$fixture"
+              TSAN_OPTIONS=halt_on_error=1 python3 -B stage005_c_crash.py "$bin" "../../paged-proof/KILLS-1M-$mode-$variant.json" "$variant" 2>&1 | tee "../../paged-proof/kills-$mode-$variant.txt"
+            done
+          done
+          python3 -B candidate_proof_inputs.py functional-summary ../../paged-proof
+      - name: Always enforce source identity and preserve boundaries
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > paged-proof/source-guard-after.txt
+          python3 -B Experiments/R005Swift/candidate_proof_inputs.py check paged-proof/runtime-inputs.json
+          bad="$(grep -rnE 'Unsafe|withUnsafe' Experiments/R005Swift/Sources/SwiftProbe --include='*.swift' | grep -v '/Snapshot.swift:' || true)"
+          test -z "$bad"
+          ! grep -rnE '@unchecked Sendable|nonisolated\(unsafe\)|unowned\(unsafe\)|Unmanaged|UnsafeMutable|unsafeBitCast' Experiments/R005Swift/Sources/SwiftProbe --include='*.swift'
+          git diff --exit-code
+          find Experiments/R005Swift/Sources -type f -exec shasum -a 256 {} \; > paged-proof/source-sha256.txt
+          echo 'Fresh A/B and S/H 1M functional proof only, scoped by actual completed files. C100 NOT_RUN; historical failures unchanged.' > paged-proof/scope.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r005-paged-source-proof
+          path: paged-proof/
+          if-no-files-found: error

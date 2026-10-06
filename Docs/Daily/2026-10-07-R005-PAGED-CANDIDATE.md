@@ -99,3 +99,28 @@ cleanup. K10 token التاريخي يستهدف retained epoch buffers في ا�
 Release zero advance/completion-service allocations، وTSan counters=null.
 owner/overlap/stale/cancel/writer-error lifecycles تُرفض فعليًا. هذا لا يشغّل
 A أو B أو C evaluator، ولا حملة100-save. Flags/source محفوظة لكل artifact.
+
+## نتيجة الدمج المحدود ومراجعة K قبل التوسع
+
+run37542773160 SUCCESS على1c4f9b84/treeac796a07، artifact11449188442 ZIP SHA256
+141c0db68d817d62cf147dfab7b26606d78449d5d6f5aa8021b4b8903c5b98ea تحقق مستقل.
+44حالة/132epochs/32مقارنة cross-build، six S/H lifecycle proofs، صفر allocations
+لـadvance وخدمة completion فيRelease، معTSan null. S عند100k copy0.76–1.21ms
+لـ9.55MB؛ H1.32–1.39ms لـ10.05MB. begin S5.25–5.54µs/H6.25–11.5µs.
+الدوال التجريبية أبطأ فيadvance منbaseline فيهذااختبارالمقارنة؛ ليسقياس A
+مضبوطًا، ولا يدّعي تحسنًا مطلقًا أو C. الأثر جزء من قرار A التالي.
+
+الكاتب الجديد مستقل، فيمكنهcommit بينماmain متوقف عندkill hook. اختبار
+K1 الآن بعدfreeze وقبلhandoff، وK2 وchain-after-WAL يحتفظان بالكاتب قبل
+إطلاقه لتكوين incomplete snapshot حتمي؛ الوضع خاص بتجهيز kill fixture،
+والحفظ المقاس يطلق الكاتب مباشرة. K3–K8 تتوقف فيخيطالكاتب نفسه، K9 بعد
+commit ثمWAL torn frame، K10 قبلrelease للepoch retained. لاتُغيّر expected
+recovery أوعتباتالأداء، ولا تعاد تسمية نتائجالتشغيلات القديمة. Prepared sink
+له atomic reservation يمنع cancel/reuse بعدbegin؛ cancelled reuse يُرفض قبل
+أيWorld write. جميعذلكيعاد فحصه bounded علىالمصدر الجديد قبلB/K.
+
+Fresh proof التالي يبني A بـEPOCH_PAGES فقط، B/K بـSTAGE_C EPOCH_PAGES.
+A100k/1M/2M×S/H و3processes×10runs بالصفر والhealth؛ ثمB30days/60records
+وquotaمنحجمsnapshot1M جديد للتخطيط المختار، وكلB recovery وK1–K10/WAL
+Debug/Release/TSan علىS/H. الـ1M fixtures ليستحملة100-save. C100 ممنوعة
+فيهذاworkflow؛ لاreuseلـA/B قديمة، artifact يحتفظبsource/flags/inputs كاملة.

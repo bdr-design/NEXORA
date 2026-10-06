@@ -113,6 +113,7 @@ final class SnapshotSink: Sendable {
     private let ownerID: ObjectIdentifier?
     private let expectedCounts: [UInt32]
     private let retainedEpochBufferBytes: Int
+    private let heldForKillFixture: Bool
 #endif
 
     init(directory: String, epoch: UInt32, expectedCounts: [UInt32]) {
@@ -125,6 +126,7 @@ final class SnapshotSink: Sendable {
 #if EPOCH_PAGES
         pendingEpoch = nil; ownerID = nil
         self.expectedCounts = expectedCounts; retainedEpochBufferBytes = 0
+        heldForKillFixture = false
 #endif
         let dispatchSubmittedNS = nx_now()
         DispatchQueue.global(qos: .utility).async {
@@ -159,9 +161,10 @@ final class SnapshotSink: Sendable {
 
 #if EPOCH_PAGES
     init(pagedDirectory directory: String, epoch: UInt32, expectedCounts: [UInt32],
-         ownerID: ObjectIdentifier, retainedEpochBufferBytes: Int) {
+         ownerID: ObjectIdentifier, retainedEpochBufferBytes: Int, heldForKillFixture: Bool) {
         self.epoch = epoch; self.expectedCounts = expectedCounts; self.ownerID = ownerID
         self.retainedEpochBufferBytes = retainedEpochBufferBytes
+        self.heldForKillFixture = heldForKillFixture
         queue = nil
         let counters = StageCWriterCounters(), pending = PendingEpochSnapshot()
         self.counters = counters; pendingEpoch = pending
@@ -191,13 +194,15 @@ final class SnapshotSink: Sendable {
     }
 
     deinit { pendingEpoch?.cancelIfUnused() }
-    func accepts(owner: AnyObject, counts: [UInt32]) -> Bool {
-        pendingEpoch != nil && ownerID == ObjectIdentifier(owner) && expectedCounts == counts
+    func reserveBegin(owner: AnyObject, counts: [UInt32]) -> Bool {
+        guard let pendingEpoch, ownerID == ObjectIdentifier(owner), expectedCounts == counts else { return false }
+        return pendingEpoch.reserveBegin()
     }
     func publish(_ view: FrozenStageCSnapshot) {
         precondition(view.epoch == epoch)
-        pendingEpoch!.publish(view)
+        pendingEpoch!.publish(view, heldForKillFixture: heldForKillFixture)
     }
+    func releaseKillFixtureWriter() { pendingEpoch?.releaseWriter() }
     func cancelUnused() {
         if let pendingEpoch { pendingEpoch.cancelIfUnused() }
         else if counters.done.load(ordering: .acquiring) == 0 { queue?.finish() }
@@ -439,10 +444,11 @@ final class StageCState {
     var totalChunks: Int { assetChunks + nodeChunks + groupChunks }
     var inFlight: Bool { sink != nil }
 
-    func prepareSink(directory: String, epoch: UInt32) -> SnapshotSink {
+    func prepareSink(directory: String, epoch: UInt32, heldForKillFixture: Bool = false) -> SnapshotSink {
 #if EPOCH_PAGES
         return SnapshotSink(pagedDirectory: directory, epoch: epoch, expectedCounts: expectedCounts,
-                            ownerID: ownerID, retainedEpochBufferBytes: preparedOwnedBytes)
+                            ownerID: ownerID, retainedEpochBufferBytes: preparedOwnedBytes,
+                            heldForKillFixture: heldForKillFixture)
 #else
         return SnapshotSink(directory: directory, epoch: epoch, expectedCounts: expectedCounts)
 #endif
@@ -450,8 +456,8 @@ final class StageCState {
 
     func begin(world: SwiftWorld, preparedSink: SnapshotSink) throws {
 #if EPOCH_PAGES
-        guard ownerID == ObjectIdentifier(world), preparedSink.accepts(owner: world, counts: expectedCounts),
-              sink == nil, !capturing, world.stageCCanFreezePages(preparedSink.epoch) else {
+        guard ownerID == ObjectIdentifier(world), sink == nil, !capturing, preparedSink.epoch > epoch,
+              world.stageCCanFreezePages(preparedSink.epoch), preparedSink.reserveBegin(owner: world, counts: expectedCounts) else {
             preparedSink.cancelUnused()
             throw ProbeError.invalid("stage C frozen save owner/pool/epoch")
         }
@@ -469,16 +475,17 @@ final class StageCState {
         lastResult = nil
 #if EPOCH_PAGES
         let frozen = world.stageCFreezePages(epoch)
+        nx_kill_point("c.k1.after_begin")
         preparedSink.publish(frozen)
 #else
         preparedSink.emit(Snapshot.controlRecord(world))
-#endif
         nx_kill_point("c.k1.after_begin")
+#endif
     }
     func begin(world: HybridWorld, preparedSink: SnapshotSink) throws {
 #if EPOCH_PAGES
-        guard ownerID == ObjectIdentifier(world), preparedSink.accepts(owner: world, counts: expectedCounts),
-              sink == nil, !capturing, world.stageCCanFreezePages(preparedSink.epoch) else {
+        guard ownerID == ObjectIdentifier(world), sink == nil, !capturing, preparedSink.epoch > epoch,
+              world.stageCCanFreezePages(preparedSink.epoch), preparedSink.reserveBegin(owner: world, counts: expectedCounts) else {
             preparedSink.cancelUnused()
             throw ProbeError.invalid("stage C frozen save owner/pool/epoch")
         }
@@ -490,11 +497,12 @@ final class StageCState {
         barrierEmits=0;barrierBytes=0;barrierNS=0;lastResult=nil
 #if EPOCH_PAGES
         let frozen = world.stageCFreezePages(epoch)
+        nx_kill_point("c.k1.after_begin")
         preparedSink.publish(frozen)
 #else
         preparedSink.emit(Snapshot.controlRecord(world))
-#endif
         nx_kill_point("c.k1.after_begin")
+#endif
     }
 
     @inline(__always) func willWriteAsset(_ world: SwiftWorld, index: Int) {

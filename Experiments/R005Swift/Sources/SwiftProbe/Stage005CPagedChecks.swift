@@ -190,6 +190,9 @@ private func pagedLifecycle<W: PagedCheckWorld>(_ directory: String, make: () th
     try require(unused.completionToken() == nil, "premature epoch completion token")
     unused.cancelUnused(); unused.cancelUnused()
     try cancelledWriter(unused)
+    var cancelledRejected = false
+    do { try world.checkBegin(state, unused) } catch { cancelledRejected = true }
+    try require(cancelledRejected && state.epoch == 0 && !state.inFlight, "cancelled prepared writer reused")
     let wrongOwner = state.prepareSink(directory: directory, epoch: 1)
     var rejected = false
     do { try wrong.checkBegin(state, wrongOwner) } catch { rejected = true }
@@ -225,7 +228,7 @@ private func pagedLifecycle<W: PagedCheckWorld>(_ directory: String, make: () th
     try require(world.checkDigest() == baseline && (try W.checkRecover(directory)).checkDigest() == baseline,
                 "failed save changed live or last committed state")
     return ["status": "pass", "assets": world.count, "unusedCancelExits": true, "cancelIdempotent": true,
-            "prematureCompletionUnavailable": true, "wrongOwnerRejected": true, "overlapRejected": true,
+            "prematureCompletionUnavailable": true, "cancelledReuseRejected": true, "wrongOwnerRejected": true, "overlapRejected": true,
             "staleEpochRejected": true, "writerFailureReported": true, "failedRetryRejected": true,
             "lastCommitPreserved": true, "scope": "single directory owner; no cross-process locking"]
 }

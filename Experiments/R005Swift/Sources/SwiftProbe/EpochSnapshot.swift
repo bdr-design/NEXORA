@@ -62,6 +62,8 @@ private struct PendingEpochState: Sendable {
     var view: FrozenStageCSnapshot? = nil
     var published = false
     var cancelled = false
+    var released = false
+    var reserved = false
 }
 
 // One handoff per whole save, not one lock/message per entity or page. The
@@ -69,19 +71,32 @@ private struct PendingEpochState: Sendable {
 final class PendingEpochSnapshot: Sendable {
     private let state = Mutex(PendingEpochState())
     private let ready = DispatchSemaphore(value: 0)
-    func publish(_ view: FrozenStageCSnapshot) {
+    func reserveBegin() -> Bool {
         state.withLock { value in
-            precondition(!value.published && !value.cancelled)
+            guard !value.reserved && !value.published && !value.cancelled else { return false }
+            value.reserved = true; return true
+        }
+    }
+    func publish(_ view: FrozenStageCSnapshot, heldForKillFixture: Bool) {
+        state.withLock { value in
+            precondition(value.reserved && !value.published && !value.cancelled)
             value.view = view; value.published = true
         }
         // Historical K10 token now targets the fully retained immutable epoch
         // and its prepared spare buffers. Queue bytes are truthfully zero.
         nx_kill_point("c.k10.peak_queue")
-        ready.signal()
+        if !heldForKillFixture { releaseWriter() }
+    }
+    func releaseWriter() {
+        let signal = state.withLock { value in
+            guard value.published && !value.released else { return false }
+            value.released = true; return true
+        }
+        if signal { ready.signal() }
     }
     func cancelIfUnused() {
         let signal = state.withLock { value in
-            guard !value.published && !value.cancelled else { return false }
+            guard !value.reserved && !value.published && !value.cancelled else { return false }
             value.cancelled = true; return true
         }
         if signal { ready.signal() }

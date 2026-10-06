@@ -1,4 +1,19 @@
 # NEXORA — current checkpoint / 2026-10-07
+
+Bounded integration run37542773160 SUCCESS; artifact11449188442 ZIP SHA256
+141c0db68d817d62cf147dfab7b26606d78449d5d6f5aa8021b4b8903c5b98ea independently
+verified:44cases/132epochs/32cross-build equalities, S/H Debug Release TSan,
+Release zero advance/completion-service allocations, six lifecycle proofs.
+Candidate scheduler/accessor overhead is material at100k; no speed win claimed.
+Next source keeps hot representation, adds atomic begin reservation/cancelled
+reuse rejection and deterministic incomplete-epoch K fixtures. Fresh A/B and
+both-layout 1M K proof planned; C100 still NOT_RUN, C OPEN and failures preserved.
+
+Integration Apple checkpoint: live1c4f9b84560d9ca6780d12467f2912959b7275d1,
+treeac796a0798dbc124fb0dc71eace9e80acdf7bd80; run37542773160/job112539475652.
+All five legacy/candidate Debug/Release and candidate TSan builds SUCCESS.
+Functional/order/lifecycle/canonical/WAL matrix is still pending; no A/B/C
+acceptance follows from compilation. Main38ce39cf and historical failures fixed.
 Conditional integration checkpoint: existing SwiftWorld/HybridWorld now have
 experimental EPOCH_PAGES storage and an immutable v2 writer; default owners
 remain available from the same permitted line. Pre-edit estimates and source

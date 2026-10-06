@@ -1,0 +1,235 @@
+{
+  "status": "pass",
+  "acceptance": false,
+  "run": 37542773160,
+  "job": 112539475652,
+  "source": "1c4f9b84560d9ca6780d12467f2912959b7275d1",
+  "tree": "ac796a0798dbc124fb0dc71eace9e80acdf7bd80",
+  "artifact": 11449188442,
+  "zipSHA256": "141c0db68d817d62cf147dfab7b26606d78449d5d6f5aa8021b4b8903c5b98ea",
+  "rawCases": 44,
+  "epochs": 132,
+  "exactCrossBuildComparisons": 32,
+  "lifecycleCases": 6,
+  "candidateFlags": [
+    "STAGE_C",
+    "EPOCH_PAGES"
+  ],
+  "modePolicies": {
+    "debug": "observe",
+    "release": "zero",
+    "tsan": "functional null"
+  },
+  "oneHundredK": [
+    {
+      "mode": "baseline-release",
+      "variant": "S",
+      "worldSetupMS": 7.239167,
+      "poolSetupMS": 0.054792,
+      "liveOwnedBytes": 10144704,
+      "preparedOwnedBytes": 10144704,
+      "epochs": [
+        {
+          "epoch": 2,
+          "beginUS": 4.084,
+          "advanceMS": 11.634453,
+          "walMS": 1.636498,
+          "serviceMS": 0.047417,
+          "loopMS": 44.314542,
+          "writerMS": 43.622375,
+          "barrierMS": 2.358495,
+          "barrierBytes": 9578368,
+          "advAllocMax": 338,
+          "serviceAllocMax": 0,
+          "queued": 4880256
+        },
+        {
+          "epoch": 3,
+          "beginUS": 31.541,
+          "advanceMS": 39.829632,
+          "walMS": 4.15883,
+          "serviceMS": 0.087042,
+          "loopMS": 95.042208,
+          "writerMS": 94.800541,
+          "barrierMS": 4.322089,
+          "barrierBytes": 9578368,
+          "advAllocMax": 367,
+          "serviceAllocMax": 0,
+          "queued": 4931376
+        },
+        {
+          "epoch": 4,
+          "beginUS": 4.625,
+          "advanceMS": 41.286954,
+          "walMS": 4.246749,
+          "serviceMS": 0.065543,
+          "loopMS": 115.964583,
+          "writerMS": 114.468375,
+          "barrierMS": 2.267879,
+          "barrierBytes": 9578368,
+          "advAllocMax": 364,
+          "serviceAllocMax": 0,
+          "queued": 5152480
+        }
+      ]
+    },
+    {
+      "mode": "candidate-release",
+      "variant": "S",
+      "worldSetupMS": 59.967708,
+      "poolSetupMS": 3.712666,
+      "liveOwnedBytes": 9826336,
+      "preparedOwnedBytes": 19569904,
+      "epochs": [
+        {
+          "epoch": 2,
+          "beginUS": 5.541,
+          "advanceMS": 44.663043,
+          "walMS": 1.546837,
+          "serviceMS": 0.049625,
+          "loopMS": 101.953625,
+          "writerMS": 19.049167,
+          "barrierMS": 0.760299,
+          "barrierBytes": 9550000,
+          "advAllocMax": 0,
+          "serviceAllocMax": 0,
+          "queued": 0
+        },
+        {
+          "epoch": 3,
+          "beginUS": 5.25,
+          "advanceMS": 73.52112,
+          "walMS": 3.525119,
+          "serviceMS": 0.2095,
+          "loopMS": 168.003541,
+          "writerMS": 18.68825,
+          "barrierMS": 0.762455,
+          "barrierBytes": 9550000,
+          "advAllocMax": 0,
+          "serviceAllocMax": 0,
+          "queued": 0
+        },
+        {
+          "epoch": 4,
+          "beginUS": 5.542,
+          "advanceMS": 112.109494,
+          "walMS": 5.709922,
+          "serviceMS": 0.074791,
+          "loopMS": 247.384541,
+          "writerMS": 24.259958,
+          "barrierMS": 1.210841,
+          "barrierBytes": 9550000,
+          "advAllocMax": 0,
+          "serviceAllocMax": 0,
+          "queued": 0
+        }
+      ]
+    },
+    {
+      "mode": "baseline-release",
+      "variant": "H",
+      "worldSetupMS": 6.55275,
+      "poolSetupMS": 0.04275,
+      "liveOwnedBytes": 10276208,
+      "preparedOwnedBytes": 10276208,
+      "epochs": [
+        {
+          "epoch": 2,
+          "beginUS": 5.625,
+          "advanceMS": 10.116377,
+          "walMS": 1.887207,
+          "serviceMS": 0.033625,
+          "loopMS": 42.733208,
+          "writerMS": 42.277334,
+          "barrierMS": 2.363569,
+          "barrierBytes": 10078368,
+          "advAllocMax": 338,
+          "serviceAllocMax": 0,
+          "queued": 5374560
+        },
+        {
+          "epoch": 3,
+          "beginUS": 5.583,
+          "advanceMS": 27.313248,
+          "walMS": 2.299212,
+          "serviceMS": 0.033666,
+          "loopMS": 77.027,
+          "writerMS": 76.964875,
+          "barrierMS": 1.545588,
+          "barrierBytes": 10078368,
+          "advAllocMax": 367,
+          "serviceAllocMax": 0,
+          "queued": 5650000
+        },
+        {
+          "epoch": 4,
+          "beginUS": 4.417,
+          "advanceMS": 23.676794,
+          "walMS": 1.877919,
+          "serviceMS": 0.024915,
+          "loopMS": 68.136291,
+          "writerMS": 67.909916,
+          "barrierMS": 1.490869,
+          "barrierBytes": 10078368,
+          "advAllocMax": 364,
+          "serviceAllocMax": 0,
+          "queued": 5696176
+        }
+      ]
+    },
+    {
+      "mode": "candidate-release",
+      "variant": "H",
+      "worldSetupMS": 36.269583,
+      "poolSetupMS": 2.671292,
+      "liveOwnedBytes": 10619328,
+      "preparedOwnedBytes": 21157456,
+      "epochs": [
+        {
+          "epoch": 2,
+          "beginUS": 6.25,
+          "advanceMS": 30.045334,
+          "walMS": 2.348127,
+          "serviceMS": 0.066875,
+          "loopMS": 74.894208,
+          "writerMS": 28.744042,
+          "barrierMS": 1.394341,
+          "barrierBytes": 10050000,
+          "advAllocMax": 0,
+          "serviceAllocMax": 0,
+          "queued": 0
+        },
+        {
+          "epoch": 3,
+          "beginUS": 7.292,
+          "advanceMS": 48.56367,
+          "walMS": 2.745953,
+          "serviceMS": 0.065625,
+          "loopMS": 110.184458,
+          "writerMS": 22.119334,
+          "barrierMS": 1.321387,
+          "barrierBytes": 10050000,
+          "advAllocMax": 0,
+          "serviceAllocMax": 0,
+          "queued": 0
+        },
+        {
+          "epoch": 4,
+          "beginUS": 11.5,
+          "advanceMS": 58.940245,
+          "walMS": 3.290129,
+          "serviceMS": 0.168166,
+          "loopMS": 128.64475,
+          "writerMS": 23.858334,
+          "barrierMS": 1.34179,
+          "barrierBytes": 10050000,
+          "advAllocMax": 0,
+          "serviceAllocMax": 0,
+          "queued": 0
+        }
+      ]
+    }
+  ],
+  "retainedEpochBufferBytesScope": "prepared World owned capacities including fixed controls and outputs; an upper bound, not sampled peak RSS",
+  "scope": "bounded S/H existing-owner full-state v2/WAL proof only; no fresh A/B/K1M/C100"
+}
