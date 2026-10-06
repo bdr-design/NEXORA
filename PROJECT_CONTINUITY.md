@@ -1,5 +1,14 @@
 # NEXORA — current checkpoint / 2026-10-06
 
+Owner «كملها كلها الان بدقه عاليه جدًا» resumes bounded engineering after the
+two failed C writer candidates; the earlier STOP and all failures remain history.
+Live source rechecked at aee15b5a2699e355440a640f4ed82a619aace5ac.
+Stage B torn-manifest recover→append→recover patch and independent 8-case crash
+matrix are prepared inside R005Swift, awaiting targeted Apple Debug/Release/TSan.
+See Docs/Daily/2026-10-06-R005-B-RECOVERY.md. C remains OPEN on S/H with unchanged
+1.10 gate and no new performance result. Current repo has no iOS app/IPA project;
+Stage2–4 production/gameplay/device work follows genuine layout-specific C proof.
+
 Only bdr-design/NEXORA; branch diagnostic/r005-design-1m-20260930.
 Read AGENTS.md and recheck live HEAD before editing. All denied branches remain forbidden.
 Main unchanged: 38ce39cf9322f47e4def5f6eddb425c5a66ea7f9.

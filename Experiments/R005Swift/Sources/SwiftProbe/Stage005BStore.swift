@@ -87,7 +87,14 @@ func bReadSummary(_ directory: String, limit: Int? = nil) throws -> BTotals {
 func bAppendManifest(segment: Int, segmentHash: [UInt64], summaryLength: Int,
                              carryVersion: Int, directory: String) throws {
     try require(segmentHash.count == 4, "B segment hash width")
+    guard (0..<bDays).contains(segment) else { throw ProbeError.invalid("B manifest segment") }
     let path = bManifestPath(directory)
+    let currentLength: Int
+    if FileManager.default.fileExists(atPath: path) { currentLength = try fileSize(path) }
+    else { currentLength = 0 }
+    guard currentLength == 64 * segment else {
+        throw ProbeError.corruption("B manifest requires recovery before append")
+    }
     let fd = nx_open_append(path); guard fd >= 0 else { throw ProbeError.invalid("B manifest open") }
     let h = FileHandle(fileDescriptor: fd, closeOnDealloc: true); defer { try? h.close() }
     var b = Bytes(reserve: 64)
@@ -99,7 +106,12 @@ func bAppendManifest(segment: Int, segmentHash: [UInt64], summaryLength: Int,
     nx_kill_point("b.s4.after_manifest_sync")
 }
 
-struct BManifestState { let segment: Int; let carryVersion: Int; let summaryLength: Int }
+struct BManifestState {
+    let segment: Int
+    let carryVersion: Int
+    let summaryLength: Int
+    let committedLength: Int
+}
 func bManifestState(_ directory: String) throws -> BManifestState? {
     let path = bManifestPath(directory)
     guard FileManager.default.fileExists(atPath: path) else { return nil }
@@ -114,7 +126,8 @@ func bManifestState(_ directory: String) throws -> BManifestState? {
         let crc = try r.u32(), marker = try r.u32()
         guard marker == bManifestCommit, crc == nx_crc(0, frame, 56) else { throw ProbeError.corruption("B manifest committed record") }
         if let last { guard segment == last.segment + 1 else { throw ProbeError.corruption("B manifest sequence") } }
-        last = BManifestState(segment: segment, carryVersion: carry, summaryLength: summary)
+        last = BManifestState(segment: segment, carryVersion: carry, summaryLength: summary,
+                              committedLength: offset + 64)
         offset += 64
     }
     return last
@@ -122,10 +135,25 @@ func bManifestState(_ directory: String) throws -> BManifestState? {
 
 func bRecoverStore(_ directory: String) throws -> BManifestState? {
     let state = try bManifestState(directory)
+    let manifest = bManifestPath(directory)
+    if FileManager.default.fileExists(atPath: manifest) {
+        let committedLength = state?.committedLength ?? 0
+        let length = try fileSize(manifest)
+        guard length >= committedLength else { throw ProbeError.corruption("B manifest shortened during recovery") }
+        if length != committedLength {
+            let h = try FileHandle(forWritingTo: URL(fileURLWithPath: manifest)); defer { try? h.close() }
+            try h.truncate(atOffset: UInt64(committedLength)); try h.synchronize()
+        }
+    }
     let summary = bSummaryPath(directory)
     if FileManager.default.fileExists(atPath: summary) {
+        guard try fileSize(summary) >= (state?.summaryLength ?? 0) else {
+            throw ProbeError.corruption("B committed summary truncated")
+        }
         let h = try FileHandle(forWritingTo: URL(fileURLWithPath: summary)); defer { try? h.close() }
         try h.truncate(atOffset: UInt64(state?.summaryLength ?? 0)); try h.synchronize()
+    } else if (state?.summaryLength ?? 0) != 0 {
+        throw ProbeError.corruption("B committed summary missing")
     }
     for name in try FileManager.default.contentsOfDirectory(atPath: directory) {
         if name.hasPrefix("carry-") && name.hasSuffix(".bin") {

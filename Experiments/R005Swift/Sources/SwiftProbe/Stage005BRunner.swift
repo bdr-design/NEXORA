@@ -86,6 +86,34 @@ func stageBCrashAction(_ directory: String) throws -> [String: Any] {
     return ["status":"pass"]
 }
 
+func stageBCrashAppendAction(_ directory: String) throws -> [String: Any] {
+    let state = try bCrashState(groups: 128, throughDay: 2)
+    _ = try bCloseSegment(directory: directory, segment: 1, open: state.0,
+                          previousCarryVersion: 0, reference: state.1, liveSegmentTotals: state.2)
+    return ["status":"pass"]
+}
+
+func stageBRecoverAppend(_ directory: String, segment: Int) throws -> [String: Any] {
+    guard segment == 0 || segment == 1 else { throw ProbeError.invalid("B append fixture segment") }
+    let previous = try bRecoverStore(directory)
+    guard (previous?.segment ?? -1) == segment - 1,
+          try fileSize(bManifestPath(directory)) == 64 * segment else {
+        throw ProbeError.invariant("B recovery did not remove uncommitted manifest tail")
+    }
+    let state = try bCrashState(groups: 128, throughDay: 2)
+    _ = try bCloseSegment(directory: directory, segment: segment, open: state.0,
+                          previousCarryVersion: previous?.carryVersion, reference: state.1,
+                          liveSegmentTotals: state.2)
+    let verified = try bVerifyDisk(directory: directory, throughDay: 2, groups: 128, groupSize: 1)
+    guard verified["committedSegment"] as? Int == segment,
+          try fileSize(bManifestPath(directory)) == 64 * (segment + 1) else {
+        throw ProbeError.invariant("B recovery after append lost committed segment")
+    }
+    return ["status":"pass", "previousCommittedSegment":segment - 1,
+            "committedSegment":segment, "manifestBytes":64 * (segment + 1),
+            "finalDiskVerification":verified]
+}
+
 func stageBRecoverCrash(_ directory: String) throws -> [String: Any] {
     let result = try bVerifyDisk(directory: directory, throughDay: 2, groups: 128, groupSize: 1)
     return result

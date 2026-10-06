@@ -42,6 +42,14 @@ import Glibc
         case "stage-b-crash-action":
             guard args.count==2 else {throw ProbeError.invalid("stage-b-crash-action directory")}
             result=try stageBCrashAction(args[1])
+        case "stage-b-crash-append-action":
+            guard args.count==2 else {throw ProbeError.invalid("stage-b-crash-append-action directory")}
+            result=try stageBCrashAppendAction(args[1])
+        case "stage-b-recover-append":
+            guard args.count==3, let segment=Int(args[2]) else {
+                throw ProbeError.invalid("stage-b-recover-append directory 0|1")
+            }
+            result=try stageBRecoverAppend(args[1], segment:segment)
         case "stage-b-recover-crash":
             guard args.count==2 else {throw ProbeError.invalid("stage-b-recover-crash directory")}
             result=try stageBRecoverCrash(args[1])

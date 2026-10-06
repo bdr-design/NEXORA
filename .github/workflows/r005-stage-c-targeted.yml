@@ -47,6 +47,7 @@ jobs:
           pathlib.Path('c-results/ROLLBACK-WRITER.json').write_text(json.dumps(report,indent=2)+'\n')
           PYCODE
       - name: Fetch and verify pinned unchanged A and B evidence
+        if: ${{ !contains(github.event.head_commit.message, '[r005-b-proof]') }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -83,8 +84,18 @@ jobs:
             done
             rm -rf "../../c-results/transport-$mode"
           done
+      - name: B torn-manifest recovery and continuation in Debug Release TSan
+        if: contains(github.event.head_commit.message, '[r005-b-proof]')
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          for mode in debug release; do
+            python3 -B stage005_b_crash.py ".build-c-$mode/$mode/nxr-swift-probe" "../../c-results/B-RECOVERY-$mode.json" 2>&1 | tee "../../c-results/b-recovery-$mode.txt"
+          done
+          swift build --scratch-path .build-c-tsan --sanitize=thread -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../c-results/build-tsan.txt
+          TSAN_OPTIONS=halt_on_error=1 python3 -B stage005_b_crash.py .build-c-tsan/debug/nxr-swift-probe ../../c-results/B-RECOVERY-tsan.json 2>&1 | tee ../../c-results/b-recovery-tsan.txt
       - name: Bounded diagnostic micro only
-        if: ${{ contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-micro-recover]') && !contains(github.event.head_commit.message, '[r005-transport-verify]') && !contains(github.event.head_commit.message, '[r005-profile]') && !contains(github.event.head_commit.message, '[r005-writer-micro]') && !contains(github.event.head_commit.message, '[r005-writer-rollback]') }}
+        if: ${{ contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-micro-recover]') && !contains(github.event.head_commit.message, '[r005-transport-verify]') && !contains(github.event.head_commit.message, '[r005-profile]') && !contains(github.event.head_commit.message, '[r005-writer-micro]') && !contains(github.event.head_commit.message, '[r005-writer-rollback]') && !contains(github.event.head_commit.message, '[r005-b-proof]') }}
         run: |
           set -euo pipefail
           cd Experiments/R005Swift
