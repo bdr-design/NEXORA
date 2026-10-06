@@ -1,5 +1,17 @@
 # NEXORA — current checkpoint / 2026-10-06
 
+Latest live HEAD before this checkpoint: `389f5a9488a75081e3b4496449a0bb3e71a22c69`,
+tree `913137b490031522e2b477a0d007ed2aab7bc93b`. Stage C functional
+source `8c0f42fd436886f3f400cc8504a207407aa3b0ec` repairs sample-count
+acceptance and S/H WAL torn-tail continuation; local 14/14 gate tests and
+Apple Debug/Release/TSan builds passed. Functional run `37506755854` is still
+in progress (bounded 4,096 S/H fixtures plus 1M K1–K10); do not infer its
+outcome or C acceptance until the run and raw artifact are checked. The
+unchanged 1.10 overhead gate has no new PASS. Commit `389f5a9` corrected
+evidence-only CI routing. An earlier evidence-only commit `611a14e` mistakenly
+triggered the legacy full workflow `37505451077`, still in progress at this
+checkpoint; preserve its eventual status and any failure without relabeling.
+
 Owner «كملها كلها الان بدقه عاليه جدًا» resumes bounded engineering after the
 two failed C writer candidates; the earlier STOP and all failures remain history.
 Live source rechecked at f4f8e167feebb9c0908281f8720a5a3235e520bf, tree
