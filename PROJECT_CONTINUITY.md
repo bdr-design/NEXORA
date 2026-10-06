@@ -1,13 +1,19 @@
 # NEXORA — current checkpoint / 2026-10-06
 
-Latest live HEAD before this checkpoint: `389f5a9488a75081e3b4496449a0bb3e71a22c69`,
-tree `913137b490031522e2b477a0d007ed2aab7bc93b`. Stage C functional
-source `8c0f42fd436886f3f400cc8504a207407aa3b0ec` repairs sample-count
-acceptance and S/H WAL torn-tail continuation; local 14/14 gate tests and
-Apple Debug/Release/TSan builds passed. Functional run `37506755854` is still
-in progress (bounded 4,096 S/H fixtures plus 1M K1–K10); do not infer its
-outcome or C acceptance until the run and raw artifact are checked. The
-unchanged 1.10 overhead gate has no new PASS. Commit `389f5a9` corrected
+Latest verified live HEAD before this evidence checkpoint:
+`2f319a14c35e318267a01dbbac0bb93f5ea8b4a7`, tree
+`7eb5d93c074d8858c373fee791640fca23e4ece6`; recheck live HEAD before
+editing. Stage C functional source `8c0f42fd436886f3f400cc8504a207407aa3b0ec`
+repairs sample-count acceptance and S/H WAL torn-tail continuation. Targeted
+Apple run `37506755854` **SUCCESS** for Debug/Release/TSan S/H: bounded
+4,096 continuation/corruption cases and 1M K1–K10 including K9 same-epoch
+second recovery. Artifact `11435812004`, downloaded ZIP SHA256
+`fdf1a0e9ab42b02399ca410656571cf8cc0551e040ab1cf67e0c8fd1a4db17c8`;
+source tree `fc8a4a74616d9b9f5a2d10d50a1b794361fb854b`, 14/14 gate tests.
+Raw files and matrix proof: Experiments/R005Swift/Evidence/20261006/37506755854-*.
+This is isolated functional proof, not production startup with cross-process
+locking. The unchanged 1.10 overhead gate has no new PASS; C is OPEN for S/H.
+Commit `389f5a9` corrected
 evidence-only CI routing. Earlier evidence-only commit `611a14e` mistakenly
 triggered legacy full workflow `37505451077`, now **FAILED** in C: S save did
 not commit within 2000 advance calls. A/TSan/B/K1–K10 passed first; no

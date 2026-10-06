@@ -1,0 +1,226 @@
+{
+  "status": "success",
+  "scope": "Targeted functional S/H WAL continuation and real 1M SIGKILL K1-K10 Debug/Release/TSan; not 100-save C acceptance",
+  "source": "8c0f42fd436886f3f400cc8504a207407aa3b0ec",
+  "tree": "fc8a4a74616d9b9f5a2d10d50a1b794361fb854b",
+  "run": 37506755854,
+  "job": 112417257350,
+  "artifact": 11435812004,
+  "artifactSHA256": "fdf1a0e9ab42b02399ca410656571cf8cc0551e040ab1cf67e0c8fd1a4db17c8",
+  "localProofGateTests": 14,
+  "matrix": [
+    {
+      "mode": "debug",
+      "layout": "S",
+      "boundedCases": 3,
+      "killPoints": 10,
+      "k9TailBytes": 36,
+      "sameEpochSecondRecoveryExact": true,
+      "chainFallbackExact": true
+    },
+    {
+      "mode": "debug",
+      "layout": "H",
+      "boundedCases": 3,
+      "killPoints": 10,
+      "k9TailBytes": 36,
+      "sameEpochSecondRecoveryExact": true,
+      "chainFallbackExact": true
+    },
+    {
+      "mode": "release",
+      "layout": "S",
+      "boundedCases": 3,
+      "killPoints": 10,
+      "k9TailBytes": 36,
+      "sameEpochSecondRecoveryExact": true,
+      "chainFallbackExact": true
+    },
+    {
+      "mode": "release",
+      "layout": "H",
+      "boundedCases": 3,
+      "killPoints": 10,
+      "k9TailBytes": 36,
+      "sameEpochSecondRecoveryExact": true,
+      "chainFallbackExact": true
+    },
+    {
+      "mode": "tsan",
+      "layout": "S",
+      "boundedCases": 3,
+      "killPoints": 10,
+      "k9TailBytes": 36,
+      "sameEpochSecondRecoveryExact": true,
+      "chainFallbackExact": true
+    },
+    {
+      "mode": "tsan",
+      "layout": "H",
+      "boundedCases": 3,
+      "killPoints": 10,
+      "k9TailBytes": 36,
+      "sameEpochSecondRecoveryExact": true,
+      "chainFallbackExact": true
+    }
+  ],
+  "C100SavePerformance": null,
+  "Cacceptance": "OPEN on S and H; 1.10 overhead gate not remeasured",
+  "rawEvidence": [
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-build-debug.txt",
+      "sha256": "67c97720c64777aeec4d40bd930e9289d9d07517313838fb1aa0486372cd4608",
+      "originalName": "build-debug.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-build-release.txt",
+      "sha256": "9b957ce3d9337474f876a0b685990b900220c121f720fea5cfb1304fc98114a8",
+      "originalName": "build-release.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-build-tsan.txt",
+      "sha256": "303ac6f561b95b31331aea4a20f15b6d90a101bba18143b87e7ef3122f73d951",
+      "originalName": "build-tsan.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-commit.txt",
+      "sha256": "fc602ddd203f261a4d1011ab3f82cdc6ce007e5930e9ffa30bbaff77aaa4a1cf",
+      "originalName": "commit.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-environment.txt",
+      "sha256": "75c499232ceb7259d9790a51cbf3689beeffa059978048e8d4185009dc184fad",
+      "originalName": "environment.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-kills-debug-H.json",
+      "sha256": "96cbf230b0dc4005dbbb06d5fe47a3f1426de2a0cefacbc24784b1ba67aea235",
+      "originalName": "kills-debug-H.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-kills-debug-H.txt",
+      "sha256": "38dba17f3c828b47157288585eac791e8b00c1bf11e40628a97a50c7a2595c8a",
+      "originalName": "kills-debug-H.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-kills-debug-S.json",
+      "sha256": "4db1877c402d449eb45091aed8dddea7fc09bdf01b7cc5b35f91b3e0eabd8954",
+      "originalName": "kills-debug-S.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-kills-debug-S.txt",
+      "sha256": "38dba17f3c828b47157288585eac791e8b00c1bf11e40628a97a50c7a2595c8a",
+      "originalName": "kills-debug-S.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-kills-release-H.json",
+      "sha256": "96cbf230b0dc4005dbbb06d5fe47a3f1426de2a0cefacbc24784b1ba67aea235",
+      "originalName": "kills-release-H.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-kills-release-H.txt",
+      "sha256": "38dba17f3c828b47157288585eac791e8b00c1bf11e40628a97a50c7a2595c8a",
+      "originalName": "kills-release-H.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-kills-release-S.json",
+      "sha256": "4db1877c402d449eb45091aed8dddea7fc09bdf01b7cc5b35f91b3e0eabd8954",
+      "originalName": "kills-release-S.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-kills-release-S.txt",
+      "sha256": "38dba17f3c828b47157288585eac791e8b00c1bf11e40628a97a50c7a2595c8a",
+      "originalName": "kills-release-S.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-kills-tsan-H.json",
+      "sha256": "96cbf230b0dc4005dbbb06d5fe47a3f1426de2a0cefacbc24784b1ba67aea235",
+      "originalName": "kills-tsan-H.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-kills-tsan-H.txt",
+      "sha256": "38dba17f3c828b47157288585eac791e8b00c1bf11e40628a97a50c7a2595c8a",
+      "originalName": "kills-tsan-H.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-kills-tsan-S.json",
+      "sha256": "4db1877c402d449eb45091aed8dddea7fc09bdf01b7cc5b35f91b3e0eabd8954",
+      "originalName": "kills-tsan-S.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-kills-tsan-S.txt",
+      "sha256": "38dba17f3c828b47157288585eac791e8b00c1bf11e40628a97a50c7a2595c8a",
+      "originalName": "kills-tsan-S.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-proof-gates.txt",
+      "sha256": "89069a4ccd2537c988f39372747b7e42cccd76b1aa845371b243e4f013714946",
+      "originalName": "proof-gates.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-scope.txt",
+      "sha256": "8c0fd80845330bc572da38c5b39bb086abefd29632b7093e95dbe0843c9b448d",
+      "originalName": "scope.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-source-guard-after.txt",
+      "sha256": "5c4f078b1ed80138eb250ecfe4fe07975f6a3c96d033cd1928dfa6eed11c86db",
+      "originalName": "source-guard-after.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-source-guard-before.txt",
+      "sha256": "5c4f078b1ed80138eb250ecfe4fe07975f6a3c96d033cd1928dfa6eed11c86db",
+      "originalName": "source-guard-before.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-source-sha256.txt",
+      "sha256": "a24ed9db880b5b5bea039e0ed6e3142cb48f4d01bbd800f57b432c2f619f00af",
+      "originalName": "source-sha256.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-tree.txt",
+      "sha256": "4119db185467d16b59a23d5fa2fb2638bcd35ccd5614ecdbe241dcbd052c9280",
+      "originalName": "tree.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-wal-debug-H.json",
+      "sha256": "1f8cc17ee934628b1906e896ff182aca5dff2f78e957d5a7aae156c1d8c91fca",
+      "originalName": "wal-debug-H.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-wal-debug-S.json",
+      "sha256": "5fe162654c4f5f5d81370c848d12bf10553d9365b28490805dfac3aa8447a141",
+      "originalName": "wal-debug-S.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-wal-release-H.json",
+      "sha256": "1f8cc17ee934628b1906e896ff182aca5dff2f78e957d5a7aae156c1d8c91fca",
+      "originalName": "wal-release-H.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-wal-release-S.json",
+      "sha256": "5fe162654c4f5f5d81370c848d12bf10553d9365b28490805dfac3aa8447a141",
+      "originalName": "wal-release-S.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-wal-tsan-H-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalName": "wal-tsan-H-stderr.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-wal-tsan-H.json",
+      "sha256": "1f8cc17ee934628b1906e896ff182aca5dff2f78e957d5a7aae156c1d8c91fca",
+      "originalName": "wal-tsan-H.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-wal-tsan-S-stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "originalName": "wal-tsan-S-stderr.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37506755854-wal-tsan-S.json",
+      "sha256": "5fe162654c4f5f5d81370c848d12bf10553d9365b28490805dfac3aa8447a141",
+      "originalName": "wal-tsan-S.json"
+    }
+  ]
+}

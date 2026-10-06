@@ -1,0 +1,1 @@
+Functional WAL continuation, Debug/Release/TSan S/H 1M K1-K10 only; no 100-save timing or C acceptance.

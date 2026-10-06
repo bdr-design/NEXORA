@@ -41,5 +41,21 @@ remain intact. The targeted Apple job compiles Debug/Release/TSan and runs
 these functional fixtures on S/H, without a 100-save timing run.
 
 Local 14 proof-gate tests, Python syntax, YAML/bash syntax and production
-source guard passed. Apple Swift compilation, sanitizer and crash results are
-pending. This change does not close C or qualify an iPhone app.
+source guard passed. Apple targeted run `37506755854` on source
+`8c0f42fd436886f3f400cc8504a207407aa3b0ec`, tree
+`fc8a4a74616d9b9f5a2d10d50a1b794361fb854b`, completed **SUCCESS**.
+Artifact `11435812004` was downloaded and independently checked at ZIP SHA256
+`fdf1a0e9ab42b02399ca410656571cf8cc0551e040ab1cf67e0c8fd1a4db17c8`.
+The pinned artifact reports all six Debug/Release/TSan × S/H combinations
+passing three 4,096-asset partial-tail continuation cases (2/8/54 bytes),
+complete-frame hash and length corruption rejects, real 1M SIGKILL K1–K10,
+K9 same-epoch recover→append→recover with 36 discarded bytes, and exact chain
+fallback. The source guard and 14 tests also passed on Apple. Every raw entry
+and its digest is under `Experiments/R005Swift/Evidence/20261006/`, with the
+matrix in `37506755854-FUNCTIONAL-PROOF.json`.
+
+This is functional proof of the dedicated experimental commands under a single
+directory owner. The resume API assumes exclusive directory ownership without
+enforcing a cross-process lock; production integration must add ownership
+enforcement. There was no 100-save overhead measurement in this run. Stage C
+remains **OPEN for both S and H**, and no iPhone app or IPA is qualified.

@@ -1,0 +1,27 @@
+{
+  "completeFrameCorruptionRejected" : true,
+  "completeLengthCorruptionRejected" : true,
+  "continuationCases" : [
+    {
+      "discardedBytes" : 2,
+      "finalSequence" : 2,
+      "secondRecoveryExact" : true,
+      "tail" : "short-header"
+    },
+    {
+      "discardedBytes" : 8,
+      "finalSequence" : 2,
+      "secondRecoveryExact" : true,
+      "tail" : "short-body"
+    },
+    {
+      "discardedBytes" : 54,
+      "finalSequence" : 2,
+      "secondRecoveryExact" : true,
+      "tail" : "short-digest"
+    }
+  ],
+  "population" : 4096,
+  "status" : "pass",
+  "variant" : "S"
+}

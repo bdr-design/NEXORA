@@ -1,0 +1,38 @@
+Building for debugging...
+[0/11] Write sources
+[1/11] Write nxr-swift-probe-entitlement.plist
+[1/11] Write sources
+[6/11] Write swift-version--79AA4F9932D1E87A.txt
+[8/13] Emitting module NexoraIdentity
+[9/13] Compiling NexoraIdentity EntitySpace.swift
+[9/17] Compiling ProbePlatform platform.c
+[11/17] Compiling NexoraAviation AircraftStore.swift
+[12/17] Emitting module NexoraAviation
+[13/17] Compiling NexoraFinance FinanceStore.swift
+[14/17] Emitting module NexoraFinance
+[15/20] Compiling NexoraSimulation ArrivalHeap.swift
+[16/20] Compiling NexoraSimulation TripSimulation.swift
+[17/20] Emitting module NexoraSimulation
+[18/33] Emitting module SwiftProbe
+[19/33] Compiling SwiftProbe Snapshot.swift
+[20/33] Compiling SwiftProbe Stage005BModel.swift
+[21/33] Compiling SwiftProbe Stage005BRunner.swift
+[22/33] Compiling SwiftProbe Stage005BStore.swift
+[23/33] Compiling SwiftProbe Stage005CHybridRestore.swift
+[24/33] Compiling SwiftProbe Stage005CHybridRunner.swift
+[25/33] Compiling SwiftProbe Checks.swift
+[26/33] Compiling SwiftProbe Core.swift
+[27/33] Compiling SwiftProbe DeadlineChecks.swift
+[28/33] Compiling SwiftProbe Hybrid.swift
+[29/33] Compiling SwiftProbe Main.swift
+[30/33] Compiling SwiftProbe Retention.swift
+[31/39] Compiling SwiftProbe Stage005CMicro.swift
+[32/39] Compiling SwiftProbe Stage005CRestore.swift
+[33/39] Compiling SwiftProbe Stage005CRunner.swift
+[34/39] Compiling SwiftProbe Stage005CSave.swift
+[35/39] Compiling SwiftProbe Stage005CWAL.swift
+[36/39] Compiling SwiftProbe Storage.swift
+[36/39] Write Objects.LinkFileList
+[37/39] Linking nxr-swift-probe
+[38/39] Applying nxr-swift-probe
+Build complete! (10.15s)
