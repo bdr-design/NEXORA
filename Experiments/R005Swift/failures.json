@@ -10,7 +10,8 @@
     "Pre-acceptance Stage C recovery review found that fallback from an incomplete current snapshot replayed only the previous snapshot's matching WAL, but the directive requires previous snapshot + previous WAL + current WAL. Recovery now replays every contiguous WAL from the restored snapshot epoch through the current epoch, rejects gaps/tails followed by newer WALs, and adds an exact SIGKILL chain-fallback regression.",
     "2026-10-05 metadata classification: the log-only cadence error was initially attributed to S and S output was assumed absent. Exact failed ZIP recovery proved S completed 5 saves (ratio 1.309202510965811, p99 1267959 ns) and H was the cadence failure. Current registry/review/continuity/report corrected before final delivery; original raw files and failed workflow status preserved.",
     "2026-10-06 local rollback patch was rejected because delete/add targeted the same path; no runtime file was changed by that rejected patch. Restored all four files using exact decoded bytes from the allowed 37c0203 source and required CI byte-equality verification.",
-    "2026-10-07 owner-rule publication b2fb3bb5 changed AGENTS.md as explicitly required. Local financial-diagnostics.py --guard --selftest then FAILED with changed baseline object: AGENTS.md because its old documentation pin remained 4b740a2712318dec0d9d9e3040447bb26f105e2b. Only that contract pin was updated to published 453bd7d01591df11ad4daec674a11b649efb5b55; all Sources/Tests/Checks/Package/legacy workflow code pins are unchanged. The subsequent local guard passed; this failed validation is preserved and is not a C run or permission to relax a source guard."
+    "2026-10-07 owner-rule publication b2fb3bb5 changed AGENTS.md as explicitly required. Local financial-diagnostics.py --guard --selftest then FAILED with changed baseline object: AGENTS.md because its old documentation pin remained 4b740a2712318dec0d9d9e3040447bb26f105e2b. Only that contract pin was updated to published 453bd7d01591df11ad4daec674a11b649efb5b55; all Sources/Tests/Checks/Package/legacy workflow code pins are unchanged. The subsequent local guard passed; this failed validation is preserved and is not a C run or permission to relax a source guard.",
+    "2026-10-07 epoch-micro publication initially rejected by byte/tree equality before moving any ref: Checks/financial-diagnostics.py was assigned mode100644 rather than its existing100755. The created tree was not published. Restored the exact executable mode from git ls-files; tree e41a430ee9a460fe21178882906b292e49af04f4 then matched local1c4d6d9 and remote7ad7ab58 was published non-force with expected-head lease. No code bytes, thresholds, branch history or previous failure statuses changed."
   ],
   "apple": [
     {
@@ -180,6 +181,20 @@
       "passedBeforeFailure": "A; selected-layout smoke; TSan; B; K1-K10 Debug/Release/TSan; source guard",
       "failedGate": "stage C save did not commit within 2000 advance calls; no STAGE005-C.json or 100-save timing result",
       "correction": "Preserve FAILED. The evidence-only routing bug was fixed at 389f5a9488a75081e3b4496449a0bb3e71a22c69; no C closure or numeric overhead claim. Source-specific B proof remains, C functional WAL source tested separately."
+    },
+    {
+      "commit": "7ad7ab58995e45ffa1d4eb0452a12f1bf20c30f6",
+      "tree": "e41a430ee9a460fe21178882906b292e49af04f4",
+      "run": 37537195946,
+      "job": 112521095781,
+      "status": "failure",
+      "artifact": 11447265073,
+      "artifactSHA256": "d42c2fafa1fc4a070f3f58443c1a4b247caf260680337fcf378f0e2c15c68261",
+      "rawZIP": "Experiments/R005Swift/Evidence/20261007/37537195946-r005-epoch-pages-micro.zip",
+      "passedBeforeFailure": "Debug/Release/TSan builds and source guard; Debug/Release4096 functional frozen/live equality across24 epochs per mode. Release4096 observed zero begin/mutation/release allocations. No validator acceptance or100k ran.",
+      "failedGate": "TSan4096 C/Swift allocator calibration; EPOCH-4096-tsan.json empty with stderr mismatch: epoch micro C/Swift allocator calibration. Debug profiling also records nonzero unoptimized generic-loop allocations and must not claim zero.",
+      "correction": "Keep this run FAILED. Separate Release calibrated allocation measurement from sanitizer-only functional ownership verification with explicit unavailable/null allocation observations; preserve zero-allocation Release micro validation and all official C gates. No S/H representation changed.",
+      "C100SavePerformance": null
     }
   ],
   "diagnosticThresholdMisses": [

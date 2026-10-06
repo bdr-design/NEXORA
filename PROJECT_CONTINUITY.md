@@ -22,6 +22,22 @@ writer view, early/overlapping release rejects and three epochs; Apple pending.
 Micro publication checks: unchanged S/H hot files,16/16 gate tests and92/92
 existing review tests, source guard/selftest, YAML/Python syntax and diff-check
 PASS locally. Swift/TSan micro execution is still pending on Apple; no C proof.
+Micro published at live7ad7ab58995e45ffa1d4eb0452a12f1bf20c30f6/treee41a430e,
+byte/tree identical to local1c4d6d9. Run37537195946/job112521095781 is building
+Debug/Release/TSan; other acceptance jobs skipped. Initial tree upload rejected
+an incorrect100644 mode for executable source-guard script before ref movement;
+restored100755, verified full tree, published with non-force lease, failure kept.
+Live main reverified38ce39cf. Original lifecycle product/UI proposal is next,
+grounded in current NEXORA D001/D002/R004 and primary aviation guidance only.
+Epoch micro37537195946 remains FAILED: builds and Debug/Release4096 exact
+frozen/live behavior ran; TSan allocator calibration failed before JSON output.
+100k was SKIPPED. Artifact11447265073 ZIP independently verified
+d42c2fafa1fc4a070f3f58443c1a4b247caf260680337fcf378f0e2c15c68261;
+raw ZIP/proof and failure registry preserved. Release4096 observed zero scoped
+begin/mutation/release allocations, Debug records nonzero generic-loop counts;
+neither is accepted C. Corrected study separates calibrated Release zero-allocation
+gate, Debug observed counters, and TSan functional ownership without interposer;
+unavailable allocation observations are null, not zero. Official gates unchanged.
 
 ## Latest owner rules and Apple diagnostic — 2026-10-07 / Asia-Riyadh
 

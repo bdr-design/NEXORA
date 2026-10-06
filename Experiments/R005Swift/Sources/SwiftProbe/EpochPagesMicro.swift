@@ -180,6 +180,10 @@ private func epochMicroFileDigest(_ path: String) throws -> String {
     try fileHash(path).map { String(format: "%016llx", $0) }.joined()
 }
 
+private func epochMicroObserved(_ value: UInt64, available: Bool) -> Any {
+    available ? value as Any : NSNull()
+}
+
 private struct EpochMicroWriterState<T: BitwiseCopyable & Sendable>: Sendable {
     var view: EpochMicroFrozen<T>?
     var result: EpochMicroWriterResult?
@@ -312,6 +316,7 @@ private func epochMicroReferenceFile(_ path: String, count: Int, completedEpochs
 
 private func epochMicroSaving<T: BitwiseCopyable & Sendable>(_ store: EpochMicroStore<T>,
         path: String, paced: Bool, count: Int,
+        requireAllocator: Bool,
         mutate: (inout EpochMicroPage<T>, Int, Int, UInt64) -> Void,
         serialize: @escaping @Sendable (EpochMicroPage<T>, Int, inout [UInt8]) -> Void) throws -> [String: Any] {
     let loopStart = nx_now()
@@ -343,21 +348,29 @@ private func epochMicroSaving<T: BitwiseCopyable & Sendable>(_ store: EpochMicro
     let mutationAlloc = nx_alloc_end()
     let afterMutationFootprint = nx_footprint()
     let result = try writer.wait()
-    try require(beginAlloc.available == 1 && mutationAlloc.available == 1 &&
-                result.allocationAvailable, "epoch micro allocator unavailable")
+    if requireAllocator {
+        try require(beginAlloc.available == 1 && mutationAlloc.available == 1 &&
+                    result.allocationAvailable, "epoch micro allocator unavailable")
+    }
     try require(rejectedOverlap && rejectedPremature, "epoch micro lifecycle rejects")
     return ["epoch": writer.epoch, "beginNS": beginNS,
-        "beginAllocations": beginAlloc.calls, "beginAllocationBytes": beginAlloc.bytes,
-        "writerSetupNS": writerSetupNS, "writerSetupAllocations": writerSetupAlloc.calls,
-        "writerSetupAllocationBytes": writerSetupAlloc.bytes,
-        "mutationNS": mutationNS, "mutationAllocations": mutationAlloc.calls,
-        "mutationAllocationBytes": mutationAlloc.bytes,
+        "beginAllocationAvailable": beginAlloc.available == 1,
+        "beginAllocations": epochMicroObserved(beginAlloc.calls, available: beginAlloc.available == 1),
+        "beginAllocationBytes": epochMicroObserved(beginAlloc.bytes, available: beginAlloc.available == 1),
+        "writerSetupNS": writerSetupNS, "writerSetupAllocationAvailable": writerSetupAlloc.available == 1,
+        "writerSetupAllocations": epochMicroObserved(writerSetupAlloc.calls, available: writerSetupAlloc.available == 1),
+        "writerSetupAllocationBytes": epochMicroObserved(writerSetupAlloc.bytes, available: writerSetupAlloc.available == 1),
+        "mutationNS": mutationNS, "mutationAllocationAvailable": mutationAlloc.available == 1,
+        "mutationAllocations": epochMicroObserved(mutationAlloc.calls, available: mutationAlloc.available == 1),
+        "mutationAllocationBytes": epochMicroObserved(mutationAlloc.bytes, available: mutationAlloc.available == 1),
         "afterMutationPhysicalFootprint": ["status": afterMutationFootprint.status,
                                             "bytes": afterMutationFootprint.bytes],
         "clonePages": store.clonePages, "cloneBytes": store.cloneBytes, "cloneNS": store.cloneNS,
         "rootCopies": store.rootCopies, "leafCopies": store.leafCopies,
         "writerNS": result.ns, "writerSleepNS": result.sleepNS,
-        "writerAllocations": result.allocations, "writerAllocationBytes": result.allocationBytes,
+        "writerAllocationAvailable": result.allocationAvailable,
+        "writerAllocations": epochMicroObserved(result.allocations, available: result.allocationAvailable),
+        "writerAllocationBytes": epochMicroObserved(result.allocationBytes, available: result.allocationAvailable),
         "writerBytes": result.bytes, "writerDigest": result.digest,
         "loopBeforeReleaseNS": nx_now() - loopStart,
         "overlapRejected": rejectedOverlap, "prematureReleaseRejected": rejectedPremature]
@@ -365,6 +378,7 @@ private func epochMicroSaving<T: BitwiseCopyable & Sendable>(_ store: EpochMicro
 
 private func epochMicroLeg<T: BitwiseCopyable & Sendable>(directory: String, name: String,
         count: Int, writerMode: String, fixture: () -> EpochMicroStore<T>,
+        requireAllocator: Bool,
         mutate: (inout EpochMicroPage<T>, Int, Int, UInt64) -> Void,
         serialize: @escaping @Sendable (EpochMicroPage<T>, Int, inout [UInt8]) -> Void,
         references: [String]) throws -> [String: Any] {
@@ -388,12 +402,13 @@ private func epochMicroLeg<T: BitwiseCopyable & Sendable>(directory: String, nam
             }
             let elapsed = nx_now() - start
             let allocation = nx_alloc_end()
-            try require(allocation.available == 1, "epoch micro control allocator unavailable")
-            value = ["epoch": epoch, "mutationNS": elapsed, "mutationAllocations": allocation.calls,
-                     "mutationAllocationBytes": allocation.bytes]
+            if requireAllocator { try require(allocation.available == 1, "epoch micro control allocator unavailable") }
+            value = ["epoch": epoch, "mutationNS": elapsed, "mutationAllocationAvailable": allocation.available == 1,
+                     "mutationAllocations": epochMicroObserved(allocation.calls, available: allocation.available == 1),
+                     "mutationAllocationBytes": epochMicroObserved(allocation.bytes, available: allocation.available == 1)]
         } else {
             value = try epochMicroSaving(store, path: path, paced: writerMode == "paced", count: count,
-                                         mutate: mutate, serialize: serialize)
+                                         requireAllocator: requireAllocator, mutate: mutate, serialize: serialize)
             try require(value["writerDigest"] as? String == references[epoch - 1], "epoch micro frozen digest")
             nx_alloc_begin()
             let releaseStart = nx_now()
@@ -401,9 +416,10 @@ private func epochMicroLeg<T: BitwiseCopyable & Sendable>(directory: String, nam
             let releaseNS = nx_now() - releaseStart
             let allocation = nx_alloc_end()
             value["releaseNS"] = releaseNS
-            value["releaseAllocations"] = allocation.calls
-            value["releaseAllocationBytes"] = allocation.bytes
-            try require(allocation.available == 1, "epoch micro release allocator unavailable")
+            value["releaseAllocationAvailable"] = allocation.available == 1
+            value["releaseAllocations"] = epochMicroObserved(allocation.calls, available: allocation.available == 1)
+            value["releaseAllocationBytes"] = epochMicroObserved(allocation.bytes, available: allocation.available == 1)
+            if requireAllocator { try require(allocation.available == 1, "epoch micro release allocator unavailable") }
             try FileManager.default.removeItem(atPath: path)
         }
         value["ownerLoopNS"] = nx_now() - epochStart
@@ -434,14 +450,16 @@ private func epochMicroLeg<T: BitwiseCopyable & Sendable>(directory: String, nam
         epochs.append(value)
     }
     return ["representation": name, "writerMode": writerMode, "assets": count,
-            "setupNS": setupNS, "setupAllocations": setupAlloc.calls,
-            "setupAllocationBytes": setupAlloc.bytes, "reservedPayloadBytes": store.reservedPayloadBytes,
+            "setupNS": setupNS, "setupAllocationAvailable": setupAlloc.available == 1,
+            "setupAllocations": epochMicroObserved(setupAlloc.calls, available: setupAlloc.available == 1),
+            "setupAllocationBytes": epochMicroObserved(setupAlloc.bytes, available: setupAlloc.available == 1),
+            "reservedPayloadBytes": store.reservedPayloadBytes,
             "beforePhysicalFootprint": ["status": beforeFootprint.status, "bytes": beforeFootprint.bytes],
             "setupPhysicalFootprint": ["status": setupFootprint.status, "bytes": setupFootprint.bytes],
             "epochs": epochs]
 }
 
-func epochPagesMicro(_ directory: String, count: Int) throws -> [String: Any] {
+func epochPagesMicro(_ directory: String, count: Int, requireAllocator: Bool = true) throws -> [String: Any] {
     guard count == 4096 || count == 100_000 else { throw ProbeError.invalid("epoch-pages-micro directory 4096|100000") }
     guard !FileManager.default.fileExists(atPath: directory) else { throw ProbeError.invalid("epoch micro directory already exists") }
     try FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
@@ -449,8 +467,11 @@ func epochPagesMicro(_ directory: String, count: Int) throws -> [String: Any] {
     nx_alloc_begin()
     let swiftComputation = allocationControl(8193)
     let swiftControl = nx_alloc_end()
-    try require(cControl > 0 && swiftControl.available == 1 && swiftControl.calls > 0 &&
-                swiftComputation == 8193 * 7 + 2, "epoch micro C/Swift allocator calibration")
+    try require(swiftComputation == 8193 * 7 + 2, "epoch micro calibration computation")
+    if requireAllocator {
+        try require(cControl > 0 && swiftControl.available == 1 && swiftControl.calls > 0,
+                    "epoch micro C/Swift allocator calibration")
+    }
     var references: [String] = []
     for epoch in 0...3 {
         let path = directory + "/reference-\(epoch).bin"
@@ -485,14 +506,18 @@ func epochPagesMicro(_ directory: String, count: Int) throws -> [String: Any] {
     var legs: [[String: Any]] = []
     for mode in ["none", "direct", "paced", "none"] {
         legs.append(try epochMicroLeg(directory: directory, name: "rows", count: count,
-            writerMode: mode, fixture: rowFixture, mutate: rowMutation, serialize: rowSerialize, references: references))
+            writerMode: mode, fixture: rowFixture, requireAllocator: requireAllocator,
+            mutate: rowMutation, serialize: rowSerialize, references: references))
         legs.append(try epochMicroLeg(directory: directory, name: "packedSoA", count: count,
-            writerMode: mode, fixture: packedFixture, mutate: packedMutation, serialize: packedSerialize, references: references))
+            writerMode: mode, fixture: packedFixture, requireAllocator: requireAllocator,
+            mutate: packedMutation, serialize: packedSerialize, references: references))
     }
     return ["status": "diagnostic", "acceptance": false, "scope": "isolated asset-page ownership micro; no S/H hot-state integration",
             "assets": count, "epochsPerLeg": 3, "writesPerAssetPerEpoch": 8,
             "rowStride": MemoryLayout<EpochMicroAsset>.stride, "packedBytesPerAsset": 65,
-            "cAllocationPositiveControl": cControl, "swiftAllocationPositiveControl": swiftControl.calls,
+            "allocatorRequired": requireAllocator, "allocationObserverAvailable": swiftControl.available == 1,
+            "cAllocationPositiveControl": epochMicroObserved(cControl, available: swiftControl.available == 1),
+            "swiftAllocationPositiveControl": epochMicroObserved(swiftControl.calls, available: swiftControl.available == 1),
             "references": references, "legs": legs,
             "limitations": "Assets only, no timing wheel, financial lifecycle, snapshot commit/WAL/recovery, A/B/K1-K10, 1M/100-save C, UI/device/thermal acceptance. Physical footprint samples are process-wide and do not certify peak RSS. Pacing sleep and writer lifetime are explicit. No performance PASS is asserted."]
 }

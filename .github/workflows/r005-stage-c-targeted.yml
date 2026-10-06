@@ -213,14 +213,19 @@ jobs:
           set -euo pipefail
           cd Experiments/R005Swift
           export NXR_ALLOCATOR_DYLIB="$PWD/../../epoch-results/AllocationObserver.dylib"
-          for mode in debug release tsan; do
+          for mode in debug release; do
             config=debug
             if test "$mode" = release; then config=release; fi
             bin=".build-epoch-$mode/$config/nxr-swift-probe"
-            TSAN_OPTIONS=halt_on_error=1 DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" epoch-pages-micro "../../epoch-results/store-$mode" 4096 > "../../epoch-results/EPOCH-4096-$mode.json" 2> "../../epoch-results/EPOCH-4096-$mode.stderr.txt"
+            DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" epoch-pages-micro "../../epoch-results/store-$mode" 4096 > "../../epoch-results/EPOCH-4096-$mode.json" 2> "../../epoch-results/EPOCH-4096-$mode.stderr.txt"
+            policy=observe
+            if test "$mode" = release; then policy=zero; fi
+            python3 -B verify_epoch_micro.py --allocation-policy "$policy" "../../epoch-results/EPOCH-4096-$mode.json" > "../../epoch-results/micro-4096-$mode-validation.txt"
             rm -rf "../../epoch-results/store-$mode"
           done
-          python3 -B verify_epoch_micro.py ../../epoch-results/EPOCH-4096-{debug,release,tsan}.json > ../../epoch-results/micro-4096-validation.txt
+          TSAN_OPTIONS=halt_on_error=1 .build-epoch-tsan/debug/nxr-swift-probe epoch-pages-functional ../../epoch-results/store-tsan 4096 > ../../epoch-results/EPOCH-4096-tsan.json 2> ../../epoch-results/EPOCH-4096-tsan.stderr.txt
+          python3 -B verify_epoch_micro.py --allocation-policy functional ../../epoch-results/EPOCH-4096-tsan.json > ../../epoch-results/micro-4096-tsan-validation.txt
+          rm -rf ../../epoch-results/store-tsan
       - name: Release 100k only after bounded ownership validation
         run: |
           set -euo pipefail

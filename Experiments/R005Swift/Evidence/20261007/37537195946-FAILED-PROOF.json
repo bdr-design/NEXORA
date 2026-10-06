@@ -1,0 +1,111 @@
+{
+  "commit": "7ad7ab58995e45ffa1d4eb0452a12f1bf20c30f6",
+  "tree": "e41a430ee9a460fe21178882906b292e49af04f4",
+  "run": 37537195946,
+  "job": 112521095781,
+  "status": "failure",
+  "artifact": 11447265073,
+  "artifactSHA256": "d42c2fafa1fc4a070f3f58443c1a4b247caf260680337fcf378f0e2c15c68261",
+  "rawZIP": "Experiments/R005Swift/Evidence/20261007/37537195946-r005-epoch-pages-micro.zip",
+  "passedBeforeFailure": "Debug/Release/TSan builds and source guard; Debug/Release4096 functional frozen/live equality across24 epochs per mode. Release4096 observed zero begin/mutation/release allocations. No validator acceptance or100k ran.",
+  "failedGate": "TSan4096 C/Swift allocator calibration; EPOCH-4096-tsan.json empty with stderr mismatch: epoch micro C/Swift allocator calibration. Debug profiling also records nonzero unoptimized generic-loop allocations and must not claim zero.",
+  "correction": "Keep this run FAILED. Separate Release calibrated allocation measurement from sanitizer-only functional ownership verification with explicit unavailable/null allocation observations; preserve zero-allocation Release micro validation and all official C gates. No S/H representation changed.",
+  "C100SavePerformance": null,
+  "rawEntries": [
+    {
+      "name": "AllocationObserver.dylib",
+      "bytes": 51112,
+      "sha256": "3d6c815f9354aeb8b58eac6d62fafd5a878edf7b6b2820e08b2d2b32508f33c6"
+    },
+    {
+      "name": "EPOCH-4096-release.json",
+      "bytes": 27315,
+      "sha256": "cc486cd9483c520e4c1e6114d47a89e13afe413c9edcd1108f96e19a0215c1a5"
+    },
+    {
+      "name": "EPOCH-4096-debug.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "EPOCH-4096-debug.json",
+      "bytes": 27860,
+      "sha256": "619c866ded80d6769b8f8a12771257917cdfd025233ee820e73131b95a77c372"
+    },
+    {
+      "name": "EPOCH-4096-release.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "EPOCH-4096-tsan.json",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "EPOCH-4096-tsan.stderr.txt",
+      "bytes": 52,
+      "sha256": "2415b8d04af52bdfd079c38e86bc82d6ad9575a9f0980c4cc3e4a03a958f43df"
+    },
+    {
+      "name": "build-debug.txt",
+      "bytes": 1698,
+      "sha256": "c8181030e75a81853feaa771704448ecf759c6f7fbc8dc22028aefdb5e601c7a"
+    },
+    {
+      "name": "build-release.txt",
+      "bytes": 477,
+      "sha256": "f7944938f192ecb6636a9f20b6422956755497495dbd54d82ecf29c783dbfce8"
+    },
+    {
+      "name": "build-tsan.txt",
+      "bytes": 1699,
+      "sha256": "0dadcec1bce93557dd3d63999c2bb99fc310fc06422c79dbce9d99b36d497c3d"
+    },
+    {
+      "name": "commit.txt",
+      "bytes": 41,
+      "sha256": "14512f174f95e827745d7e4a2714c6468688e6137f557e5f27b235759142a2b8"
+    },
+    {
+      "name": "environment.txt",
+      "bytes": 251,
+      "sha256": "b0e84a90ca88d5c49dda9478f26391635e87e380a8e087fb4b0a9fd5847a4296"
+    },
+    {
+      "name": "hot-layout-source.txt",
+      "bytes": 877,
+      "sha256": "e7d59a11b4b80f58e1ed4baf1ead2b4f2a7a443605764a585b775b034ec7db82"
+    },
+    {
+      "name": "proof-gates.txt",
+      "bytes": 2123,
+      "sha256": "615b03701ec717da64cb5cfcd4719fc04231a796072cc9483d7c90094ee218ec"
+    },
+    {
+      "name": "scope.txt",
+      "bytes": 161,
+      "sha256": "c9a26a6105ce58b9dfa9929522f1f6b9dd6e18f011c72eeb5ce322930363abdd"
+    },
+    {
+      "name": "source-guard-after.txt",
+      "bytes": 270,
+      "sha256": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7"
+    },
+    {
+      "name": "source-guard-before.txt",
+      "bytes": 270,
+      "sha256": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7"
+    },
+    {
+      "name": "source-sha256.txt",
+      "bytes": 2650,
+      "sha256": "6e9122943540929e89c5e16fab146f2a020c5e4c743ffd567b5a3d982c60eac7"
+    },
+    {
+      "name": "tree.txt",
+      "bytes": 41,
+      "sha256": "4b1aa9d2da7e13e0e0caefc169b56a7f90917b3c385afc3e6cfd2e5c5936d7c4"
+    }
+  ]
+}

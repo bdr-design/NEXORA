@@ -83,3 +83,19 @@ C مفتوحة على S/H و1.10 ثابتة؛ 36875130222 و37505451077 وكل �
 37534787220 على756d2e92 نجح في jobs contracts/diagnostics/layout؛ ليس تطبيقiOS.
 المحلل الجديد يقبل الدليل الأصلي ويرفض ست حالات عبث بالهوية/deadline/transcript/
 recovery/writer/control hooks. micro الملكية لم يُبن على Apple بعد.
+
+## أول نتيجة micro محفوظة — فشل لا يُعاد تصنيفه
+
+run37537195946 عند7ad7ab58/treee41a430e **FAILED**. Debug/Release/TSan builds
+نجحت؛ Debug/Release4096 أعادا24epoch مطابقين للمرجع لكلmode. Release رصد صفر
+تخصيص ضمن freeze/mutation/release؛ Debug رصد تخصيصات generic loops غير محسنة،
+فلا ادعاء صفر فيه. تشغيل TSan فشل معايرة C/Swift allocator، ملف JSON فارغ
+وstderr محفوظ؛ validator لم ينفذ و100k SKIPPED. Artifact11447265073، ZIP SHA256
+`d42c2fafa1fc4a070f3f58443c1a4b247caf260680337fcf378f0e2c15c68261`.
+
+تصحيح القياس، دون تغيير مرشح الملكية: Release يبقى بمعايرة إلزامية وبوابة
+صفر تخصيص micro؛ Debug يعرض الملاحظات الحقيقية دون ادعاء صفر؛ TSan يتحقق
+التزامن والدورة بنفس التنفيذ دون interposer، مع null وتصريح عدم إتاحة
+التخصيصات. هذا الفصل لا يقبل قياسات مفقودة ولا يمس1.10 أو البوابات الأصلية.
+يحتفظ التشغيل الأول بحالة FAILED ودليله. وثيقة D005 تصنف دورة المنتج المقترحة
+NOT_IMPLEMENTED؛ لا قسم أو زر مضاف للعبة منها.
