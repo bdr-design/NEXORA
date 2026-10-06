@@ -59,21 +59,6 @@ enum Snapshot {
     static let version: UInt32 = 2
     static let flags: UInt32 = 1
 
-    static func currentThreadQoS() -> String {
-#if canImport(Darwin)
-        switch qos_class_self() {
-        case QOS_CLASS_USER_INTERACTIVE: return "userInteractive"
-        case QOS_CLASS_USER_INITIATED: return "userInitiated"
-        case QOS_CLASS_DEFAULT: return "default"
-        case QOS_CLASS_UTILITY: return "utility"
-        case QOS_CLASS_BACKGROUND: return "background"
-        default: return "unspecified"
-        }
-#else
-        return "unavailable"
-#endif
-    }
-
     // Read-only storage stays alive until every synchronous write completes.
     // No pointer escapes this scope and the writer never mutates a queued record.
     static func writeRecord(_ record: [UInt8], descriptor: Int32, range: Range<Int>) throws {
@@ -197,34 +182,6 @@ enum Snapshot {
         var out = Data(capacity: 32)
         appendDigestHash(hashBytes(bytes, range: range), into: &out)
         return out
-    }
-
-    // Writer-owned fixed metadata: little-endian keys followed by digest space.
-    static func canonicalMetadata(_ counts: [UInt32]) -> [UInt8] {
-        precondition(counts.count == 4)
-        var bytes: [UInt8] = []
-        bytes.reserveCapacity(counts.reduce(0) { $0 + Int($1) } * 38)
-        for kind in UInt16(0)...UInt16(3) {
-            for index in UInt32(0)..<counts[Int(kind)] {
-                appendLE(kind, into: &bytes)
-                appendLE(index, into: &bytes)
-                for _ in 0..<32 { bytes.append(0) }
-            }
-        }
-        return bytes
-    }
-
-    static func storeDigest(_ hash: NXRHash, into bytes: inout [UInt8], at offset: Int) {
-        precondition(hash.status == 0 && offset >= 0 && offset <= bytes.count - 32)
-        @inline(__always) func word(_ value: UInt64, into target: inout [UInt8], at start: Int) {
-            for i in 0..<8 {
-                target[start + i] = UInt8(truncatingIfNeeded: value >> UInt64(56 - i * 8))
-            }
-        }
-        word(hash.a, into: &bytes, at: offset)
-        word(hash.b, into: &bytes, at: offset + 8)
-        word(hash.c, into: &bytes, at: offset + 16)
-        word(hash.d, into: &bytes, at: offset + 24)
     }
 
     static func record(kind: UInt16, index: UInt32, elements: UInt32, payloadBytes: Int,

@@ -57,7 +57,7 @@ private func stageCMicroWriterFiles(_ directory: String) throws -> [String: Any]
     let result = try write(records.map { $0.1 }, name: "valid")
     let actual = try Data(contentsOf: URL(fileURLWithPath: directory + "/valid/snapshot-1.bin"))
     try require(actual == expected && result.bytes == UInt64(expected.count), "micro exact v2 file oracle")
-    try require(result.batchFlushes >= 3, "micro multiple batch flushes")
+    try require(result.chunks == records.count, "micro exact writer record count")
     var outOfRange = records[0].1; outOfRange[4] = 1
     var reserved = records[0].1; reserved[2] = 1
     let invalid: [(String, [[UInt8]])] = [
@@ -74,7 +74,7 @@ private func stageCMicroWriterFiles(_ directory: String) throws -> [String: Any]
     }
     try require(rejected == invalid.count, "micro writer record rejection")
     return ["status":"pass", "population":world.count, "exactFileBytes":actual.count,
-            "records":records.count, "batchFlushes":result.batchFlushes,
+            "records":records.count, "writerRecordChunks":result.chunks,
             "noncanonicalInputOrder":true, "rejectedRecordCases":rejected]
 }
 
@@ -131,9 +131,6 @@ func stageCMicroTransportChecks(_ directory: String) throws -> [String: Any] {
     try require(hex == knownSHA && digest == oldDigest &&
                 Snapshot.digestBytes([UInt8](abc), range: 0..<3) == oldDigest,
                 "micro independent SHA-256 and digest encoding")
-    var fixedDigest = [UInt8](repeating: 0, count: 32)
-    Snapshot.storeDigest(Snapshot.hashData(abc), into: &fixedDigest, at: 0)
-    try require(Data(fixedDigest) == oldDigest, "micro fixed digest known bytes")
     let writerFiles = try stageCMicroWriterFiles(directory + "/writer-files")
     return ["status":"pass","fifoRecords":10000,"emptyFinish":true,
             "exactWrittenBytes":10000,"rejectedMisuse":rejected,

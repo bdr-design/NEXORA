@@ -27,6 +27,25 @@ jobs:
           xcodebuild -version >> c-results/environment.txt
           python3 -B Checks/financial-diagnostics.py --guard --selftest > c-results/source-guard-before.txt
           python3 -B -m unittest discover -s Experiments/R005Swift/tests -v > c-results/proof-gates.txt 2>&1
+      - name: Verify exact allowed writer rollback
+        if: contains(github.event.head_commit.message, '[r005-writer-rollback]')
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin 37c0203569b3c8240278d80765f6aadb369e14cc
+          python3 - <<'PYCODE'
+          import hashlib,json,pathlib,subprocess
+          base='37c0203569b3c8240278d80765f6aadb369e14cc'
+          files={}
+          for name in ('Snapshot.swift','Stage005CSave.swift','Stage005CRunner.swift','Stage005CHybridRunner.swift'):
+              path='Experiments/R005Swift/Sources/SwiftProbe/'+name
+              prior=subprocess.check_output(['git','show',base+':'+path])
+              current=pathlib.Path(path).read_bytes()
+              assert current==prior,path
+              files[path]=hashlib.sha256(current).hexdigest()
+          report={'status':'pass','scope':'exact rollback and functional verification, no timing retry',
+                  'restoredWriterSource':base,'fileSHA256':files}
+          pathlib.Path('c-results/ROLLBACK-WRITER.json').write_text(json.dumps(report,indent=2)+'\n')
+          PYCODE
       - name: Fetch and verify pinned unchanged A and B evidence
         env:
           GH_TOKEN: ${{ github.token }}
@@ -65,7 +84,7 @@ jobs:
             rm -rf "../../c-results/transport-$mode"
           done
       - name: Bounded diagnostic micro only
-        if: ${{ contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-micro-recover]') && !contains(github.event.head_commit.message, '[r005-transport-verify]') && !contains(github.event.head_commit.message, '[r005-profile]') && !contains(github.event.head_commit.message, '[r005-writer-micro]') }}
+        if: ${{ contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-micro-recover]') && !contains(github.event.head_commit.message, '[r005-transport-verify]') && !contains(github.event.head_commit.message, '[r005-profile]') && !contains(github.event.head_commit.message, '[r005-writer-micro]') && !contains(github.event.head_commit.message, '[r005-writer-rollback]') }}
         run: |
           set -euo pipefail
           cd Experiments/R005Swift
@@ -179,10 +198,11 @@ jobs:
           pathlib.Path('c-results/RECOVERED-QOS.json').write_text(json.dumps(report,indent=2)+'\n')
           PYCODE
       - name: Bounded TSan transport verification without new overhead measurement
-        if: contains(github.event.head_commit.message, '[r005-transport-verify]')
+        if: ${{ contains(github.event.head_commit.message, '[r005-transport-verify]') || contains(github.event.head_commit.message, '[r005-writer-rollback]') }}
         run: |
           set -euo pipefail
           cd Experiments/R005Swift
+          trap 'rm -rf ../../c-results/transport-tsan ../../c-results/smoke-tsan-S ../../c-results/smoke-tsan-H' EXIT
           swift build --scratch-path .build-c-tsan --sanitize=thread -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../c-results/build-tsan.txt
           bin=.build-c-tsan/debug/nxr-swift-probe
           TSAN_OPTIONS=halt_on_error=1 "$bin" stage-c-transport-checks ../../c-results/transport-tsan > ../../c-results/transport-tsan.json 2> ../../c-results/transport-tsan-stderr.txt

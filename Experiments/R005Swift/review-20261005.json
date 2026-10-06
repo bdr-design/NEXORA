@@ -24,36 +24,39 @@
     "CI": "source guards before execution and always after failure"
   },
   "candidate": {
-    "source": "ec695084cba1aa63a563602549c2a96f80418cc9",
-    "tree": "569a5c6bb43794ae9964155882fd37fe33acb397",
-    "run": 37316669619,
-    "workflowConclusion": "failure",
-    "acceptance": "failed cadence; not a performance fix",
-    "artifact": 11348271339,
-    "artifactSHA256": "4978fd9a2040e2af497a2d3c1276d00275d169b30b8baeb84635dbf11645f53d",
-    "failedGate": "H save did not commit within 2000 advance calls; S completed 5 saves but ratio 1.309202510965811 and advance p99 1267959 ns both exceed limits",
+    "source": "f85808c12f89a56566da5494ba98c0bb71de0ffc",
+    "tree": "f6bb5085bf336f6fdb38d81ab02a589f3f950a59",
+    "run": 37475368651,
+    "job": 112309268594,
+    "workflowConclusion": "success",
+    "artifact": 11418154134,
+    "artifactSHA256": "a12c29b668702410b877a9964491f798b115c15d95e76607283d2db1dc169796",
+    "scope": "bounded S 1M/5-save diagnostic; not C acceptance",
+    "acceptance": "overhead gate miss; C remains open",
     "S": {
       "saves": 5,
-      "status": "diagnostic",
-      "overheadRatio": 1.309202510965811,
-      "advanceP99NS": 1267959,
-      "samples": 1629,
-      "pairedAllocationViolations": 0
+      "overheadRatio": 1.557025666617678,
+      "advanceP99NS": 1099084,
+      "advanceSamples": 617,
+      "beginP99NS": 81083,
+      "beginSamples": 5,
+      "pairedAllocationViolations": 0,
+      "idleAllocationsMax": 0,
+      "savingAllocationsMax": 390,
+      "barrierChunksMax": 390,
+      "snapshotBytes": 95801772
     },
-    "H": {
-      "status": "runtime failure",
-      "failedGate": "save did not commit within 2000 advance calls",
-      "aggregateTimingResult": null
+    "writer": {
+      "batchTargetBytes": 262144,
+      "canonicalBytes": 223934,
+      "lastBatchFlushes": 354,
+      "metadata": "fixed-canonical-bytes",
+      "observedThreadQoS": "utility",
+      "producerRecordScratchBytes": 0,
+      "qos": "detached-utility",
+      "seenBytes": 5893
     },
-    "recovery": {
-      "source": "0b2d2b9be023c74bddc7055618aec8c9ec8e74a9",
-      "tree": "16b92b8d642578655c60a22b7b790f7146eeb0f2",
-      "run": 37317983436,
-      "workflowConclusion": "success",
-      "artifact": 11348731266,
-      "artifactSHA256": "837e044786e2c4551a47785b7949074a69f6ba3a0cbda3caa95e4ec574400beb",
-      "scope": "exact artifact verification and byte-equal rollback only; no new measurement"
-    }
+    "functionalChecks": "PASS Debug/Release/TSan exact 411324-byte v2 file oracle with 26 unordered records and five malformed-record rejects; S/H 100k restore Debug/Release, S 100k TSan; K3 actual SIGKILL exact 1M recovery Debug/Release; empty TSan stderr"
   },
   "thresholds": {
     "beginSaveP99NS": 100000,
@@ -242,6 +245,18 @@
       },
       "idleAllocationsMax": 0,
       "snapshotBytes": 95801772
+    },
+    {
+      "run": 37475368651,
+      "source": "f85808c12f89a56566da5494ba98c0bb71de0ffc",
+      "tree": "f6bb5085bf336f6fdb38d81ab02a589f3f950a59",
+      "layout": "S",
+      "saves": 5,
+      "overheadRatio": 1.557025666617678,
+      "advanceP99NS": 1099084,
+      "advanceSamples": 617,
+      "pairedViolations": 0,
+      "scope": "bounded S 1M/5-save diagnostic; not C acceptance"
     }
   ],
   "rawEvidence": [
@@ -553,6 +568,62 @@
       "sha256": "a3de5ef33ae2eefc5f359ec1edec4e3a9f81e04c508b94350e0ce53f8492b4a5",
       "run": 37473200899,
       "originalName": "smoke-debug-S.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-MICRO-S.json",
+      "sha256": "16dcfee7e7158ee7385b9dfefac1a7ee7b51a9fb9aa004f8f28efcca54ccaff4"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-REUSED-AB.json",
+      "sha256": "adfdb3797aeb04a9190b92d19281bfee38fb0c2f97bffdb7de941b365e53934e"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-STAGE005-A.json",
+      "sha256": "a2419f0a74b69cffaa02e9ee03fd05b08b325a69cd8387383e2e845d6a3bed72"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-allocation-probes-S.json",
+      "sha256": "3aeb58d42aea1443ded1eae46964222cb7917c99378d66cd7c37b2c0b92e5084"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-mid-record-debug.json",
+      "sha256": "6b5c66029e9e1aeea0a02efa1198a8d313e33c280dcc4b13c2c1ce9762285ad7"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-mid-record-release.json",
+      "sha256": "6b5c66029e9e1aeea0a02efa1198a8d313e33c280dcc4b13c2c1ce9762285ad7"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-smoke-debug-H.json",
+      "sha256": "7c014caff38fa59789e7c29e6a0ec6c54e03ff480a0a61a41008ec8f636d7be5"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-smoke-debug-S.json",
+      "sha256": "a3de5ef33ae2eefc5f359ec1edec4e3a9f81e04c508b94350e0ce53f8492b4a5"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-smoke-release-H.json",
+      "sha256": "7c014caff38fa59789e7c29e6a0ec6c54e03ff480a0a61a41008ec8f636d7be5"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-smoke-release-S.json",
+      "sha256": "a3de5ef33ae2eefc5f359ec1edec4e3a9f81e04c508b94350e0ce53f8492b4a5"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-transport-debug.json",
+      "sha256": "d5b4eed4bc54cbca054b8ad43bbba0f38d661f96476ca50ae66ad61b41b31a96"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-transport-release.json",
+      "sha256": "d5b4eed4bc54cbca054b8ad43bbba0f38d661f96476ca50ae66ad61b41b31a96"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-writer-tsan-smoke.json",
+      "sha256": "a3de5ef33ae2eefc5f359ec1edec4e3a9f81e04c508b94350e0ce53f8492b4a5"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37475368651-writer-tsan.json",
+      "sha256": "d5b4eed4bc54cbca054b8ad43bbba0f38d661f96476ca50ae66ad61b41b31a96"
     }
   ],
   "reuse": {
@@ -574,7 +645,7 @@
     "Chat app disconnect cause unverified; continuity persists in repository"
   ],
   "failureRegistry": "Experiments/R005Swift/failures.json",
-  "next": "one bounded detached utility writer-priority check; full C only if all unchanged micro gates support it",
+  "next": "No further timing attempts. Verify exact writer rollback and Debug/Release/TSan functions, then owner chooses a broader ownership redesign or stable-runner diagnosis.",
   "candidateHistory": [
     {
       "source": "1c0c87151a0a3f39c0967da4c0f5ba6c5ab68547",
@@ -631,31 +702,85 @@
           "scope": "cold snapshot scratch retained outside measured advance; not A kernel-owned memory"
         }
       }
+    },
+    {
+      "source": "ec695084cba1aa63a563602549c2a96f80418cc9",
+      "tree": "569a5c6bb43794ae9964155882fd37fe33acb397",
+      "run": 37316669619,
+      "workflowConclusion": "failure",
+      "acceptance": "failed cadence; not a performance fix",
+      "artifact": 11348271339,
+      "artifactSHA256": "4978fd9a2040e2af497a2d3c1276d00275d169b30b8baeb84635dbf11645f53d",
+      "failedGate": "H save did not commit within 2000 advance calls; S completed 5 saves but ratio 1.309202510965811 and advance p99 1267959 ns both exceed limits",
+      "S": {
+        "saves": 5,
+        "status": "diagnostic",
+        "overheadRatio": 1.309202510965811,
+        "advanceP99NS": 1267959,
+        "samples": 1629,
+        "pairedAllocationViolations": 0
+      },
+      "H": {
+        "status": "runtime failure",
+        "failedGate": "save did not commit within 2000 advance calls",
+        "aggregateTimingResult": null
+      },
+      "recovery": {
+        "source": "0b2d2b9be023c74bddc7055618aec8c9ec8e74a9",
+        "tree": "16b92b8d642578655c60a22b7b790f7146eeb0f2",
+        "run": 37317983436,
+        "workflowConclusion": "success",
+        "artifact": 11348731266,
+        "artifactSHA256": "837e044786e2c4551a47785b7949074a69f6ba3a0cbda3caa95e4ec574400beb",
+        "scope": "exact artifact verification and byte-equal rollback only; no new measurement"
+      }
+    },
+    {
+      "source": "5fd2a7e8813814269a33a4b55cc3c3343d083d79",
+      "tree": "574e5d6010e64837cd33cbf8cea8e3d914e8bc06",
+      "run": 37473200899,
+      "workflowConclusion": "success",
+      "artifact": 11418475143,
+      "artifactSHA256": "c67f64790a653348565f84d1538763606d686831d7b5810148697dbbedb1ec2c",
+      "scope": "bounded S 1M/5-save micro plus exact-file Debug/Release/TSan, S/H 100k restore in Debug/Release; not C acceptance",
+      "S": {
+        "overheadRatio": 2.125063528589722,
+        "advanceP99NS": 1027750,
+        "advanceSamples": 750,
+        "beginP99NS": 10959,
+        "pairedAllocationViolations": 0,
+        "idleAllocationsMax": 0
+      },
+      "writer": {
+        "batchTargetBytes": 262144,
+        "canonicalBytes": 223934,
+        "lastBatchFlushes": 355,
+        "metadata": "fixed-canonical-bytes",
+        "producerRecordScratchBytes": 0,
+        "qos": "utility",
+        "seenBytes": 5893
+      },
+      "functionalChecks": "PASS exact 411324-byte v2 oracle with unordered input and five rejected malformed-record cases; K3 actual SIGKILL/exact 1M recovery Debug/Release; empty TSan stderr"
     }
   ],
   "liveTransportRestoredFrom": {
-    "source": "3b3711de3123f85980dd100e35cae2b3e998a4de",
-    "tree": "6c04893b16c17492e2b7d74a9dc4a57751f2468b",
+    "source": "37c0203569b3c8240278d80765f6aadb369e14cc",
     "files": [
       "Snapshot.swift",
       "Stage005CSave.swift",
       "Stage005CRunner.swift",
       "Stage005CHybridRunner.swift"
     ],
-    "status": "CI byte-equality verified for all four files, run 37317983436",
-    "scope": "no new performance evidence; original C remains open"
+    "status": "local exact bytes; CI verification pending",
+    "scope": "no new performance evidence; C open on S and H"
   },
   "rollback": {
-    "source": "0b2d2b9be023c74bddc7055618aec8c9ec8e74a9",
-    "tree": "16b92b8d642578655c60a22b7b790f7146eeb0f2",
-    "run": 37317983436,
-    "workflowConclusion": "success",
-    "artifact": 11348731266,
-    "artifactSHA256": "837e044786e2c4551a47785b7949074a69f6ba3a0cbda3caa95e4ec574400beb",
-    "scope": "exact artifact verification and byte-equal rollback only; no new measurement"
+    "status": "pending Apple functional verification",
+    "restoredWriterSource": "37c0203569b3c8240278d80765f6aadb369e14cc",
+    "scope": "four runtime files byte-equal to allowed source; exact-file regressions retained; no performance retry"
   },
   "repoResumption20261006": {
-    "ownerInstruction": "\u0627\u0633\u062a\u062e\u062f\u0645 \u0627\u0644\u0645\u0633\u062a\u0648\u062f\u0639",
+    "ownerInstruction": "استخدم المستودع",
     "base": "37c0203569b3c8240278d80765f6aadb369e14cc",
     "candidates": [
       {
@@ -684,12 +809,58 @@
           "seenBytes": 5893
         },
         "functionalChecks": "PASS exact 411324-byte v2 oracle with unordered input and five rejected malformed-record cases; K3 actual SIGKILL/exact 1M recovery Debug/Release; empty TSan stderr"
+      },
+      {
+        "source": "f85808c12f89a56566da5494ba98c0bb71de0ffc",
+        "tree": "f6bb5085bf336f6fdb38d81ab02a589f3f950a59",
+        "run": 37475368651,
+        "job": 112309268594,
+        "workflowConclusion": "success",
+        "artifact": 11418154134,
+        "artifactSHA256": "a12c29b668702410b877a9964491f798b115c15d95e76607283d2db1dc169796",
+        "scope": "bounded S 1M/5-save diagnostic; not C acceptance",
+        "acceptance": "overhead gate miss; C remains open",
+        "S": {
+          "saves": 5,
+          "overheadRatio": 1.557025666617678,
+          "advanceP99NS": 1099084,
+          "advanceSamples": 617,
+          "beginP99NS": 81083,
+          "beginSamples": 5,
+          "pairedAllocationViolations": 0,
+          "idleAllocationsMax": 0,
+          "savingAllocationsMax": 390,
+          "barrierChunksMax": 390,
+          "snapshotBytes": 95801772
+        },
+        "writer": {
+          "batchTargetBytes": 262144,
+          "canonicalBytes": 223934,
+          "lastBatchFlushes": 354,
+          "metadata": "fixed-canonical-bytes",
+          "observedThreadQoS": "utility",
+          "producerRecordScratchBytes": 0,
+          "qos": "detached-utility",
+          "seenBytes": 5893
+        },
+        "functionalChecks": "PASS Debug/Release/TSan exact 411324-byte v2 file oracle with 26 unordered records and five malformed-record rejects; S/H 100k restore Debug/Release, S 100k TSan; K3 actual SIGKILL exact 1M recovery Debug/Release; empty TSan stderr"
       }
     ],
-    "attempts": 1,
+    "attempts": 2,
     "maxAttempts": 2,
-    "status": "C-open",
-    "next": "one bounded detached utility writer-priority check; full C only if all unchanged micro gates support it"
+    "status": "C-open; two-candidate stop; rollback pending verification",
+    "next": "No further timing attempts. Verify exact writer rollback and Debug/Release/TSan functions, then owner chooses a broader ownership redesign or stable-runner diagnosis."
   },
-  "updated": "2026-10-06"
+  "updated": "2026-10-06",
+  "rollbackHistory": [
+    {
+      "source": "0b2d2b9be023c74bddc7055618aec8c9ec8e74a9",
+      "tree": "16b92b8d642578655c60a22b7b790f7146eeb0f2",
+      "run": 37317983436,
+      "workflowConclusion": "success",
+      "artifact": 11348731266,
+      "artifactSHA256": "837e044786e2c4551a47785b7949074a69f6ba3a0cbda3caa95e4ec574400beb",
+      "scope": "exact artifact verification and byte-equal rollback only; no new measurement"
+    }
+  ]
 }

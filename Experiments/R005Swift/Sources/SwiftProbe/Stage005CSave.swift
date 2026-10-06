@@ -8,8 +8,6 @@ struct StageCSnapshotFileResult: Sendable {
     let chunks: Int
     let writeNS: UInt64
     let peakQueuedBytes: Int
-    let batchFlushes: Int
-    let threadQoS: String
 }
 
 final class StageCWriterCounters: Sendable {
@@ -20,8 +18,6 @@ final class StageCWriterCounters: Sendable {
     let bytes = Atomic<UInt64>(0)
     let chunks = Atomic<Int>(0)
     let writeNS = Atomic<UInt64>(0)
-    let batchFlushes = Atomic<Int>(0)
-    let threadQoS = Mutex<String>("unmeasured")
 }
 
 struct StageCRecordQueueState: Sendable {
@@ -96,14 +92,13 @@ final class SnapshotSink: Sendable {
         let queue = StageCRecordQueue(capacity: capacity)
         self.counters = counters
         self.queue = queue
-        DispatchQueue.global(qos: .utility).async(qos: .utility, flags: [.enforceQoS, .detached]) {
+        DispatchQueue.global(qos: .utility).async {
             do {
                 let result = try StageCSnapshotWriter.run(queue, counters: counters,
                     directory: directory, epoch: epoch, expectedCounts: expectedCounts)
                 counters.bytes.store(result.bytes, ordering: .releasing)
                 counters.chunks.store(result.chunks, ordering: .releasing)
                 counters.writeNS.store(result.writeNS, ordering: .releasing)
-                counters.batchFlushes.store(result.batchFlushes, ordering: .releasing)
             } catch {
                 counters.failed.store(1, ordering: .releasing)
             }
@@ -136,16 +131,12 @@ final class SnapshotSink: Sendable {
         return StageCSnapshotFileResult(bytes: counters.bytes.load(ordering: .acquiring),
             chunks: counters.chunks.load(ordering: .acquiring),
             writeNS: counters.writeNS.load(ordering: .acquiring),
-            peakQueuedBytes: counters.peak.load(ordering: .acquiring),
-            batchFlushes: counters.batchFlushes.load(ordering: .acquiring),
-            threadQoS: counters.threadQoS.withLock { $0 })
+            peakQueuedBytes: counters.peak.load(ordering: .acquiring))
     }
 }
 
 enum StageCSnapshotWriter {
-    static let batchBytes = 256 * 1024
-
-    static func parseRecord(_ record: [UInt8]) throws -> (StageCRecordKey, UInt32, NXRHash) {
+    static func parseRecord(_ record: [UInt8]) throws -> (StageCRecordKey, UInt32, Data) {
         guard record.count >= 16 else { throw ProbeError.corruption("stage C short record") }
         var r = StageCByteReader(bytes: record)
         let kind = try r.u16(), reserved = try r.u16(), index = try r.u32()
@@ -154,7 +145,7 @@ enum StageCSnapshotWriter {
               record.count == 16 + payloadBytes else {
             throw ProbeError.corruption("stage C record header")
         }
-        let digest = Snapshot.hashBytes(record, range: 16..<record.count)
+        let digest = Snapshot.digestBytes(record, range: 16..<record.count)
         return (StageCRecordKey(kind: kind, index: index), elements, digest)
     }
 
@@ -165,8 +156,6 @@ enum StageCSnapshotWriter {
             throw ProbeError.invalid("stage C expected record counts")
         }
         let start = nx_now()
-        let threadQoS = Snapshot.currentThreadQoS()
-        counters.threadQoS.withLock { $0 = threadQoS }
         let tmp = directory + "/snapshot-\(epoch).tmp"
         let final = directory + "/snapshot-\(epoch).bin"
         guard FileManager.default.createFile(atPath: tmp, contents: nil) else {
@@ -178,64 +167,46 @@ enum StageCSnapshotWriter {
         try handle.write(contentsOf: prefix)
         var bytesWritten = UInt64(prefix.count)
         var counts = [UInt32](repeating: 0, count: 4)
-        let recordCount = expectedCounts.reduce(0) { $0 + Int($1) }
-        let offsets = [0, Int(expectedCounts[0]), Int(expectedCounts[0]) + Int(expectedCounts[1]),
-                       Int(expectedCounts[0]) + Int(expectedCounts[1]) + Int(expectedCounts[2])]
-        var seen = ContiguousArray<UInt8>(repeating: 0, count: recordCount)
-        var canonical = Snapshot.canonicalMetadata(expectedCounts)
-        var batch: [UInt8] = []
-        batch.reserveCapacity(batchBytes + 18_876)
-        var pendingRecordBytes = 0
-        var batchFlushes = 0
-        var midpointWritten = false
-        func flush() throws {
-            guard !batch.isEmpty else { return }
-            try Snapshot.writeRecord(batch, descriptor: handle.fileDescriptor, range: 0..<batch.count)
-            batchFlushes += 1
-            batch.removeAll(keepingCapacity: true)
-            _ = counters.queued.subtract(pendingRecordBytes, ordering: .relaxed)
-            pendingRecordBytes = 0
-        }
+        var digests: [StageCRecordKey: Data] = [:]
+        digests.reserveCapacity(expectedCounts.reduce(0) { $0 + Int($1) })
 
         while true {
             guard let record = queue.waitAndPop() else { break }
             let parsed = try parseRecord(record)
             let key = parsed.0
-            guard key.kind < 4, key.index < expectedCounts[Int(key.kind)] else {
-                throw ProbeError.corruption("stage C out-of-range record")
+            guard key.kind < 4, key.index < expectedCounts[Int(key.kind)],
+                  digests[key] == nil else {
+                throw ProbeError.corruption("stage C duplicate/out-of-range record")
             }
-            let slot = offsets[Int(key.kind)] + Int(key.index)
-            guard seen[slot] == 0 else { throw ProbeError.corruption("stage C duplicate record") }
-            seen[slot] = 1
-            let digestOffset = slot * 38 + 6
-            Snapshot.storeDigest(parsed.2, into: &canonical, at: digestOffset)
+            digests[key] = parsed.2
             counts[Int(key.kind)] += 1
-            if key.kind > 0 && !midpointWritten {
+            if key.kind > 0 {
                 let split = max(16, record.count / 2)
-                batch.append(contentsOf: record[0..<split])
-                // Keep K3 at a physically written incomplete record, including
-                // its complete byte count until the remainder is flushed.
-                try flush()
+                try Snapshot.writeRecord(record, descriptor: handle.fileDescriptor, range: 0..<split)
                 nx_kill_point("c.k3.mid_record")
-                midpointWritten = true
-                batch.append(contentsOf: record[split..<record.count])
+                try Snapshot.writeRecord(record, descriptor: handle.fileDescriptor, range: split..<record.count)
             } else {
-                batch.append(contentsOf: record)
+                try Snapshot.writeRecord(record, descriptor: handle.fileDescriptor, range: 0..<record.count)
             }
-            batch.append(contentsOf: canonical[digestOffset..<(digestOffset + 32)])
-            bytesWritten += UInt64(record.count + 32)
-            pendingRecordBytes += record.count + 32
-            if batch.count >= batchBytes { try flush() }
+            try handle.write(contentsOf: parsed.2)
+            bytesWritten += UInt64(record.count + parsed.2.count)
+            _ = counters.queued.subtract(record.count + parsed.2.count, ordering: .relaxed)
         }
 
-        try flush()
-        guard counters.queued.load(ordering: .relaxed) == 0 else {
-            throw ProbeError.invariant("stage C queued byte accounting")
-        }
         guard counts == expectedCounts else { throw ProbeError.corruption("stage C missing record") }
         nx_kill_point("c.k4.before_footer")
+        var canonical = Data(capacity: digests.count * 38)
+        for kind in UInt16(0)...UInt16(3) {
+            for index in UInt32(0)..<expectedCounts[Int(kind)] {
+                let key = StageCRecordKey(kind: kind, index: index)
+                guard let digest = digests[key] else { throw ProbeError.corruption("stage C canonical record") }
+                Snapshot.appendLE(kind, into: &canonical)
+                Snapshot.appendLE(index, into: &canonical)
+                canonical.append(digest)
+            }
+        }
         let totalBytes = bytesWritten + 64
-        let footer = Snapshot.footer(counts: counts, totalBytes: totalBytes, canonicalDigestInput: Data(canonical))
+        let footer = Snapshot.footer(counts: counts, totalBytes: totalBytes, canonicalDigestInput: canonical)
         try handle.write(contentsOf: footer)
         nx_kill_point("c.k5.after_footer")
         try handle.synchronize()
@@ -265,9 +236,8 @@ enum StageCSnapshotWriter {
             if FileManager.default.fileExists(atPath: oldMarker) { try FileManager.default.removeItem(atPath: oldMarker) }
             guard nx_sync_dir(directory) == 0 else { throw ProbeError.invalid("stage C generation cleanup sync") }
         }
-        return StageCSnapshotFileResult(bytes: totalBytes, chunks: recordCount,
-            writeNS: nx_now() - start, peakQueuedBytes: counters.peak.load(ordering: .relaxed),
-            batchFlushes: batchFlushes, threadQoS: threadQoS)
+        return StageCSnapshotFileResult(bytes: totalBytes, chunks: digests.count,
+            writeNS: nx_now() - start, peakQueuedBytes: counters.peak.load(ordering: .relaxed))
     }
 }
 

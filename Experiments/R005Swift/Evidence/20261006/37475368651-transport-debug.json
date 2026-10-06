@@ -1,0 +1,19 @@
+{
+  "emptyFinish" : true,
+  "exactWrittenBytes" : 10000,
+  "fifoRecords" : 10000,
+  "knownSHA256" : true,
+  "legacyDigestEncoding" : true,
+  "rejectedMisuse" : 2,
+  "scope" : "queue\/writer lifecycle checks, not Stage C acceptance",
+  "status" : "pass",
+  "writerFiles" : {
+    "batchFlushes" : 3,
+    "exactFileBytes" : 411324,
+    "noncanonicalInputOrder" : true,
+    "population" : 4096,
+    "records" : 26,
+    "rejectedRecordCases" : 5,
+    "status" : "pass"
+  }
+}

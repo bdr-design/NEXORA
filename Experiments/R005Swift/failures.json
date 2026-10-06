@@ -8,7 +8,8 @@
     "Post-Stage-A directive review found the measured S variant still used the earlier thin 45-byte asset columns and had not added the five required UInt32 columns contract/changeEpoch/entity/policy/origin. The successful run is preserved as invalid for the A design decision; S was corrected to the required 65-byte full-column layout, the full typed checkpoint was extended accordingly, and A must be remeasured before B/C acceptance.",
     "Pre-acceptance Stage C adversarial review found that SwiftWorld.advance had save barriers on schedule/invalidate paths but not before its asset/group mutations. Corrected by emitting the asset and group pre-write chunks after all recoverable checks and before the first mutation; no threshold or result was reclassified.",
     "Pre-acceptance Stage C recovery review found that fallback from an incomplete current snapshot replayed only the previous snapshot's matching WAL, but the directive requires previous snapshot + previous WAL + current WAL. Recovery now replays every contiguous WAL from the restored snapshot epoch through the current epoch, rejects gaps/tails followed by newer WALs, and adds an exact SIGKILL chain-fallback regression.",
-    "2026-10-05 metadata classification: the log-only cadence error was initially attributed to S and S output was assumed absent. Exact failed ZIP recovery proved S completed 5 saves (ratio 1.309202510965811, p99 1267959 ns) and H was the cadence failure. Current registry/review/continuity/report corrected before final delivery; original raw files and failed workflow status preserved."
+    "2026-10-05 metadata classification: the log-only cadence error was initially attributed to S and S output was assumed absent. Exact failed ZIP recovery proved S completed 5 saves (ratio 1.309202510965811, p99 1267959 ns) and H was the cadence failure. Current registry/review/continuity/report corrected before final delivery; original raw files and failed workflow status preserved.",
+    "2026-10-06 local rollback patch was rejected because delete/add targeted the same path; no runtime file was changed by that rejected patch. Restored all four files using exact decoded bytes from the allowed 37c0203 source and required CI byte-equality verification."
   ],
   "apple": [
     {
@@ -410,6 +411,30 @@
         "idleAllocationsMax": 0
       },
       "correction": "C remains open; only overhead failed in this 5-save diagnosis. No 100-save proof started. Metadata/batching is functionally valid; no accepted performance improvement inferred."
+    },
+    {
+      "commit": "f85808c12f89a56566da5494ba98c0bb71de0ffc",
+      "tree": "f6bb5085bf336f6fdb38d81ab02a589f3f950a59",
+      "run": 37475368651,
+      "job": 112309268594,
+      "workflowConclusion": "success",
+      "artifact": 11418154134,
+      "artifactSHA256": "a12c29b668702410b877a9964491f798b115c15d95e76607283d2db1dc169796",
+      "scope": "bounded S 1M/5-save diagnostic; not C acceptance",
+      "S": {
+        "saves": 5,
+        "overheadRatio": 1.557025666617678,
+        "advanceP99NS": 1099084,
+        "advanceSamples": 617,
+        "beginP99NS": 81083,
+        "beginSamples": 5,
+        "pairedAllocationViolations": 0,
+        "idleAllocationsMax": 0,
+        "savingAllocationsMax": 390,
+        "barrierChunksMax": 390,
+        "snapshotBytes": 95801772
+      },
+      "correction": "STOP at two bounded repository candidates. Only overhead missed in this S 5-save diagnostic. No full C/100-save campaign. Roll back unproved writer metadata/batching/detached QoS, keep evidence and exact-file regression."
     }
   ]
 }

@@ -28,10 +28,14 @@ thermal governor may reduce presentation work, not silently change economic
 outcomes or discard scheduled business events. An overloaded accelerated clock
 must honestly report actual progress rather than corrupt simulation.
 
-Acceptance requires 20,000 full-feature assets, including operations, invoices,
-revenue, payroll, maintenance, delivery, persistence and active UI/map use. The
-architecture aims at 100,000. Native Swift and a Metal map remain the selected
-platform direction, subject to measured implementation decisions.
+The current scale decision supersedes the earlier 20,000 acceptance / 100,000
+architecture figures: design for 1M assets with capacity headroom to 2M. After
+explicit layout-specific C closure and the owner's production merge approval,
+physical iPhone 17 Pro Max acceptance proceeds through 100k, 250k and 1M.
+Acceptance still requires full-feature assets: operations, invoices, revenue,
+payroll, maintenance, delivery, persistence and active UI/map use. R005 fixtures
+and Apple CI probes do not prove this gameplay or device acceptance. Native Swift
+and a Metal map remain the selected platform direction, subject to measurement.
 
 Diagnostics starts with the foundation and grows into bounded causal tracing:
 operation/owner/cause, work counts, stage latency, queue state, failures, saves,
