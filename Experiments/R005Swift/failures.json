@@ -392,6 +392,24 @@
         "aggregateTimingResult": null
       },
       "correction": "Both candidates rejected and live C transport restored byte-for-byte. No new performance attempt at owner limit."
+    },
+    {
+      "commit": "5fd2a7e8813814269a33a4b55cc3c3343d083d79",
+      "tree": "574e5d6010e64837cd33cbf8cea8e3d914e8bc06",
+      "run": 37473200899,
+      "workflowConclusion": "success",
+      "artifact": 11418475143,
+      "artifactSHA256": "c67f64790a653348565f84d1538763606d686831d7b5810148697dbbedb1ec2c",
+      "scope": "bounded S 1M/5-save micro plus exact-file Debug/Release/TSan, S/H 100k restore in Debug/Release; not C acceptance",
+      "S": {
+        "overheadRatio": 2.125063528589722,
+        "advanceP99NS": 1027750,
+        "advanceSamples": 750,
+        "beginP99NS": 10959,
+        "pairedAllocationViolations": 0,
+        "idleAllocationsMax": 0
+      },
+      "correction": "C remains open; only overhead failed in this 5-save diagnosis. No 100-save proof started. Metadata/batching is functionally valid; no accepted performance improvement inferred."
     }
   ]
 }

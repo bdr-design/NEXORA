@@ -222,6 +222,26 @@
       },
       "idleAllocationsMax": 0,
       "snapshotBytes": 95801772
+    },
+    {
+      "run": 37473200899,
+      "layout": "S",
+      "saves": 5,
+      "status": "diagnostic",
+      "overheadRatio": 2.125063528589722,
+      "beginSaveP99NS": 10959,
+      "advanceP99NS": 1027750,
+      "advanceSamples": 750,
+      "allocationPairing": {
+        "firstViolationAllocations": 0,
+        "firstViolationCall": -1,
+        "firstViolationChunks": 0,
+        "maxExcess": 0,
+        "samples": 750,
+        "violations": 0
+      },
+      "idleAllocationsMax": 0,
+      "snapshotBytes": 95801772
     }
   ],
   "rawEvidence": [
@@ -449,6 +469,90 @@
       "sha256": "a1b7c511de150d6c6b13601ea4b0e6b179c8677b10995f92786545e51422d150",
       "run": 37317983436,
       "originalName": "RECOVERED-QOS.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-transport-release.json",
+      "sha256": "d5b4eed4bc54cbca054b8ad43bbba0f38d661f96476ca50ae66ad61b41b31a96",
+      "run": 37473200899,
+      "originalName": "transport-release.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-mid-record-release.json",
+      "sha256": "6b5c66029e9e1aeea0a02efa1198a8d313e33c280dcc4b13c2c1ce9762285ad7",
+      "run": 37473200899,
+      "originalName": "mid-record-release.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-writer-tsan.json",
+      "sha256": "d5b4eed4bc54cbca054b8ad43bbba0f38d661f96476ca50ae66ad61b41b31a96",
+      "run": 37473200899,
+      "originalName": "writer-tsan.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-smoke-release-S.json",
+      "sha256": "a3de5ef33ae2eefc5f359ec1edec4e3a9f81e04c508b94350e0ce53f8492b4a5",
+      "run": 37473200899,
+      "originalName": "smoke-release-S.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-writer-tsan-smoke.json",
+      "sha256": "a3de5ef33ae2eefc5f359ec1edec4e3a9f81e04c508b94350e0ce53f8492b4a5",
+      "run": 37473200899,
+      "originalName": "writer-tsan-smoke.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-REUSED-AB.json",
+      "sha256": "adfdb3797aeb04a9190b92d19281bfee38fb0c2f97bffdb7de941b365e53934e",
+      "run": 37473200899,
+      "originalName": "REUSED-AB.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-smoke-debug-H.json",
+      "sha256": "7c014caff38fa59789e7c29e6a0ec6c54e03ff480a0a61a41008ec8f636d7be5",
+      "run": 37473200899,
+      "originalName": "smoke-debug-H.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-smoke-release-H.json",
+      "sha256": "7c014caff38fa59789e7c29e6a0ec6c54e03ff480a0a61a41008ec8f636d7be5",
+      "run": 37473200899,
+      "originalName": "smoke-release-H.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-STAGE005-A.json",
+      "sha256": "a2419f0a74b69cffaa02e9ee03fd05b08b325a69cd8387383e2e845d6a3bed72",
+      "run": 37473200899,
+      "originalName": "STAGE005-A.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-allocation-probes-S.json",
+      "sha256": "347b61d68a98a672482287e918f154713254e52f6c25c2208c41b8353f4ce370",
+      "run": 37473200899,
+      "originalName": "allocation-probes-S.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-transport-debug.json",
+      "sha256": "d5b4eed4bc54cbca054b8ad43bbba0f38d661f96476ca50ae66ad61b41b31a96",
+      "run": 37473200899,
+      "originalName": "transport-debug.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-MICRO-S.json",
+      "sha256": "b86b8e0ffc8e40c3f5ab9e796dced3ec5c17b0595ef7833286bd431929ff80d3",
+      "run": 37473200899,
+      "originalName": "MICRO-S.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-mid-record-debug.json",
+      "sha256": "6b5c66029e9e1aeea0a02efa1198a8d313e33c280dcc4b13c2c1ce9762285ad7",
+      "run": 37473200899,
+      "originalName": "mid-record-debug.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37473200899-smoke-debug-S.json",
+      "sha256": "a3de5ef33ae2eefc5f359ec1edec4e3a9f81e04c508b94350e0ce53f8492b4a5",
+      "run": 37473200899,
+      "originalName": "smoke-debug-S.json"
     }
   ],
   "reuse": {
@@ -470,7 +574,7 @@
     "Chat app disconnect cause unverified; continuity persists in repository"
   ],
   "failureRegistry": "Experiments/R005Swift/failures.json",
-  "next": "Stopped at the owner limit. Present matched-host diagnosis / ownership redesign / hold experimental C with their costs. No production approval.",
+  "next": "one bounded detached utility writer-priority check; full C only if all unchanged micro gates support it",
   "candidateHistory": [
     {
       "source": "1c0c87151a0a3f39c0967da4c0f5ba6c5ab68547",
@@ -549,5 +653,43 @@
     "artifact": 11348731266,
     "artifactSHA256": "837e044786e2c4551a47785b7949074a69f6ba3a0cbda3caa95e4ec574400beb",
     "scope": "exact artifact verification and byte-equal rollback only; no new measurement"
-  }
+  },
+  "repoResumption20261006": {
+    "ownerInstruction": "\u0627\u0633\u062a\u062e\u062f\u0645 \u0627\u0644\u0645\u0633\u062a\u0648\u062f\u0639",
+    "base": "37c0203569b3c8240278d80765f6aadb369e14cc",
+    "candidates": [
+      {
+        "source": "5fd2a7e8813814269a33a4b55cc3c3343d083d79",
+        "tree": "574e5d6010e64837cd33cbf8cea8e3d914e8bc06",
+        "run": 37473200899,
+        "workflowConclusion": "success",
+        "artifact": 11418475143,
+        "artifactSHA256": "c67f64790a653348565f84d1538763606d686831d7b5810148697dbbedb1ec2c",
+        "scope": "bounded S 1M/5-save micro plus exact-file Debug/Release/TSan, S/H 100k restore in Debug/Release; not C acceptance",
+        "S": {
+          "overheadRatio": 2.125063528589722,
+          "advanceP99NS": 1027750,
+          "advanceSamples": 750,
+          "beginP99NS": 10959,
+          "pairedAllocationViolations": 0,
+          "idleAllocationsMax": 0
+        },
+        "writer": {
+          "batchTargetBytes": 262144,
+          "canonicalBytes": 223934,
+          "lastBatchFlushes": 355,
+          "metadata": "fixed-canonical-bytes",
+          "producerRecordScratchBytes": 0,
+          "qos": "utility",
+          "seenBytes": 5893
+        },
+        "functionalChecks": "PASS exact 411324-byte v2 oracle with unordered input and five rejected malformed-record cases; K3 actual SIGKILL/exact 1M recovery Debug/Release; empty TSan stderr"
+      }
+    ],
+    "attempts": 1,
+    "maxAttempts": 2,
+    "status": "C-open",
+    "next": "one bounded detached utility writer-priority check; full C only if all unchanged micro gates support it"
+  },
+  "updated": "2026-10-06"
 }

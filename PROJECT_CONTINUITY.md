@@ -1,17 +1,24 @@
 # Repository continuation — 2026-10-06 / Asia-Riyadh
 
-Owner «استخدم المستودع» directs continuation from the live repo through Apple CI.
-Base HEAD 37c0203569b3c8240278d80765f6aadb369e14cc, tree
-0e9edfef55c5475c373d7f13bd87ec2799004a70; main unchanged at 38ce39cf.
-AGENTS/live continuity reread, five local C blobs verified against live tree.
-New candidate changes writer metadata and batch I/O only, retaining old producer
-records and utility QoS. It does not restore the failed pool/background candidates.
-Estimates/ownership/failure trace in Docs/Daily/2026-10-06-R005-REPO-WRITER.md.
-Next: Debug/Release exact file oracle + invalid records + S/H 100k restore + K3,
-bounded TSan, then S 1M/5-save micro. Current attempt count 0 of maximum 2.
-Do not repeat full C unless micro supports every unchanged timing/allocation gate.
-C OPEN on S/H; previous failures and original thresholds retained. No production,
-merge or iPhone acceptance. Earlier checkpoint below is historical for this resume.
+Owner «استخدم المستودع» resumes repository/Apple CI work. Base 37c0203; AGENTS and
+live continuity read, five C blobs verified against live tree before modification.
+First writer candidate 5fd2a7e8813814269a33a4b55cc3c3343d083d79, tree
+574e5d6010e64837cd33cbf8cea8e3d914e8bc06, run 37473200899 SUCCESS diagnostics;
+artifact 11418475143 ZIP SHA-256
+c67f64790a653348565f84d1538763606d686831d7b5810148697dbbedb1ec2c.
+Exact-file/malformed-record checks Debug/Release/TSan, S/H 100k Debug/Release,
+S 100k TSan and real K3 1M Debug/Release PASS. No full K1-K10 rerun.
+S 5-save ratio=2.125063528589722 FAIL; begin=10959 ns PASS; advance=1027750 ns /
+750 samples PASS; paired violations=0, idle alloc=0. C remains OPEN.
+
+Only one remaining bounded candidate: detach and explicitly assign utility writer
+QoS, record actual qos_class_self diagnostic. Copy hooks/producer records, all
+thresholds/calculation/cadence/service fixed. No pool/background QoS/artificial delay.
+Details/estimates in Docs/Daily/2026-10-06-R005-REPO-WRITER.md. Attempts 1 of 2;
+if the blocker remains, stop and give measured alternatives. No full 100-save run
+unless every micro timing/allocation gate supports it. S proof never accepts H.
+A/B revalidated, not freshly measured. No production change/main merge/IPA.
+Read live HEAD before any next write; all earlier failures retained below/in registry.
 
 ---
 

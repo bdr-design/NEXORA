@@ -1,0 +1,118 @@
+{
+  "advanceCalls" : 10154,
+  "advanceDuringSaveNS" : {
+    "marginNS" : 72250,
+    "max" : 1648042,
+    "p50" : 342583,
+    "p99" : 1027750,
+    "samples" : 750
+  },
+  "allocationPairing" : {
+    "firstViolationAllocations" : 0,
+    "firstViolationCall" : -1,
+    "firstViolationChunks" : 0,
+    "maxExcess" : 0,
+    "samples" : 750,
+    "violations" : 0
+  },
+  "allocationsIdleMaxPerAdvance" : 0,
+  "allocationsWhileSavingMaxPerAdvance" : 410,
+  "assets" : 1000000,
+  "barrierChunksMaxPerAdvance" : 410,
+  "barrierCopy" : {
+    "bytesPerSave" : [
+      56125952,
+      50274272,
+      55001904,
+      53605008,
+      51471920
+    ],
+    "nsMax" : 22052896,
+    "nsP50" : 11571417,
+    "nsP99" : 22052896,
+    "nsPerSave" : [
+      17571300,
+      22052896,
+      11571417,
+      9037065,
+      10316539
+    ],
+    "samples" : 5
+  },
+  "beginSaveNS" : {
+    "marginNS" : 89041,
+    "max" : 10959,
+    "p50" : 9000,
+    "p99" : 10959,
+    "samples" : 5
+  },
+  "exactRecoveredDigest" : "ebf65816a6b8c4d4f8ba35c9068389c4fd2db516d060ce9c50265f1bddc0d4e9",
+  "idleEvents" : 8956130,
+  "idleNSPerEvent" : 282.86760732593206,
+  "ignoredWALTailBytes" : 0,
+  "limits" : "Apple CI process\/SIGKILL proof; WAL full-record process persistence, not physical power-cut certification; not iPhone acceptance",
+  "overheadRatio" : 2.1250635285897221,
+  "overheadRatioMargin" : -1.0250635285897221,
+  "peakQueuedBytes" : 64308304,
+  "recoveredEpoch" : 6,
+  "replayedCommands" : 154,
+  "restoreNS" : 291294875,
+  "saveNSPerEvent" : 601.11163574777709,
+  "saves" : 5,
+  "savingEvents" : 637690,
+  "simulationPhases" : {
+    "capturing" : {
+      "barrierChunks" : 16717,
+      "calls" : 109,
+      "events" : 49831,
+      "ns" : 101484579,
+      "nsPerEvent" : 2036.5752041901628,
+      "nsPerWorkUnit" : 2034.044435091095,
+      "workUnits" : 49893
+    },
+    "idle" : {
+      "barrierChunks" : 0,
+      "calls" : 9404,
+      "events" : 8956130,
+      "ns" : 2533399064,
+      "nsPerEvent" : 282.86760732593206,
+      "nsPerWorkUnit" : 161.5010656881316,
+      "workUnits" : 15686578
+    },
+    "writerOnly" : {
+      "barrierChunks" : 0,
+      "calls" : 641,
+      "events" : 587859,
+      "ns" : 281838300,
+      "nsPerEvent" : 479.43180252407467,
+      "nsPerWorkUnit" : 309.67736618822266,
+      "workUnits" : 910103
+    }
+  },
+  "snapshotBytes" : 95801772,
+  "snapshotBytesMax" : 95801772,
+  "snapshotBytesMin" : 95801772,
+  "status" : "diagnostic",
+  "thresholds" : {
+    "advanceDuringSaveP99NS" : 1100000,
+    "beginSaveP99NS" : 100000,
+    "idleAllocationsPerAdvance" : 0,
+    "overheadRatio" : 1.1000000000000001
+  },
+  "variant" : "S",
+  "writeNS" : {
+    "max" : 169378084,
+    "p50" : 107095208,
+    "p99" : 169378084,
+    "samples" : 5
+  },
+  "writerTransport" : {
+    "batchTargetBytes" : 262144,
+    "canonicalBytes" : 223934,
+    "lastBatchFlushes" : 355,
+    "metadata" : "fixed-canonical-bytes",
+    "producerRecordScratchBytes" : 0,
+    "qos" : "utility",
+    "seenBytes" : 5893
+  }
+}

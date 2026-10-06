@@ -59,6 +59,21 @@ enum Snapshot {
     static let version: UInt32 = 2
     static let flags: UInt32 = 1
 
+    static func currentThreadQoS() -> String {
+#if canImport(Darwin)
+        switch qos_class_self() {
+        case QOS_CLASS_USER_INTERACTIVE: return "userInteractive"
+        case QOS_CLASS_USER_INITIATED: return "userInitiated"
+        case QOS_CLASS_DEFAULT: return "default"
+        case QOS_CLASS_UTILITY: return "utility"
+        case QOS_CLASS_BACKGROUND: return "background"
+        default: return "unspecified"
+        }
+#else
+        return "unavailable"
+#endif
+    }
+
     // Read-only storage stays alive until every synchronous write completes.
     // No pointer escapes this scope and the writer never mutates a queued record.
     static func writeRecord(_ record: [UInt8], descriptor: Int32, range: Range<Int>) throws {

@@ -9,6 +9,7 @@ struct StageCSnapshotFileResult: Sendable {
     let writeNS: UInt64
     let peakQueuedBytes: Int
     let batchFlushes: Int
+    let threadQoS: String
 }
 
 final class StageCWriterCounters: Sendable {
@@ -20,6 +21,7 @@ final class StageCWriterCounters: Sendable {
     let chunks = Atomic<Int>(0)
     let writeNS = Atomic<UInt64>(0)
     let batchFlushes = Atomic<Int>(0)
+    let threadQoS = Mutex<String>("unmeasured")
 }
 
 struct StageCRecordQueueState: Sendable {
@@ -94,7 +96,7 @@ final class SnapshotSink: Sendable {
         let queue = StageCRecordQueue(capacity: capacity)
         self.counters = counters
         self.queue = queue
-        DispatchQueue.global(qos: .utility).async {
+        DispatchQueue.global(qos: .utility).async(qos: .utility, flags: [.enforceQoS, .detached]) {
             do {
                 let result = try StageCSnapshotWriter.run(queue, counters: counters,
                     directory: directory, epoch: epoch, expectedCounts: expectedCounts)
@@ -135,7 +137,8 @@ final class SnapshotSink: Sendable {
             chunks: counters.chunks.load(ordering: .acquiring),
             writeNS: counters.writeNS.load(ordering: .acquiring),
             peakQueuedBytes: counters.peak.load(ordering: .acquiring),
-            batchFlushes: counters.batchFlushes.load(ordering: .acquiring))
+            batchFlushes: counters.batchFlushes.load(ordering: .acquiring),
+            threadQoS: counters.threadQoS.withLock { $0 })
     }
 }
 
@@ -162,6 +165,8 @@ enum StageCSnapshotWriter {
             throw ProbeError.invalid("stage C expected record counts")
         }
         let start = nx_now()
+        let threadQoS = Snapshot.currentThreadQoS()
+        counters.threadQoS.withLock { $0 = threadQoS }
         let tmp = directory + "/snapshot-\(epoch).tmp"
         let final = directory + "/snapshot-\(epoch).bin"
         guard FileManager.default.createFile(atPath: tmp, contents: nil) else {
@@ -262,7 +267,7 @@ enum StageCSnapshotWriter {
         }
         return StageCSnapshotFileResult(bytes: totalBytes, chunks: recordCount,
             writeNS: nx_now() - start, peakQueuedBytes: counters.peak.load(ordering: .relaxed),
-            batchFlushes: batchFlushes)
+            batchFlushes: batchFlushes, threadQoS: threadQoS)
     }
 }
 
