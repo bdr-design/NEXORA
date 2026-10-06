@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/Users/runner/work/NEXORA/NEXORA/Experiments/R005Swift/stage005_c.py", line 29, in <module>
+    raise RuntimeError((cp.returncode,cp.stderr[-8000:]))
+RuntimeError: (1, 'mismatch: stage C save did not commit within 2000 advance calls\n')

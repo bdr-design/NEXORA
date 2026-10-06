@@ -1,0 +1,1067 @@
+{
+  "status": "pass",
+  "scope": "R005 proof-only Stage B; generated disposable finance data, no production record deletion",
+  "B": [
+    {
+      "case": "G16",
+      "day": 1,
+      "detailBytes": 4000016,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 0,
+      "peakBytes": 4000016,
+      "rowsSummarized": 0,
+      "segmentWriteNS": 12752000,
+      "summarizeNS": 0,
+      "totalBytes": 4000016,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 2,
+      "detailBytes": 11600032,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 0,
+      "peakBytes": 11600032,
+      "rowsSummarized": 0,
+      "segmentWriteNS": 19454958,
+      "summarizeNS": 0,
+      "totalBytes": 11600032,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 3,
+      "detailBytes": 19200048,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 0,
+      "peakBytes": 19200048,
+      "rowsSummarized": 0,
+      "segmentWriteNS": 20159625,
+      "summarizeNS": 0,
+      "totalBytes": 19200048,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 4,
+      "detailBytes": 26800064,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 0,
+      "peakBytes": 26800064,
+      "rowsSummarized": 0,
+      "segmentWriteNS": 18052167,
+      "summarizeNS": 0,
+      "totalBytes": 26800064,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 5,
+      "detailBytes": 34760080,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 0,
+      "peakBytes": 34760080,
+      "rowsSummarized": 0,
+      "segmentWriteNS": 20798584,
+      "summarizeNS": 0,
+      "totalBytes": 34760080,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 6,
+      "detailBytes": 42720096,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 0,
+      "peakBytes": 42720096,
+      "rowsSummarized": 0,
+      "segmentWriteNS": 21433625,
+      "summarizeNS": 0,
+      "totalBytes": 42720096,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 7,
+      "detailBytes": 50680112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 0,
+      "peakBytes": 50680112,
+      "rowsSummarized": 0,
+      "segmentWriteNS": 18970959,
+      "summarizeNS": 0,
+      "totalBytes": 50680112,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 8,
+      "detailBytes": 54640112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 625,
+      "peakBytes": 58682768,
+      "rowsSummarized": 61875,
+      "segmentWriteNS": 22685292,
+      "summarizeNS": 18561250,
+      "totalBytes": 54682752,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 9,
+      "detailBytes": 55000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1250,
+      "peakBytes": 62726688,
+      "rowsSummarized": 118125,
+      "segmentWriteNS": 22874375,
+      "summarizeNS": 33617292,
+      "totalBytes": 55086656,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 10,
+      "detailBytes": 55360112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 63170592,
+      "rowsSummarized": 118125,
+      "segmentWriteNS": 24438416,
+      "summarizeNS": 28353709,
+      "totalBytes": 55490560,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 11,
+      "detailBytes": 55760112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 63615136,
+      "rowsSummarized": 118750,
+      "segmentWriteNS": 25125875,
+      "summarizeNS": 30751167,
+      "totalBytes": 55895104,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 12,
+      "detailBytes": 55800112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 64019680,
+      "rowsSummarized": 124375,
+      "segmentWriteNS": 22668583,
+      "summarizeNS": 37440458,
+      "totalBytes": 55939648,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 13,
+      "detailBytes": 55840112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 64064224,
+      "rowsSummarized": 124375,
+      "segmentWriteNS": 24352458,
+      "summarizeNS": 32882667,
+      "totalBytes": 55984192,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 14,
+      "detailBytes": 55880112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 64108768,
+      "rowsSummarized": 124375,
+      "segmentWriteNS": 23865333,
+      "summarizeNS": 31713166,
+      "totalBytes": 56028736,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 15,
+      "detailBytes": 55920112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 64153312,
+      "rowsSummarized": 124375,
+      "segmentWriteNS": 21403875,
+      "summarizeNS": 31034500,
+      "totalBytes": 56073280,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 16,
+      "detailBytes": 55960112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 64197856,
+      "rowsSummarized": 124375,
+      "segmentWriteNS": 21424375,
+      "summarizeNS": 31421750,
+      "totalBytes": 56117824,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 17,
+      "detailBytes": 56000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 64242400,
+      "rowsSummarized": 124375,
+      "segmentWriteNS": 20975167,
+      "summarizeNS": 31335584,
+      "totalBytes": 56162368,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 18,
+      "detailBytes": 56000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 64286944,
+      "rowsSummarized": 125000,
+      "segmentWriteNS": 22382584,
+      "summarizeNS": 34170958,
+      "totalBytes": 56166912,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 19,
+      "detailBytes": 56000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 64291488,
+      "rowsSummarized": 125000,
+      "segmentWriteNS": 24587750,
+      "summarizeNS": 29211916,
+      "totalBytes": 56171456,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 20,
+      "detailBytes": 56000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 64296032,
+      "rowsSummarized": 125000,
+      "segmentWriteNS": 19663583,
+      "summarizeNS": 30373292,
+      "totalBytes": 56176000,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 21,
+      "detailBytes": 56000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 64300576,
+      "rowsSummarized": 125000,
+      "segmentWriteNS": 23154417,
+      "summarizeNS": 32592291,
+      "totalBytes": 56180544,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 22,
+      "detailBytes": 56000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 64305120,
+      "rowsSummarized": 125000,
+      "segmentWriteNS": 24216833,
+      "summarizeNS": 36236459,
+      "totalBytes": 56185088,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 23,
+      "detailBytes": 56000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 64309664,
+      "rowsSummarized": 125000,
+      "segmentWriteNS": 22277958,
+      "summarizeNS": 30446166,
+      "totalBytes": 56189632,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 24,
+      "detailBytes": 56000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 64314208,
+      "rowsSummarized": 125000,
+      "segmentWriteNS": 19274000,
+      "summarizeNS": 30987708,
+      "totalBytes": 56194176,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 25,
+      "detailBytes": 56000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 64318752,
+      "rowsSummarized": 125000,
+      "segmentWriteNS": 25100583,
+      "summarizeNS": 42709834,
+      "totalBytes": 56198720,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 26,
+      "detailBytes": 56000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 64323296,
+      "rowsSummarized": 125000,
+      "segmentWriteNS": 20813208,
+      "summarizeNS": 40426084,
+      "totalBytes": 56203264,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 27,
+      "detailBytes": 56000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 64327840,
+      "rowsSummarized": 125000,
+      "segmentWriteNS": 21565750,
+      "summarizeNS": 29411709,
+      "totalBytes": 56207808,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 28,
+      "detailBytes": 56000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 64332384,
+      "rowsSummarized": 125000,
+      "segmentWriteNS": 23769875,
+      "summarizeNS": 29505666,
+      "totalBytes": 56212352,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 29,
+      "detailBytes": 56000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 64336928,
+      "rowsSummarized": 125000,
+      "segmentWriteNS": 23199042,
+      "summarizeNS": 32736750,
+      "totalBytes": 56216896,
+      "window": 7
+    },
+    {
+      "case": "G16",
+      "day": 30,
+      "detailBytes": 56000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 1875,
+      "peakBytes": 64341472,
+      "rowsSummarized": 125000,
+      "segmentWriteNS": 24874708,
+      "summarizeNS": 29797417,
+      "totalBytes": 56221440,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 1,
+      "detailBytes": 64000016,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 0,
+      "peakBytes": 64000016,
+      "rowsSummarized": 0,
+      "segmentWriteNS": 191342209,
+      "summarizeNS": 0,
+      "totalBytes": 64000016,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 2,
+      "detailBytes": 185600032,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 0,
+      "peakBytes": 185600032,
+      "rowsSummarized": 0,
+      "segmentWriteNS": 326678875,
+      "summarizeNS": 0,
+      "totalBytes": 185600032,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 3,
+      "detailBytes": 307200048,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 0,
+      "peakBytes": 307200048,
+      "rowsSummarized": 0,
+      "segmentWriteNS": 295256041,
+      "summarizeNS": 0,
+      "totalBytes": 307200048,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 4,
+      "detailBytes": 428800064,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 0,
+      "peakBytes": 428800064,
+      "rowsSummarized": 0,
+      "segmentWriteNS": 303652834,
+      "summarizeNS": 0,
+      "totalBytes": 428800064,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 5,
+      "detailBytes": 556160080,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 0,
+      "peakBytes": 556160080,
+      "rowsSummarized": 0,
+      "segmentWriteNS": 292733958,
+      "summarizeNS": 0,
+      "totalBytes": 556160080,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 6,
+      "detailBytes": 683520096,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 0,
+      "peakBytes": 683520096,
+      "rowsSummarized": 0,
+      "segmentWriteNS": 316087084,
+      "summarizeNS": 0,
+      "totalBytes": 683520096,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 7,
+      "detailBytes": 810880112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 0,
+      "peakBytes": 810880112,
+      "rowsSummarized": 0,
+      "segmentWriteNS": 332326042,
+      "summarizeNS": 0,
+      "totalBytes": 810880112,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 8,
+      "detailBytes": 874240112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 10000,
+      "peakBytes": 938882768,
+      "rowsSummarized": 990000,
+      "segmentWriteNS": 334967250,
+      "summarizeNS": 259772834,
+      "totalBytes": 874882752,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 9,
+      "detailBytes": 880000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 20000,
+      "peakBytes": 1003526688,
+      "rowsSummarized": 1890000,
+      "segmentWriteNS": 261226458,
+      "summarizeNS": 676552500,
+      "totalBytes": 881286656,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 10,
+      "detailBytes": 885760112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1010570592,
+      "rowsSummarized": 1890000,
+      "segmentWriteNS": 383082667,
+      "summarizeNS": 662309625,
+      "totalBytes": 887690560,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 11,
+      "detailBytes": 892160112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1017615136,
+      "rowsSummarized": 1900000,
+      "segmentWriteNS": 337821291,
+      "summarizeNS": 645312542,
+      "totalBytes": 894095104,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 12,
+      "detailBytes": 892800112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1024019680,
+      "rowsSummarized": 1990000,
+      "segmentWriteNS": 353631542,
+      "summarizeNS": 621707917,
+      "totalBytes": 894739648,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 13,
+      "detailBytes": 893440112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1024664224,
+      "rowsSummarized": 1990000,
+      "segmentWriteNS": 316905250,
+      "summarizeNS": 694252667,
+      "totalBytes": 895384192,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 14,
+      "detailBytes": 894080112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1025308768,
+      "rowsSummarized": 1990000,
+      "segmentWriteNS": 349565500,
+      "summarizeNS": 825920750,
+      "totalBytes": 896028736,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 15,
+      "detailBytes": 894720112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1025953312,
+      "rowsSummarized": 1990000,
+      "segmentWriteNS": 373196500,
+      "summarizeNS": 582016208,
+      "totalBytes": 896673280,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 16,
+      "detailBytes": 895360112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1026597856,
+      "rowsSummarized": 1990000,
+      "segmentWriteNS": 366510958,
+      "summarizeNS": 518399291,
+      "totalBytes": 897317824,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 17,
+      "detailBytes": 896000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1027242400,
+      "rowsSummarized": 1990000,
+      "segmentWriteNS": 273920416,
+      "summarizeNS": 588053208,
+      "totalBytes": 897962368,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 18,
+      "detailBytes": 896000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1027886944,
+      "rowsSummarized": 2000000,
+      "segmentWriteNS": 295681875,
+      "summarizeNS": 675330834,
+      "totalBytes": 897966912,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 19,
+      "detailBytes": 896000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1027891488,
+      "rowsSummarized": 2000000,
+      "segmentWriteNS": 299761000,
+      "summarizeNS": 630669542,
+      "totalBytes": 897971456,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 20,
+      "detailBytes": 896000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1027896032,
+      "rowsSummarized": 2000000,
+      "segmentWriteNS": 333961208,
+      "summarizeNS": 594708375,
+      "totalBytes": 897976000,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 21,
+      "detailBytes": 896000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1027900576,
+      "rowsSummarized": 2000000,
+      "segmentWriteNS": 346940083,
+      "summarizeNS": 645228083,
+      "totalBytes": 897980544,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 22,
+      "detailBytes": 896000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1027905120,
+      "rowsSummarized": 2000000,
+      "segmentWriteNS": 374625541,
+      "summarizeNS": 734275375,
+      "totalBytes": 897985088,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 23,
+      "detailBytes": 896000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1027909664,
+      "rowsSummarized": 2000000,
+      "segmentWriteNS": 340175291,
+      "summarizeNS": 532518333,
+      "totalBytes": 897989632,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 24,
+      "detailBytes": 896000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1027914208,
+      "rowsSummarized": 2000000,
+      "segmentWriteNS": 288764291,
+      "summarizeNS": 575991667,
+      "totalBytes": 897994176,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 25,
+      "detailBytes": 896000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1027918752,
+      "rowsSummarized": 2000000,
+      "segmentWriteNS": 316475583,
+      "summarizeNS": 439618542,
+      "totalBytes": 897998720,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 26,
+      "detailBytes": 896000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1027923296,
+      "rowsSummarized": 2000000,
+      "segmentWriteNS": 293371416,
+      "summarizeNS": 535689959,
+      "totalBytes": 898003264,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 27,
+      "detailBytes": 896000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1027927840,
+      "rowsSummarized": 2000000,
+      "segmentWriteNS": 271496041,
+      "summarizeNS": 516234375,
+      "totalBytes": 898007808,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 28,
+      "detailBytes": 896000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1027932384,
+      "rowsSummarized": 2000000,
+      "segmentWriteNS": 301248458,
+      "summarizeNS": 604433625,
+      "totalBytes": 898012352,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 29,
+      "detailBytes": 896000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1027936928,
+      "rowsSummarized": 2000000,
+      "segmentWriteNS": 323237417,
+      "summarizeNS": 601783042,
+      "totalBytes": 898016896,
+      "window": 7
+    },
+    {
+      "case": "G1",
+      "day": 30,
+      "detailBytes": 896000112,
+      "invariants": {
+        "I1": true,
+        "I2": true,
+        "I3": true
+      },
+      "openCarried": 30000,
+      "peakBytes": 1027941472,
+      "rowsSummarized": 2000000,
+      "segmentWriteNS": 257637542,
+      "summarizeNS": 540406917,
+      "totalBytes": 898021440,
+      "window": 7
+    }
+  ],
+  "cases": {
+    "G16_W7": {
+      "BdayMax": 8000016,
+      "S30": 99840,
+      "Omax": 120016,
+      "peakBytes": 64341472
+    },
+    "G1_W7": {
+      "BdayMax": 128000016,
+      "S30": 99840,
+      "Omax": 1920016,
+      "peakBytes": 1027941472
+    },
+    "G1_W3": {
+      "BdayMax": 128000016,
+      "S30": 148480,
+      "Omax": 10240016,
+      "peakBytes": 532630304
+    }
+  },
+  "quotaInputs": {
+    "capBytes": 1073741824,
+    "formula": "ceil64MiB(1.25*((W+1)*BdayMax+S30+Omax)+2*Snap); Snap supplied by Stage C"
+  },
+  "finalDiskVerification": {
+    "G16": {
+      "committedSegment": 22,
+      "status": "pass",
+      "totalsExact": true
+    },
+    "G1": {
+      "committedSegment": 22,
+      "status": "pass",
+      "totalsExact": true
+    },
+    "G1_W3": {
+      "committedSegment": 26,
+      "status": "pass",
+      "totalsExact": true
+    }
+  }
+}

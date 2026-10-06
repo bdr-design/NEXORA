@@ -1,0 +1,7 @@
+Apple Swift version 6.1.2 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)
+Target: arm64-apple-macosx15.0
+Xcode 16.4
+Build version 16F6
+Darwin sat12-bq152-2673caf8-31a2-42b3-9d24-08a7c71ae3f8-325443A52BCF.local 24.6.0 Darwin Kernel Version 24.6.0: Tue Jul 21 20:51:34 PDT 2026; root:xnu-11417.140.69.711.44~1/RELEASE_ARM64_VMAPPLE arm64
+hw.model: VirtualMac2,1
+hw.memsize: 7516192768

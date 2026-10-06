@@ -1,0 +1,97 @@
+{
+  "status": "pass",
+  "population": 1000000,
+  "points": 10,
+  "results": [
+    {
+      "point": "c.k1.after_begin",
+      "signal": "SIGKILL",
+      "expectedEpoch": 1,
+      "restoredEpoch": 1,
+      "exactDigest": true,
+      "ignoredWALTailBytes": 0
+    },
+    {
+      "point": "c.k2.after_first_barrier",
+      "signal": "SIGKILL",
+      "expectedEpoch": 1,
+      "restoredEpoch": 1,
+      "exactDigest": true,
+      "ignoredWALTailBytes": 0
+    },
+    {
+      "point": "c.k3.mid_record",
+      "signal": "SIGKILL",
+      "expectedEpoch": 1,
+      "restoredEpoch": 1,
+      "exactDigest": true,
+      "ignoredWALTailBytes": 0
+    },
+    {
+      "point": "c.k4.before_footer",
+      "signal": "SIGKILL",
+      "expectedEpoch": 1,
+      "restoredEpoch": 1,
+      "exactDigest": true,
+      "ignoredWALTailBytes": 0
+    },
+    {
+      "point": "c.k5.after_footer",
+      "signal": "SIGKILL",
+      "expectedEpoch": 1,
+      "restoredEpoch": 1,
+      "exactDigest": true,
+      "ignoredWALTailBytes": 0
+    },
+    {
+      "point": "c.k6.after_fsync",
+      "signal": "SIGKILL",
+      "expectedEpoch": 1,
+      "restoredEpoch": 1,
+      "exactDigest": true,
+      "ignoredWALTailBytes": 0
+    },
+    {
+      "point": "c.k7.after_rename",
+      "signal": "SIGKILL",
+      "expectedEpoch": 1,
+      "restoredEpoch": 1,
+      "exactDigest": true,
+      "ignoredWALTailBytes": 0
+    },
+    {
+      "point": "c.k8.after_dirsync",
+      "signal": "SIGKILL",
+      "expectedEpoch": 2,
+      "restoredEpoch": 2,
+      "exactDigest": true,
+      "ignoredWALTailBytes": 0
+    },
+    {
+      "point": "c.k9.mid_wal_record",
+      "signal": "SIGKILL",
+      "expectedEpoch": 2,
+      "restoredEpoch": 2,
+      "exactDigest": true,
+      "ignoredWALTailBytes": 36
+    },
+    {
+      "point": "c.k10.peak_queue",
+      "signal": "SIGKILL",
+      "expectedEpoch": 1,
+      "restoredEpoch": 1,
+      "exactDigest": true,
+      "ignoredWALTailBytes": 0
+    }
+  ],
+  "chainFallback": {
+    "point": "c.chain.after_wal",
+    "signal": "SIGKILL",
+    "baseSnapshotEpoch": 1,
+    "replayedThroughWAL": 2,
+    "exactDigest": true,
+    "processed": 1
+  },
+  "variant": "S",
+  "limit": "real process SIGKILL, not physical power loss"
+}

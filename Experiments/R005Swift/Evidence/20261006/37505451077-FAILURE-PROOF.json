@@ -1,0 +1,102 @@
+{
+  "status": "failure",
+  "scope": "Unintended legacy full workflow from evidence-only commit; actual Stage C cadence failure",
+  "source": "611a14efca6bb571887d4f5dc5189d51621b212d",
+  "tree": "5b18f5f7590ba421be04905ac59839109c79eca7",
+  "run": 37505451077,
+  "job": 112412833492,
+  "artifact": 11434785670,
+  "artifactSHA256": "74448035313bd58003158f72570adf213d8f3b1adfc8bff58652587f71e6556a",
+  "selectedLayout": "S",
+  "A_HtoS1M": 0.9261958004278472,
+  "BRecords": 60,
+  "passedBeforeFailure": [
+    "A",
+    "selected-layout smoke",
+    "TSan",
+    "B",
+    "K1-K10 Debug/Release/TSan",
+    "source guard"
+  ],
+  "failedGate": "stage C save did not commit within 2000 advance calls",
+  "Cmetrics": null,
+  "C100SaveAcceptance": "not produced",
+  "routingFix": "389f5a9488a75081e3b4496449a0bb3e71a22c69",
+  "rawEvidence": [
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37505451077-STAGE005-A.json",
+      "sha256": "148a574cedf1800eaaa810186c913bfcf018d948de05f74fcb8010c2fe793e1d",
+      "originalName": "STAGE005-A.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37505451077-STAGE005-B.json",
+      "sha256": "2d8fafcd5c851a1f23162f3158244da81ad1d16f5ef4334b1106fec49d75cd2e",
+      "originalName": "STAGE005-B.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37505451077-STAGE005-B-KILLS-debug.json",
+      "sha256": "455e1987983c788c03f02ff50abdfe16acd648dc9cb95cd955e61d9301388ce5",
+      "originalName": "STAGE005-B-KILLS-debug.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37505451077-STAGE005-B-KILLS-release.json",
+      "sha256": "455e1987983c788c03f02ff50abdfe16acd648dc9cb95cd955e61d9301388ce5",
+      "originalName": "STAGE005-B-KILLS-release.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37505451077-STAGE005-B-KILLS-tsan.json",
+      "sha256": "455e1987983c788c03f02ff50abdfe16acd648dc9cb95cd955e61d9301388ce5",
+      "originalName": "STAGE005-B-KILLS-tsan.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37505451077-STAGE005-C-KILLS-debug.json",
+      "sha256": "128d744e3202b7d48cbbf867f0da6f4a903dbb93749d3bdf0f78b5f3ac62fd4d",
+      "originalName": "STAGE005-C-KILLS-debug.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37505451077-STAGE005-C-KILLS-release.json",
+      "sha256": "128d744e3202b7d48cbbf867f0da6f4a903dbb93749d3bdf0f78b5f3ac62fd4d",
+      "originalName": "STAGE005-C-KILLS-release.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37505451077-STAGE005-C-KILLS-tsan.json",
+      "sha256": "128d744e3202b7d48cbbf867f0da6f4a903dbb93749d3bdf0f78b5f3ac62fd4d",
+      "originalName": "STAGE005-C-KILLS-tsan.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37505451077-stage005-c-run.txt",
+      "sha256": "117a483cab040ab01c25d082493eac256bea9e1e4d9bd63cdeae02a7860f9936",
+      "originalName": "stage005-c-run.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37505451077-proof-gates.txt",
+      "sha256": "a7dfdf39e9611992ec7aa8557c9ba71b69c7d3c27ab99d8591764cacebde79b7",
+      "originalName": "proof-gates.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37505451077-original-source-guard-before.txt",
+      "sha256": "5c4f078b1ed80138eb250ecfe4fe07975f6a3c96d033cd1928dfa6eed11c86db",
+      "originalName": "original-source-guard-before.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37505451077-original-source-guard.txt",
+      "sha256": "5c4f078b1ed80138eb250ecfe4fe07975f6a3c96d033cd1928dfa6eed11c86db",
+      "originalName": "original-source-guard.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37505451077-commit.txt",
+      "sha256": "4e575c8ac7919f447ef21e5cdf8f16a67fc420232194203d95e1a2ce7f8b4ef7",
+      "originalName": "commit.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37505451077-tree.txt",
+      "sha256": "a54d273975d84917869bc0f0587fef81bd798dc40e85bfd920998d9f57c1aa06",
+      "originalName": "tree.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37505451077-environment.txt",
+      "sha256": "d7fd34135c418b78774cbeb8f68ca4cb10c62fef71018259c18c4fae9d260a90",
+      "originalName": "environment.txt"
+    }
+  ]
+}

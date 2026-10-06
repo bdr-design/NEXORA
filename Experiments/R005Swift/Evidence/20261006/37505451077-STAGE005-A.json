@@ -1,0 +1,4073 @@
+{
+  "status": "pass",
+  "gateFailures": [],
+  "scope": "R005 proof-only Stage A; Apple CI VM, not iPhone acceptance",
+  "A": [
+    {
+      "variant": "S",
+      "assets": 100000,
+      "processes": 3,
+      "warmupsPerProcess": 2,
+      "measuredRuns": 30,
+      "bytesPerAsset": {
+        "owned": 101.44704,
+        "footprint": 0.16384
+      },
+      "nsPerEvent": {
+        "median": 85.28592,
+        "min": 73.9237,
+        "max": 340.47238,
+        "runs": 30
+      },
+      "advanceCallNS": {
+        "p50": 16020.5,
+        "p99": 1099167,
+        "max": 4939750
+      },
+      "allocationsMaxPerCall": 0,
+      "correctness": {
+        "oracle100k": true,
+        "reference1M": true,
+        "partitionCases": 15,
+        "mutantsKilled": 8
+      },
+      "rawProcesses": [
+        {
+          "assets": 100000,
+          "cAllocationPositiveControl": 1,
+          "measuredRuns": 10,
+          "samples": [
+            {
+              "advanceCallNS": {
+                "max": 2352417,
+                "p50": 17708,
+                "p99": 109125
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 123.95482,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 98.96,
+              "revenue": 14899685,
+              "run": 1,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1171750,
+                "p50": 16292,
+                "p99": 59833
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 84.25093,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 2,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1204000,
+                "p50": 15625,
+                "p99": 251875
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 94.59859,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 72.58112,
+              "revenue": 14899685,
+              "run": 3,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2636917,
+                "p50": 17584,
+                "p99": 430833
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 145.35006,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 4,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1566208,
+                "p50": 16792,
+                "p99": 73958
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 92.88619,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 5,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1138833,
+                "p50": 14584,
+                "p99": 80208
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 83.71877,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 6,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1136209,
+                "p50": 16125,
+                "p99": 61500
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 83.39426,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 0.16384,
+              "revenue": 14899685,
+              "run": 7,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2227959,
+                "p50": 14250,
+                "p99": 81292
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 90.97951,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 0.16384,
+              "revenue": 14899685,
+              "run": 8,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1139917,
+                "p50": 15958,
+                "p99": 30958
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 82.61529,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 9,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2677750,
+                "p50": 24666,
+                "p99": 184208
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 173.39357,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 10,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            }
+          ],
+          "status": "pass",
+          "swiftAllocationPositiveControl": 6,
+          "variant": "S",
+          "warmups": 2,
+          "process": 1
+        },
+        {
+          "assets": 100000,
+          "cAllocationPositiveControl": 1,
+          "measuredRuns": 10,
+          "samples": [
+            {
+              "advanceCallNS": {
+                "max": 1133167,
+                "p50": 14541,
+                "p99": 108875
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 77.47323,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 3.2768,
+              "revenue": 14899685,
+              "run": 1,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1209500,
+                "p50": 15667,
+                "p99": 114375
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 84.7678,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 0.16384,
+              "revenue": 14899685,
+              "run": 2,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1136209,
+                "p50": 15958,
+                "p99": 72083
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 85.80404,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 3,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1151541,
+                "p50": 15875,
+                "p99": 26125
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 81.44282,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 12.78016,
+              "revenue": 14899685,
+              "run": 4,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1141084,
+                "p50": 14166,
+                "p99": 27834
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 73.9237,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 52.59264,
+              "revenue": 14899685,
+              "run": 5,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1125958,
+                "p50": 15916,
+                "p99": 34417
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 80.80039,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 38.33856,
+              "revenue": 14899685,
+              "run": 6,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1144333,
+                "p50": 16708,
+                "p99": 29708
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 83.45209,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 1.47456,
+              "revenue": 14899685,
+              "run": 7,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1120875,
+                "p50": 15584,
+                "p99": 53792
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 80.91627,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 0.32768,
+              "revenue": 14899685,
+              "run": 8,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1122541,
+                "p50": 14083,
+                "p99": 56125
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 77.10813,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 9,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1135417,
+                "p50": 15583,
+                "p99": 76500
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 84.24639,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 3.44064,
+              "revenue": 14899685,
+              "run": 10,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            }
+          ],
+          "status": "pass",
+          "swiftAllocationPositiveControl": 6,
+          "variant": "S",
+          "warmups": 2,
+          "process": 2
+        },
+        {
+          "assets": 100000,
+          "cAllocationPositiveControl": 1,
+          "measuredRuns": 10,
+          "samples": [
+            {
+              "advanceCallNS": {
+                "max": 1132917,
+                "p50": 15917,
+                "p99": 116250
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 89.52918,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 31.7856,
+              "revenue": 14899685,
+              "run": 1,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1166625,
+                "p50": 16500,
+                "p99": 28584
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 84.6558,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 67.66592,
+              "revenue": 14899685,
+              "run": 2,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1323958,
+                "p50": 19708,
+                "p99": 143583
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 122.51947,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 3,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4939750,
+                "p50": 50125,
+                "p99": 1099167
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 340.47238,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 85.52512,
+              "revenue": 14899685,
+              "run": 4,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1175958,
+                "p50": 18458,
+                "p99": 112667
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 126.19453,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 5,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1151542,
+                "p50": 16833,
+                "p99": 107542
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 104.78836,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 6,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1120708,
+                "p50": 15834,
+                "p99": 122667
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 91.98624,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 7,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1134500,
+                "p50": 16125,
+                "p99": 54542
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 83.53796,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 14.7456,
+              "revenue": 14899685,
+              "run": 8,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1133833,
+                "p50": 16083,
+                "p99": 98375
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 86.11423,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 9,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2216042,
+                "p50": 16750,
+                "p99": 298625
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 122.51972,
+              "ownedBytes": 10144704,
+              "ownedBytesPerAsset": 101.44704,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 10,
+              "sequenceHash": 2131646350360604768,
+              "variant": "S"
+            }
+          ],
+          "status": "pass",
+          "swiftAllocationPositiveControl": 6,
+          "variant": "S",
+          "warmups": 2,
+          "process": 3
+        }
+      ]
+    },
+    {
+      "variant": "S",
+      "assets": 1000000,
+      "processes": 3,
+      "warmupsPerProcess": 2,
+      "measuredRuns": 30,
+      "bytesPerAsset": {
+        "owned": 96.160704,
+        "footprint": 0.114688
+      },
+      "nsPerEvent": {
+        "median": 142.556522,
+        "min": 116.654537,
+        "max": 206.524269,
+        "runs": 30
+      },
+      "advanceCallNS": {
+        "p50": 18645.5,
+        "p99": 260333,
+        "max": 20044833
+      },
+      "allocationsMaxPerCall": 0,
+      "correctness": {
+        "oracle100k": true,
+        "reference1M": true,
+        "partitionCases": 15,
+        "mutantsKilled": 8
+      },
+      "rawProcesses": [
+        {
+          "assets": 1000000,
+          "cAllocationPositiveControl": 1,
+          "measuredRuns": 10,
+          "samples": [
+            {
+              "advanceCallNS": {
+                "max": 5921875,
+                "p50": 19083,
+                "p99": 260333
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 178.181055,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 34.259008,
+              "revenue": 148999055,
+              "run": 1,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3694833,
+                "p50": 17833,
+                "p99": 179709
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 149.885198,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 33.210432,
+              "revenue": 148999055,
+              "run": 2,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2755000,
+                "p50": 18041,
+                "p99": 145792
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 125.879902,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 8.175616,
+              "revenue": 148999055,
+              "run": 3,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4077958,
+                "p50": 19250,
+                "p99": 155167
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 163.566523,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 16.187392,
+              "revenue": 148999055,
+              "run": 4,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1826500,
+                "p50": 18541,
+                "p99": 136542
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 135.501513,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 0.049152,
+              "revenue": 148999055,
+              "run": 5,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1934708,
+                "p50": 19167,
+                "p99": 191625
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 149.174575,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 12.12416,
+              "revenue": 148999055,
+              "run": 6,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2241792,
+                "p50": 18458,
+                "p99": 140792
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 125.785527,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 7,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 9169709,
+                "p50": 18709,
+                "p99": 204667
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 152.598438,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 8,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4158666,
+                "p50": 18458,
+                "p99": 137875
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 129.554992,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 9,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1957208,
+                "p50": 18750,
+                "p99": 153000
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 137.213468,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 10,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            }
+          ],
+          "status": "pass",
+          "swiftAllocationPositiveControl": 6,
+          "variant": "S",
+          "warmups": 2,
+          "process": 1
+        },
+        {
+          "assets": 1000000,
+          "cAllocationPositiveControl": 1,
+          "measuredRuns": 10,
+          "samples": [
+            {
+              "advanceCallNS": {
+                "max": 2012333,
+                "p50": 18459,
+                "p99": 140167
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 142.375261,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 48.267328,
+              "revenue": 148999055,
+              "run": 1,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1842583,
+                "p50": 19750,
+                "p99": 178125
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 156.147791,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 61.308992,
+              "revenue": 148999055,
+              "run": 2,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4130292,
+                "p50": 18542,
+                "p99": 152750
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 149.134623,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 0.032768,
+              "revenue": 148999055,
+              "run": 3,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2443000,
+                "p50": 17583,
+                "p99": 139209
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 124.549679,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 0.278528,
+              "revenue": 148999055,
+              "run": 4,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 18201500,
+                "p50": 17625,
+                "p99": 207208
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 176.683643,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 5,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3965625,
+                "p50": 19250,
+                "p99": 140625
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 132.405364,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 6,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4317625,
+                "p50": 18958,
+                "p99": 134083
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 139.743939,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 7,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4066000,
+                "p50": 18666,
+                "p99": 129042
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 125.549088,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 0.032768,
+              "revenue": 148999055,
+              "run": 8,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 20044833,
+                "p50": 18958,
+                "p99": 256333
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 206.524269,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 0.114688,
+              "revenue": 148999055,
+              "run": 9,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4096667,
+                "p50": 18208,
+                "p99": 150875
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 126.862851,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 0.114688,
+              "revenue": 148999055,
+              "run": 10,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            }
+          ],
+          "status": "pass",
+          "swiftAllocationPositiveControl": 6,
+          "variant": "S",
+          "warmups": 2,
+          "process": 2
+        },
+        {
+          "assets": 1000000,
+          "cAllocationPositiveControl": 1,
+          "measuredRuns": 10,
+          "samples": [
+            {
+              "advanceCallNS": {
+                "max": 2081833,
+                "p50": 20458,
+                "p99": 249125
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 173.173815,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 74.367168,
+              "revenue": 148999055,
+              "run": 1,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2536041,
+                "p50": 18625,
+                "p99": 206500
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 142.737783,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 29.245504,
+              "revenue": 148999055,
+              "run": 2,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1865875,
+                "p50": 20000,
+                "p99": 168875
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 157.720747,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 56.246336,
+              "revenue": 148999055,
+              "run": 3,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2799333,
+                "p50": 19500,
+                "p99": 115208
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 116.654537,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 4.194304,
+              "revenue": 148999055,
+              "run": 4,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2695875,
+                "p50": 17708,
+                "p99": 142208
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 131.585684,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 4.030464,
+              "revenue": 148999055,
+              "run": 5,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4079834,
+                "p50": 18625,
+                "p99": 145833
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 141.861928,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 6,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2743708,
+                "p50": 19250,
+                "p99": 205042
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 150.182784,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 0.032768,
+              "revenue": 148999055,
+              "run": 7,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 5527834,
+                "p50": 18833,
+                "p99": 145375
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 145.587111,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 24.133632,
+              "revenue": 148999055,
+              "run": 8,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4068459,
+                "p50": 18084,
+                "p99": 172375
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 155.68358,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 0.049152,
+              "revenue": 148999055,
+              "run": 9,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2905541,
+                "p50": 17417,
+                "p99": 166500
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 133.515939,
+              "ownedBytes": 96160704,
+              "ownedBytesPerAsset": 96.160704,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 10,
+              "sequenceHash": 15166557374937326104,
+              "variant": "S"
+            }
+          ],
+          "status": "pass",
+          "swiftAllocationPositiveControl": 6,
+          "variant": "S",
+          "warmups": 2,
+          "process": 3
+        }
+      ]
+    },
+    {
+      "variant": "S",
+      "assets": 2000000,
+      "processes": 3,
+      "warmupsPerProcess": 2,
+      "measuredRuns": 30,
+      "bytesPerAsset": {
+        "owned": 95.774176,
+        "footprint": 0.020479999999999998
+      },
+      "nsPerEvent": {
+        "median": 319.47137325,
+        "min": 162.5787425,
+        "max": 500.7825825,
+        "runs": 30
+      },
+      "advanceCallNS": {
+        "p50": 51812.5,
+        "p99": 553208,
+        "max": 21799625
+      },
+      "allocationsMaxPerCall": 0,
+      "correctness": {
+        "oracle100k": true,
+        "reference1M": true,
+        "partitionCases": 15,
+        "mutantsKilled": 8
+      },
+      "rawProcesses": [
+        {
+          "assets": 2000000,
+          "cAllocationPositiveControl": 1,
+          "measuredRuns": 10,
+          "samples": [
+            {
+              "advanceCallNS": {
+                "max": 3794584,
+                "p50": 73458,
+                "p99": 356917
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 408.590603,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 4.620288,
+              "revenue": 297998839,
+              "run": 1,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 5377625,
+                "p50": 102084,
+                "p99": 358292
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 500.7825825,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 43.122752,
+              "revenue": 297998839,
+              "run": 2,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4067666,
+                "p50": 84792,
+                "p99": 324375
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 430.5205595,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0.098304,
+              "revenue": 297998839,
+              "run": 3,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4146291,
+                "p50": 92417,
+                "p99": 374916
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 486.1989475,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0.049152,
+              "revenue": 297998839,
+              "run": 4,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2079583,
+                "p50": 62708,
+                "p99": 263917
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 302.375141,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 5,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4295583,
+                "p50": 70417,
+                "p99": 245792
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 368.745933,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 6,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2862584,
+                "p50": 78042,
+                "p99": 267500
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 374.9316805,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 7,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3343958,
+                "p50": 83792,
+                "p99": 295875
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 376.8205485,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0.049152,
+              "revenue": 297998839,
+              "run": 8,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2233959,
+                "p50": 77459,
+                "p99": 262583
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 378.118941,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 9,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 21799625,
+                "p50": 80250,
+                "p99": 553208
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 493.9344755,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 10,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            }
+          ],
+          "status": "pass",
+          "swiftAllocationPositiveControl": 6,
+          "variant": "S",
+          "warmups": 2,
+          "process": 1
+        },
+        {
+          "assets": 2000000,
+          "cAllocationPositiveControl": 1,
+          "measuredRuns": 10,
+          "samples": [
+            {
+              "advanceCallNS": {
+                "max": 5473084,
+                "p50": 97250,
+                "p99": 318041
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 485.674468,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 16.105472,
+              "revenue": 297998839,
+              "run": 1,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4516416,
+                "p50": 49458,
+                "p99": 260209
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 312.511116,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0.024576,
+              "revenue": 297998839,
+              "run": 2,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4010459,
+                "p50": 41000,
+                "p99": 221125
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 240.9395585,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 28.074016,
+              "revenue": 297998839,
+              "run": 3,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4252833,
+                "p50": 51792,
+                "p99": 268208
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 330.072142,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 4,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2415542,
+                "p50": 51833,
+                "p99": 228542
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 256.232765,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0.016384,
+              "revenue": 297998839,
+              "run": 5,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 15211583,
+                "p50": 47791,
+                "p99": 233292
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 263.166571,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0.04096,
+              "revenue": 297998839,
+              "run": 6,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4004708,
+                "p50": 50500,
+                "p99": 250125
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 297.111765,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 7,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4060667,
+                "p50": 75833,
+                "p99": 279583
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 391.3875785,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 8,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3427500,
+                "p50": 48042,
+                "p99": 233000
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 269.4560625,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 21.553184,
+              "revenue": 297998839,
+              "run": 9,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1831416,
+                "p50": 44500,
+                "p99": 218750
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 254.6361265,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 10,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            }
+          ],
+          "status": "pass",
+          "swiftAllocationPositiveControl": 6,
+          "variant": "S",
+          "warmups": 2,
+          "process": 2
+        },
+        {
+          "assets": 2000000,
+          "cAllocationPositiveControl": 1,
+          "measuredRuns": 10,
+          "samples": [
+            {
+              "advanceCallNS": {
+                "max": 4860459,
+                "p50": 62625,
+                "p99": 295541
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 362.920475,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0.04096,
+              "revenue": 297998839,
+              "run": 1,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3755916,
+                "p50": 73208,
+                "p99": 293042
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 381.050587,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 2,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3150334,
+                "p50": 51667,
+                "p99": 311333
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 326.4316305,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 4.08784,
+              "revenue": 297998839,
+              "run": 3,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3926417,
+                "p50": 36125,
+                "p99": 229083
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 220.582173,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0.016384,
+              "revenue": 297998839,
+              "run": 4,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4036917,
+                "p50": 35916,
+                "p99": 205792
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 206.3177345,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 25.559072,
+              "revenue": 297998839,
+              "run": 5,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4197042,
+                "p50": 33584,
+                "p99": 177958
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 173.6883345,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 10.027008,
+              "revenue": 297998839,
+              "run": 6,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1855875,
+                "p50": 32000,
+                "p99": 167375
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 162.5787425,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 7,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3835459,
+                "p50": 39291,
+                "p99": 225833
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 225.644178,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 8,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4167709,
+                "p50": 41417,
+                "p99": 215250
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 234.5840135,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 9,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4471083,
+                "p50": 38917,
+                "p99": 237000
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 236.451566,
+              "ownedBytes": 191548352,
+              "ownedBytesPerAsset": 95.774176,
+              "physDeltaPerAsset": 4.04688,
+              "revenue": 297998839,
+              "run": 10,
+              "sequenceHash": 537983423405128826,
+              "variant": "S"
+            }
+          ],
+          "status": "pass",
+          "swiftAllocationPositiveControl": 6,
+          "variant": "S",
+          "warmups": 2,
+          "process": 3
+        }
+      ]
+    },
+    {
+      "variant": "H",
+      "assets": 100000,
+      "processes": 3,
+      "warmupsPerProcess": 2,
+      "measuredRuns": 30,
+      "bytesPerAsset": {
+        "owned": 102.76208,
+        "footprint": 0.0
+      },
+      "nsPerEvent": {
+        "median": 53.632365,
+        "min": 45.7804,
+        "max": 142.01125,
+        "runs": 30
+      },
+      "advanceCallNS": {
+        "p50": 8250.0,
+        "p99": 391458,
+        "max": 2709917
+      },
+      "allocationsMaxPerCall": 0,
+      "correctness": {
+        "oracle100k": true,
+        "reference1M": true,
+        "partitionCases": 15,
+        "mutantsKilled": 8
+      },
+      "rawProcesses": [
+        {
+          "assets": 100000,
+          "cAllocationPositiveControl": 1,
+          "measuredRuns": 10,
+          "samples": [
+            {
+              "advanceCallNS": {
+                "max": 1102958,
+                "p50": 8291,
+                "p99": 61083
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 53.61631,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0.16384,
+              "revenue": 14899685,
+              "run": 1,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2709917,
+                "p50": 21875,
+                "p99": 101958
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 115.51711,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 2,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1190375,
+                "p50": 8375,
+                "p99": 29125
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 51.42761,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 3,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1179250,
+                "p50": 23041,
+                "p99": 79000
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 113.31414,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 4,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1185375,
+                "p50": 8125,
+                "p99": 50667
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 52.91672,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 102.72832,
+              "revenue": 14899685,
+              "run": 5,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1163959,
+                "p50": 8084,
+                "p99": 18833
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 49.61079,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 6,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1438250,
+                "p50": 27333,
+                "p99": 83083
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 135.51626,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 7,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2670750,
+                "p50": 22833,
+                "p99": 142625
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 142.01125,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 8,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1297041,
+                "p50": 8292,
+                "p99": 32250
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 51.49425,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 9,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1156125,
+                "p50": 8250,
+                "p99": 36375
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 49.97505,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 10,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            }
+          ],
+          "status": "pass",
+          "swiftAllocationPositiveControl": 6,
+          "variant": "H",
+          "warmups": 2,
+          "process": 1
+        },
+        {
+          "assets": 100000,
+          "cAllocationPositiveControl": 1,
+          "measuredRuns": 10,
+          "samples": [
+            {
+              "advanceCallNS": {
+                "max": 1109209,
+                "p50": 7792,
+                "p99": 15750
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 46.42763,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 48.82432,
+              "revenue": 14899685,
+              "run": 1,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2637750,
+                "p50": 21166,
+                "p99": 56334
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 105.94628,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0.49152,
+              "revenue": 14899685,
+              "run": 2,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1082042,
+                "p50": 7709,
+                "p99": 14708
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 45.7804,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 3,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2630917,
+                "p50": 26375,
+                "p99": 80083
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 136.11484,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 4,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1135458,
+                "p50": 8583,
+                "p99": 106625
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 61.21768,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 5,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1160792,
+                "p50": 8041,
+                "p99": 40333
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 49.81258,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 6,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1128875,
+                "p50": 8125,
+                "p99": 58708
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 52.94129,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 69.632,
+              "revenue": 14899685,
+              "run": 7,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1128292,
+                "p50": 8166,
+                "p99": 78833
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 72.02754,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 8,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1139500,
+                "p50": 8125,
+                "p99": 103000
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 56.45335,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0.8192,
+              "revenue": 14899685,
+              "run": 9,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1254083,
+                "p50": 8125,
+                "p99": 55125
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 53.64842,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0.16384,
+              "revenue": 14899685,
+              "run": 10,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            }
+          ],
+          "status": "pass",
+          "swiftAllocationPositiveControl": 6,
+          "variant": "H",
+          "warmups": 2,
+          "process": 2
+        },
+        {
+          "assets": 100000,
+          "cAllocationPositiveControl": 1,
+          "measuredRuns": 10,
+          "samples": [
+            {
+              "advanceCallNS": {
+                "max": 1199042,
+                "p50": 8417,
+                "p99": 46000
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 54.84419,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 1,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1687292,
+                "p50": 8500,
+                "p99": 61125
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 79.61924,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 2,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1136917,
+                "p50": 8208,
+                "p99": 38042
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 49.07081,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 3,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1134375,
+                "p50": 8167,
+                "p99": 18875
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 48.06928,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 102.72832,
+              "revenue": 14899685,
+              "run": 4,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1104917,
+                "p50": 8042,
+                "p99": 16291
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 47.59282,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 5,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2113958,
+                "p50": 8250,
+                "p99": 100833
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 73.09996,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 6,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1132209,
+                "p50": 8333,
+                "p99": 24209
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 49.62407,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 7,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1174000,
+                "p50": 9583,
+                "p99": 391458
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 114.90752,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 8,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1875875,
+                "p50": 8042,
+                "p99": 248417
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 71.77493,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 9,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1156375,
+                "p50": 8209,
+                "p99": 23083
+              },
+              "advanceCalls": 391,
+              "assets": 100000,
+              "events": 100000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 49.05961,
+              "ownedBytes": 10276208,
+              "ownedBytesPerAsset": 102.76208,
+              "physDeltaPerAsset": 0,
+              "revenue": 14899685,
+              "run": 10,
+              "sequenceHash": 2131646350360604768,
+              "variant": "H"
+            }
+          ],
+          "status": "pass",
+          "swiftAllocationPositiveControl": 6,
+          "variant": "H",
+          "warmups": 2,
+          "process": 3
+        }
+      ]
+    },
+    {
+      "variant": "H",
+      "assets": 1000000,
+      "processes": 3,
+      "warmupsPerProcess": 2,
+      "measuredRuns": 30,
+      "bytesPerAsset": {
+        "owned": 100.748672,
+        "footprint": 0.0
+      },
+      "nsPerEvent": {
+        "median": 132.035252,
+        "min": 102.210632,
+        "max": 186.926683,
+        "runs": 30
+      },
+      "advanceCallNS": {
+        "p50": 16270.5,
+        "p99": 482667,
+        "max": 9937167
+      },
+      "allocationsMaxPerCall": 0,
+      "correctness": {
+        "oracle100k": true,
+        "reference1M": true,
+        "partitionCases": 15,
+        "mutantsKilled": 8
+      },
+      "rawProcesses": [
+        {
+          "assets": 1000000,
+          "cAllocationPositiveControl": 1,
+          "measuredRuns": 10,
+          "samples": [
+            {
+              "advanceCallNS": {
+                "max": 1889334,
+                "p50": 15542,
+                "p99": 125625
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 111.82352,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 20.70944,
+              "revenue": 148999055,
+              "run": 1,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2521417,
+                "p50": 14958,
+                "p99": 139834
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 120.840863,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 2,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3384875,
+                "p50": 15416,
+                "p99": 149875
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 117.292552,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 12.550144,
+              "revenue": 148999055,
+              "run": 3,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 5643958,
+                "p50": 16291,
+                "p99": 278625
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 165.346167,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 4,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4088708,
+                "p50": 16125,
+                "p99": 148167
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 125.77854,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 5,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4522042,
+                "p50": 26542,
+                "p99": 184125
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 186.926683,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 6,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3239625,
+                "p50": 17167,
+                "p99": 142792
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 127.256259,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0.049152,
+              "revenue": 148999055,
+              "run": 7,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3237291,
+                "p50": 21833,
+                "p99": 166459
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 145.581511,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 8,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4754375,
+                "p50": 16250,
+                "p99": 180417
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 138.257705,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 9,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3301292,
+                "p50": 14667,
+                "p99": 105708
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 104.856803,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0.032768,
+              "revenue": 148999055,
+              "run": 10,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            }
+          ],
+          "status": "pass",
+          "swiftAllocationPositiveControl": 6,
+          "variant": "H",
+          "warmups": 2,
+          "process": 1
+        },
+        {
+          "assets": 1000000,
+          "cAllocationPositiveControl": 1,
+          "measuredRuns": 10,
+          "samples": [
+            {
+              "advanceCallNS": {
+                "max": 4053208,
+                "p50": 14542,
+                "p99": 121167
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 106.63277,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0.08192,
+              "revenue": 148999055,
+              "run": 1,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3346125,
+                "p50": 16708,
+                "p99": 183042
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 133.102306,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 2,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4106083,
+                "p50": 17084,
+                "p99": 153166
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 133.835736,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 20.70944,
+              "revenue": 148999055,
+              "run": 3,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4005083,
+                "p50": 20500,
+                "p99": 153709
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 147.459244,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 4,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4381000,
+                "p50": 15375,
+                "p99": 230916
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 151.625992,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 5,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4125917,
+                "p50": 19000,
+                "p99": 164500
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 139.739147,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0.032768,
+              "revenue": 148999055,
+              "run": 6,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1932666,
+                "p50": 15542,
+                "p99": 159375
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 122.789348,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 7,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3398625,
+                "p50": 15584,
+                "p99": 84959
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 102.210632,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 8,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1942666,
+                "p50": 17375,
+                "p99": 127834
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 119.091475,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 9,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2178833,
+                "p50": 15917,
+                "p99": 120458
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 116.807291,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0.016384,
+              "revenue": 148999055,
+              "run": 10,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            }
+          ],
+          "status": "pass",
+          "swiftAllocationPositiveControl": 6,
+          "variant": "H",
+          "warmups": 2,
+          "process": 2
+        },
+        {
+          "assets": 1000000,
+          "cAllocationPositiveControl": 1,
+          "measuredRuns": 10,
+          "samples": [
+            {
+              "advanceCallNS": {
+                "max": 2350459,
+                "p50": 19750,
+                "p99": 284583
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 150.958235,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 20.627456,
+              "revenue": 148999055,
+              "run": 1,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4663000,
+                "p50": 17750,
+                "p99": 164416
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 144.508298,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 20.693056,
+              "revenue": 148999055,
+              "run": 2,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 1835000,
+                "p50": 16333,
+                "p99": 117542
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 112.121543,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0.08192,
+              "revenue": 148999055,
+              "run": 3,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4163417,
+                "p50": 15375,
+                "p99": 121041
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 115.988031,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 4,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4228666,
+                "p50": 24166,
+                "p99": 158417
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 163.90079,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 5,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4411000,
+                "p50": 17541,
+                "p99": 482667
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 165.669912,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 6,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 9937167,
+                "p50": 15750,
+                "p99": 396125
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 168.699061,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 7,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3263541,
+                "p50": 18417,
+                "p99": 182041
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 157.157277,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 8,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3202417,
+                "p50": 15833,
+                "p99": 138875
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 130.968198,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 9,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4041709,
+                "p50": 15250,
+                "p99": 124250
+              },
+              "advanceCalls": 3914,
+              "assets": 1000000,
+              "events": 1000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 116.107849,
+              "ownedBytes": 100748672,
+              "ownedBytesPerAsset": 100.748672,
+              "physDeltaPerAsset": 0,
+              "revenue": 148999055,
+              "run": 10,
+              "sequenceHash": 15166557374937326104,
+              "variant": "H"
+            }
+          ],
+          "status": "pass",
+          "swiftAllocationPositiveControl": 6,
+          "variant": "H",
+          "warmups": 2,
+          "process": 3
+        }
+      ]
+    },
+    {
+      "variant": "H",
+      "assets": 2000000,
+      "processes": 3,
+      "warmupsPerProcess": 2,
+      "measuredRuns": 30,
+      "bytesPerAsset": {
+        "owned": 100.607664,
+        "footprint": 0.0
+      },
+      "nsPerEvent": {
+        "median": 143.09489000000002,
+        "min": 114.935979,
+        "max": 209.583104,
+        "runs": 30
+      },
+      "advanceCallNS": {
+        "p50": 23374.5,
+        "p99": 271000,
+        "max": 22667625
+      },
+      "allocationsMaxPerCall": 0,
+      "correctness": {
+        "oracle100k": true,
+        "reference1M": true,
+        "partitionCases": 15,
+        "mutantsKilled": 8
+      },
+      "rawProcesses": [
+        {
+          "assets": 2000000,
+          "cAllocationPositiveControl": 1,
+          "measuredRuns": 10,
+          "samples": [
+            {
+              "advanceCallNS": {
+                "max": 2627792,
+                "p50": 23416,
+                "p99": 183167
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 138.682423,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 12.525568,
+              "revenue": 297998839,
+              "run": 1,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3233166,
+                "p50": 22625,
+                "p99": 180750
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 139.615163,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 12.525568,
+              "revenue": 297998839,
+              "run": 2,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4006917,
+                "p50": 22500,
+                "p99": 167375
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 129.8692785,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0.016384,
+              "revenue": 297998839,
+              "run": 3,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 8298667,
+                "p50": 26916,
+                "p99": 271000
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 209.583104,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 4,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3762458,
+                "p50": 25750,
+                "p99": 214334
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 179.9136985,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0.016384,
+              "revenue": 297998839,
+              "run": 5,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4153666,
+                "p50": 24333,
+                "p99": 161750
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 143.842153,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 6,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4103875,
+                "p50": 22666,
+                "p99": 152833
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 134.339322,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0.024576,
+              "revenue": 297998839,
+              "run": 7,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2584583,
+                "p50": 25541,
+                "p99": 180750
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 153.232052,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 8,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4293125,
+                "p50": 24584,
+                "p99": 188625
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 148.131206,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 9,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3835708,
+                "p50": 27209,
+                "p99": 200750
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 186.200749,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 10,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            }
+          ],
+          "status": "pass",
+          "swiftAllocationPositiveControl": 6,
+          "variant": "H",
+          "warmups": 2,
+          "process": 1
+        },
+        {
+          "assets": 2000000,
+          "cAllocationPositiveControl": 1,
+          "measuredRuns": 10,
+          "samples": [
+            {
+              "advanceCallNS": {
+                "max": 6020042,
+                "p50": 23791,
+                "p99": 162833
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 138.957482,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 1,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4066625,
+                "p50": 22416,
+                "p99": 126416
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 121.982708,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 2,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4074250,
+                "p50": 22708,
+                "p99": 137375
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 129.6537225,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 12.541952,
+              "revenue": 297998839,
+              "run": 3,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3502416,
+                "p50": 24875,
+                "p99": 169708
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 151.205698,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 4,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4065833,
+                "p50": 23875,
+                "p99": 185666
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 143.615316,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 4.022272,
+              "revenue": 297998839,
+              "run": 5,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 7808375,
+                "p50": 23792,
+                "p99": 146500
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 145.6109675,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 6,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4051917,
+                "p50": 23333,
+                "p99": 164583
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 141.8005735,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 7,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4090041,
+                "p50": 24292,
+                "p99": 185500
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 143.685394,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 8,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 7031167,
+                "p50": 24375,
+                "p99": 194042
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 157.4786265,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 9,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 6549916,
+                "p50": 25125,
+                "p99": 181583
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 156.599269,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 10,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            }
+          ],
+          "status": "pass",
+          "swiftAllocationPositiveControl": 6,
+          "variant": "H",
+          "warmups": 2,
+          "process": 2
+        },
+        {
+          "assets": 2000000,
+          "cAllocationPositiveControl": 1,
+          "measuredRuns": 10,
+          "samples": [
+            {
+              "advanceCallNS": {
+                "max": 4049833,
+                "p50": 19500,
+                "p99": 125166
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 116.0917045,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 12.550144,
+              "revenue": 297998839,
+              "run": 1,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4025000,
+                "p50": 22375,
+                "p99": 177625
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 142.574464,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0.032768,
+              "revenue": 297998839,
+              "run": 2,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 4024208,
+                "p50": 22500,
+                "p99": 149500
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 142.1553245,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 3,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2461875,
+                "p50": 18416,
+                "p99": 135833
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 114.935979,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 4,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 21162000,
+                "p50": 22083,
+                "p99": 161291
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 161.7615045,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0.024576,
+              "revenue": 297998839,
+              "run": 5,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 3979625,
+                "p50": 20041,
+                "p99": 174417
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 139.3505875,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0.024576,
+              "revenue": 297998839,
+              "run": 6,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 22667625,
+                "p50": 22917,
+                "p99": 168583
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 164.776286,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 7,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2578417,
+                "p50": 21459,
+                "p99": 131500
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 126.639689,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 8,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 2582125,
+                "p50": 20833,
+                "p99": 141917
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 131.6349265,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0.016384,
+              "revenue": 297998839,
+              "run": 9,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            },
+            {
+              "advanceCallNS": {
+                "max": 5112209,
+                "p50": 24250,
+                "p99": 163709
+              },
+              "advanceCalls": 7829,
+              "assets": 2000000,
+              "events": 2000000,
+              "maxAllocationsPerAdvance": 0,
+              "nsPerEvent": 148.962967,
+              "ownedBytes": 201215328,
+              "ownedBytesPerAsset": 100.607664,
+              "physDeltaPerAsset": 0,
+              "revenue": 297998839,
+              "run": 10,
+              "sequenceHash": 537983423405128826,
+              "variant": "H"
+            }
+          ],
+          "status": "pass",
+          "swiftAllocationPositiveControl": 6,
+          "variant": "H",
+          "warmups": 2,
+          "process": 3
+        }
+      ]
+    }
+  ],
+  "decisionA": {
+    "chosen": "S",
+    "ratioHtoS1M": 0.9261958004278472,
+    "rule": "H only if H median ns/event <= 0.75*S at 1M, H owned <=128 B/asset, and all health gates pass"
+  },
+  "health": {
+    "S": {
+      "selftest": {
+        "boundaries": {
+          "groups": 9,
+          "status": "pass"
+        },
+        "mutations": [
+          {
+            "detected": true,
+            "evidence": "mismatch: ordered event 0",
+            "fault": "swapTie",
+            "test": "exact_sorted_transcript"
+          },
+          {
+            "detected": true,
+            "evidence": "mismatch: ordered event 0",
+            "fault": "omitTieBreaker",
+            "test": "exact_sorted_transcript"
+          },
+          {
+            "detected": true,
+            "evidence": "mismatch: complete ordered transcript",
+            "fault": "slotPlusOne",
+            "test": "exact_sorted_transcript"
+          },
+          {
+            "detected": true,
+            "evidence": "invariant: wrong wheel slot/time",
+            "fault": "slotMinusOne",
+            "test": "exact_sorted_transcript"
+          },
+          {
+            "detected": true,
+            "evidence": "mismatch: ordered event 1",
+            "fault": "reverseCascade",
+            "test": "exact_sorted_transcript"
+          },
+          {
+            "detected": true,
+            "evidence": "mismatch: ordered event 1",
+            "fault": "duplicate",
+            "test": "exact_sorted_transcript"
+          },
+          {
+            "detected": true,
+            "evidence": "mismatch: ordered event 0",
+            "fault": "missing",
+            "test": "exact_sorted_transcript"
+          },
+          {
+            "detected": true,
+            "evidence": "mismatch: stale generation illegally committed",
+            "fault": "acceptStaleGeneration",
+            "test": "stale_no_commit"
+          }
+        ]
+      },
+      "order100k": {
+        "actualClockPartitions": [
+          {
+            "budget": 1,
+            "calls": 100278,
+            "deadlineIntervalNS": 10000,
+            "eventsCompared": 100000,
+            "status": "pass",
+            "timeStops": 277
+          },
+          {
+            "budget": 7,
+            "calls": 14761,
+            "deadlineIntervalNS": 10000,
+            "eventsCompared": 100000,
+            "status": "pass",
+            "timeStops": 478
+          },
+          {
+            "budget": 31,
+            "calls": 3500,
+            "deadlineIntervalNS": 10000,
+            "eventsCompared": 100000,
+            "status": "pass",
+            "timeStops": 281
+          },
+          {
+            "budget": 256,
+            "calls": 1641,
+            "deadlineIntervalNS": 10000,
+            "eventsCompared": 100000,
+            "status": "pass",
+            "timeStops": 1640
+          },
+          {
+            "budget": 1024,
+            "calls": 1442,
+            "deadlineIntervalNS": 10000,
+            "eventsCompared": 100000,
+            "status": "pass",
+            "timeStops": 1441
+          }
+        ],
+        "assets": 100000,
+        "independentSortedReferenceEvents": 100000,
+        "legacyExactTranscriptCases": 5,
+        "status": "pass",
+        "swiftPartitionCases": 10,
+        "timedClock": "injected deadline after 19 atomic/scheduler checkpoints; actual clock tested separately"
+      },
+      "order1M": {
+        "actualClockPartitions": [
+          {
+            "budget": 1,
+            "calls": 1003139,
+            "deadlineIntervalNS": 10000,
+            "eventsCompared": 1000000,
+            "status": "pass",
+            "timeStops": 3138
+          },
+          {
+            "budget": 7,
+            "calls": 146365,
+            "deadlineIntervalNS": 10000,
+            "eventsCompared": 1000000,
+            "status": "pass",
+            "timeStops": 3562
+          },
+          {
+            "budget": 31,
+            "calls": 36029,
+            "deadlineIntervalNS": 10000,
+            "eventsCompared": 1000000,
+            "status": "pass",
+            "timeStops": 5681
+          },
+          {
+            "budget": 256,
+            "calls": 18499,
+            "deadlineIntervalNS": 10000,
+            "eventsCompared": 1000000,
+            "status": "pass",
+            "timeStops": 18498
+          },
+          {
+            "budget": 1024,
+            "calls": 20221,
+            "deadlineIntervalNS": 10000,
+            "eventsCompared": 1000000,
+            "status": "pass",
+            "timeStops": 20220
+          }
+        ],
+        "assets": 1000000,
+        "independentSortedReferenceEvents": 1000000,
+        "legacyExactTranscriptCases": 0,
+        "status": "pass",
+        "swiftPartitionCases": 10,
+        "timedClock": "injected deadline after 19 atomic/scheduler checkpoints; actual clock tested separately"
+      }
+    },
+    "H": {
+      "layout": {
+        "eventNodeSize": 32,
+        "eventNodeStride": 32,
+        "hotAssetSize": 48,
+        "hotAssetStride": 48,
+        "status": "pass"
+      },
+      "mutants": [
+        {
+          "detected": true,
+          "evidence": "mismatch: hybrid ordered event 0",
+          "fault": "swapTie",
+          "test": "exact_sorted_transcript"
+        },
+        {
+          "detected": true,
+          "evidence": "mismatch: hybrid ordered event 0",
+          "fault": "omitTieBreaker",
+          "test": "exact_sorted_transcript"
+        },
+        {
+          "detected": true,
+          "evidence": "mismatch: hybrid complete ordered transcript",
+          "fault": "slotPlusOne",
+          "test": "exact_sorted_transcript"
+        },
+        {
+          "detected": true,
+          "evidence": "invariant: wrong wheel slot/time",
+          "fault": "slotMinusOne",
+          "test": "exact_sorted_transcript"
+        },
+        {
+          "detected": true,
+          "evidence": "mismatch: hybrid ordered event 1",
+          "fault": "reverseCascade",
+          "test": "exact_sorted_transcript"
+        },
+        {
+          "detected": true,
+          "evidence": "mismatch: hybrid ordered event 1",
+          "fault": "duplicate",
+          "test": "exact_sorted_transcript"
+        },
+        {
+          "detected": true,
+          "evidence": "mismatch: hybrid ordered event 0",
+          "fault": "missing",
+          "test": "exact_sorted_transcript"
+        },
+        {
+          "detected": true,
+          "evidence": "mismatch: hybrid stale generation illegally committed",
+          "fault": "acceptStaleGeneration",
+          "test": "stale_no_commit"
+        }
+      ],
+      "order100k": {
+        "actualClockCases": 5,
+        "assets": 100000,
+        "countCases": 5,
+        "independentSortedReferenceEvents": 100000,
+        "injectedClockCases": 5,
+        "legacyExactTranscriptCases": 5,
+        "partitionCases": 15,
+        "status": "pass"
+      },
+      "order1M": {
+        "actualClockCases": 5,
+        "assets": 1000000,
+        "countCases": 5,
+        "independentSortedReferenceEvents": 1000000,
+        "injectedClockCases": 5,
+        "legacyExactTranscriptCases": 0,
+        "partitionCases": 15,
+        "status": "pass"
+      }
+    }
+  }
+}

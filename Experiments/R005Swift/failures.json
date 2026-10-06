@@ -166,6 +166,19 @@
         "artifactSHA256": "837e044786e2c4551a47785b7949074a69f6ba3a0cbda3caa95e4ec574400beb",
         "scope": "exact artifact verification and byte-equal rollback only; no new measurement"
       }
+    },
+    {
+      "commit": "611a14efca6bb571887d4f5dc5189d51621b212d",
+      "tree": "5b18f5f7590ba421be04905ac59839109c79eca7",
+      "run": 37505451077,
+      "job": 112412833492,
+      "status": "failure",
+      "artifact": 11434785670,
+      "artifactSHA256": "74448035313bd58003158f72570adf213d8f3b1adfc8bff58652587f71e6556a",
+      "scope": "Unintended legacy full workflow from evidence-only commit; actual Stage C cadence failure",
+      "passedBeforeFailure": "A; selected-layout smoke; TSan; B; K1-K10 Debug/Release/TSan; source guard",
+      "failedGate": "stage C save did not commit within 2000 advance calls; no STAGE005-C.json or 100-save timing result",
+      "correction": "Preserve FAILED. The evidence-only routing bug was fixed at 389f5a9488a75081e3b4496449a0bb3e71a22c69; no C closure or numeric overhead claim. Source-specific B proof remains, C functional WAL source tested separately."
     }
   ],
   "diagnosticThresholdMisses": [

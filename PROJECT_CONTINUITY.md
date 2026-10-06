@@ -8,9 +8,13 @@ Apple Debug/Release/TSan builds passed. Functional run `37506755854` is still
 in progress (bounded 4,096 S/H fixtures plus 1M K1–K10); do not infer its
 outcome or C acceptance until the run and raw artifact are checked. The
 unchanged 1.10 overhead gate has no new PASS. Commit `389f5a9` corrected
-evidence-only CI routing. An earlier evidence-only commit `611a14e` mistakenly
-triggered the legacy full workflow `37505451077`, still in progress at this
-checkpoint; preserve its eventual status and any failure without relabeling.
+evidence-only CI routing. Earlier evidence-only commit `611a14e` mistakenly
+triggered legacy full workflow `37505451077`, now **FAILED** in C: S save did
+not commit within 2000 advance calls. A/TSan/B/K1–K10 passed first; no
+STAGE005-C.json or 100-save metrics were produced. Artifact `11434785670` ZIP
+SHA256 `74448035313bd58003158f72570adf213d8f3b1adfc8bff58652587f71e6556a`.
+See Docs/Daily/2026-10-06-R005-LEGACY-RERUN.md and failures.json. Never
+reclassify this run or original failed run `36875130222` as success.
 
 Owner «كملها كلها الان بدقه عاليه جدًا» resumes bounded engineering after the
 two failed C writer candidates; the earlier STOP and all failures remain history.
