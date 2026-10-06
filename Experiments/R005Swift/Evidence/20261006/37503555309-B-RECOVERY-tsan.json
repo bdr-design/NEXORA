@@ -1,0 +1,118 @@
+{
+  "status": "pass",
+  "points": 5,
+  "results": [
+    {
+      "point": "b.s1.mid_summary_append",
+      "signal": "SIGKILL",
+      "expectedCommittedSegment": -1,
+      "restored": {
+        "committedSegment": -1,
+        "status": "pass",
+        "totalsExact": true
+      }
+    },
+    {
+      "point": "b.s2.after_summary_sync",
+      "signal": "SIGKILL",
+      "expectedCommittedSegment": -1,
+      "restored": {
+        "committedSegment": -1,
+        "status": "pass",
+        "totalsExact": true
+      }
+    },
+    {
+      "point": "b.s3.after_carry_sync",
+      "signal": "SIGKILL",
+      "expectedCommittedSegment": -1,
+      "restored": {
+        "committedSegment": -1,
+        "status": "pass",
+        "totalsExact": true
+      }
+    },
+    {
+      "point": "b.s4.after_manifest_sync",
+      "signal": "SIGKILL",
+      "expectedCommittedSegment": 0,
+      "restored": {
+        "committedSegment": 0,
+        "status": "pass",
+        "totalsExact": true
+      }
+    },
+    {
+      "point": "b.s5.after_delete_before_dirsync",
+      "signal": "SIGKILL",
+      "expectedCommittedSegment": 0,
+      "restored": {
+        "committedSegment": 0,
+        "status": "pass",
+        "totalsExact": true
+      }
+    }
+  ],
+  "recoverAppendRecoverCases": [
+    {
+      "previousCommittedSegment": -1,
+      "tornTailBytes": 1,
+      "newCommittedSegment": 0,
+      "manifestBytes": 64,
+      "secondRecoveryExact": true
+    },
+    {
+      "previousCommittedSegment": -1,
+      "tornTailBytes": 7,
+      "newCommittedSegment": 0,
+      "manifestBytes": 64,
+      "secondRecoveryExact": true
+    },
+    {
+      "previousCommittedSegment": -1,
+      "tornTailBytes": 31,
+      "newCommittedSegment": 0,
+      "manifestBytes": 64,
+      "secondRecoveryExact": true
+    },
+    {
+      "previousCommittedSegment": -1,
+      "tornTailBytes": 63,
+      "newCommittedSegment": 0,
+      "manifestBytes": 64,
+      "secondRecoveryExact": true
+    },
+    {
+      "previousCommittedSegment": 0,
+      "tornTailBytes": 1,
+      "newCommittedSegment": 1,
+      "manifestBytes": 128,
+      "secondRecoveryExact": true
+    },
+    {
+      "previousCommittedSegment": 0,
+      "tornTailBytes": 7,
+      "newCommittedSegment": 1,
+      "manifestBytes": 128,
+      "secondRecoveryExact": true
+    },
+    {
+      "previousCommittedSegment": 0,
+      "tornTailBytes": 31,
+      "newCommittedSegment": 1,
+      "manifestBytes": 128,
+      "secondRecoveryExact": true
+    },
+    {
+      "previousCommittedSegment": 0,
+      "tornTailBytes": 63,
+      "newCommittedSegment": 1,
+      "manifestBytes": 128,
+      "secondRecoveryExact": true
+    }
+  ],
+  "fullCorruptFrameRejected": true,
+  "shortCommittedSummaryRejected": true,
+  "directAppendBeforeRecoveryRejectedAndHealed": true,
+  "limit": "process SIGKILL, not physical power cut"
+}

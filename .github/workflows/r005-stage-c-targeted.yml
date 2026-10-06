@@ -6,8 +6,107 @@ permissions:
   contents: read
   actions: read
 jobs:
+  stage-b-full:
+    if: ${{ contains(github.event.head_commit.message, '[r005-b-full]') && !contains(github.event.head_commit.message, '[r005-evidence-only]') }}
+    runs-on: macos-15
+    timeout-minutes: 120
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Pin source and check production boundary
+        run: |
+          set -euo pipefail
+          mkdir -p b-results
+          git rev-parse HEAD > b-results/commit.txt
+          git rev-parse HEAD^{tree} > b-results/tree.txt
+          swift --version > b-results/environment.txt
+          xcodebuild -version >> b-results/environment.txt
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > b-results/source-guard-before.txt
+          python3 -B -m unittest discover -s Experiments/R005Swift/tests -v > b-results/proof-gates.txt 2>&1
+      - name: Confirm B crash proof source is byte-identical
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin a65a5912be0116564f2a5d075da5c83b0c6b9e12
+          gh api repos/bdr-design/NEXORA/actions/artifacts/11430977253/zip > "$RUNNER_TEMP/b-proof.zip"
+          python3 - "$RUNNER_TEMP/b-proof.zip" <<'PYCODE'
+          import hashlib,json,pathlib,subprocess,sys,zipfile
+          base='a65a5912be0116564f2a5d075da5c83b0c6b9e12'
+          archive=pathlib.Path(sys.argv[1])
+          digest=hashlib.sha256(archive.read_bytes()).hexdigest()
+          assert digest=='32618114c48dec880bda4dd70e9daeb282aa508dcd664ff6c4d0856c7ee014ef'
+          with zipfile.ZipFile(archive) as z:
+              assert z.read('commit.txt').decode().strip()==base
+              for mode in ('debug','release','tsan'):
+                  prior=json.loads(z.read(f'B-RECOVERY-{mode}.json'))
+                  assert prior['status']=='pass' and len(prior['recoverAppendRecoverCases'])==8
+                  assert prior['directAppendBeforeRecoveryRejectedAndHealed']
+          paths=['Experiments/R005Swift/Sources/SwiftProbe/'+name+'.swift' for name in
+                 ('Stage005BStore','Stage005BModel','Stage005BRunner','Main','Retention','Storage','Checks')]
+          paths += ['Experiments/R005Swift/'+name for name in
+                    ('stage005_b_crash.py','stage005_b.py','Package.swift',
+                     'Sources/ProbePlatform/include/ProbePlatform.h','Sources/ProbePlatform/platform.c')]
+          for path in paths:
+              assert pathlib.Path(path).read_bytes()==subprocess.check_output(['git','show',base+':'+path]),path
+          report={'status':'pass','scope':'byte-identical Stage B source; prior crash proof reused, no crash rerun',
+                  'source':base,'run':37503555309,'artifact':11430977253,
+                  'artifactSHA256':digest,'matchedFiles':paths,'priorModes':['debug','release','tsan']}
+          pathlib.Path('b-results/PRIOR-B-CRASH-PROOF.json').write_text(json.dumps(report,indent=2)+'\n')
+          PYCODE
+      - name: Fresh Release build and full 30-day Stage B measurement
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          swift build --scratch-path .build-b-release -c release -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../b-results/build-release.txt
+          python3 -B stage005_b.py .build-b-release/release/nxr-swift-probe ../../b-results/STAGE005-B.json 2>&1 | tee ../../b-results/stage005-b-run.txt
+          python3 - <<'PYCODE'
+          import json,pathlib
+          p=pathlib.Path('../../b-results')
+          b=json.loads((p/'STAGE005-B.json').read_text())
+          assert b['status']=='pass' and len(b['B'])==60
+          assert {k:len([r for r in b['B'] if (r['case'],r['window'])==(c,w)]) for k,c,w in
+                  (('G16_W7','G16',7),('G1_W7','G1',7))}=={'G16_W7':30,'G1_W7':30}
+          for case,window in (('G16',7),('G1',7)):
+              assert sorted(r['day'] for r in b['B'] if (r['case'],r['window'])==(case,window))==list(range(1,31))
+          assert all(all(r['invariants'].values()) for r in b['B'])
+          assert set(b['cases'])=={'G16_W7','G1_W7','G1_W3'}
+          assert all(v['status']=='pass' and v['totalsExact'] for v in b['finalDiskVerification'].values())
+          mib=1024*1024
+          snapshot=95801772 # Pinned Stage C snapshot size, not a fresh C result.
+          quota={}
+          for name,window,expected in (('G16_W7',7,320),('G1_W7',7,1408),('G1_W3',3,832)):
+              c=b['cases'][name]
+              raw=(5*((window+1)*c['BdayMax']+c['S30']+c['Omax'])+3)//4+2*snapshot
+              quota[name]=((raw+64*mib-1)//(64*mib))*64
+              assert quota[name]==expected,name
+          assert quota['G16_W7']<=1024 and quota['G1_W7']>1024 and quota['G1_W3']<=1024
+          (p/'B-QUOTA.json').write_text(json.dumps({'status':'pass','scope':'new B inputs plus pinned snapshot; not new C measurement',
+             'snapshotBytesInput':snapshot,'quotaMiB':quota},indent=2)+'\n')
+          (p/'scope.txt').write_text('Fresh Stage B 30 days / 60 daily records; exact unchanged B crash source and pinned prior Debug/Release/TSan proof; no C timing result.\n')
+          PYCODE
+      - name: Always verify source and preserve digests
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > b-results/source-guard-after.txt
+          bad="$(grep -rnE 'Unsafe|withUnsafe' Experiments/R005Swift/Sources/SwiftProbe --include='*.swift' | grep -v '/Snapshot.swift:' || true)"
+          test -z "$bad"
+          ! grep -rnE '@unchecked Sendable|nonisolated\(unsafe\)|unowned\(unsafe\)|Unmanaged|UnsafeMutable|unsafeBitCast' Experiments/R005Swift/Sources/SwiftProbe --include='*.swift'
+          git diff --exit-code
+          find Experiments/R005Swift/Sources -type f -exec shasum -a 256 {} \; > b-results/source-sha256.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r005-full-b-results
+          path: b-results/
+          if-no-files-found: error
   stage-c:
-    if: ${{ (contains(github.event.head_commit.message, '[r005-micro]') || contains(github.event.head_commit.message, '[r005-c-targeted]')) && !contains(github.event.head_commit.message, '[r005-evidence-only]') }}
+    if: ${{ (contains(github.event.head_commit.message, '[r005-micro]') || contains(github.event.head_commit.message, '[r005-c-targeted]')) && !contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-b-full]') }}
     runs-on: macos-15
     timeout-minutes: 60
     env:

@@ -2,10 +2,16 @@
 
 Owner «كملها كلها الان بدقه عاليه جدًا» resumes bounded engineering after the
 two failed C writer candidates; the earlier STOP and all failures remain history.
-Live source rechecked at aee15b5a2699e355440a640f4ed82a619aace5ac.
-Stage B torn-manifest recover→append→recover patch and independent 8-case crash
-matrix are prepared inside R005Swift, awaiting targeted Apple Debug/Release/TSan.
-See Docs/Daily/2026-10-06-R005-B-RECOVERY.md. C remains OPEN on S/H with unchanged
+Live source rechecked at a65a5912be0116564f2a5d075da5c83b0c6b9e12, tree
+87512388b1ddcb35e8476f9b06872edda336384b. Stage B torn-manifest
+recover→append→recover repair passed Apple Debug/Release/TSan SIGKILL proof:
+run37503555309 SUCCESS, artifact11430977253 SHA256
+32618114c48dec880bda4dd70e9daeb282aa508dcd664ff6c4d0856c7ee014ef.
+Five old kill points, eight new continuation cases, and three fail-closed cases
+passed; this is not a physical power-cut test. Complete 30-day/60-record B and
+quota remeasurement on the changed source is still pending. See
+Docs/Daily/2026-10-06-R005-B-RECOVERY.md and proof metadata under
+Experiments/R005Swift/Evidence/20261006/. C remains OPEN on S/H with unchanged
 1.10 gate and no new performance result. Current repo has no iOS app/IPA project;
 Stage2–4 production/gameplay/device work follows genuine layout-specific C proof.
 
@@ -41,9 +47,13 @@ e975025ad4148013ece4a2fcfdef7c70ead4a60ae2f65b3ce09b650df9a67cd3.
 Debug/Release/TSan, S/H100k and exact four-file equality PASS. No timing retry.
 No thresholds/formula/cadence/workload change, production/main merge or IPA.
 No closure STAGE-R005-RESULTS.md/results.json until true 1M/100-save C PASS names layout.
-Next: owner reviews stable-runner diagnosis, snapshot ownership redesign or C hold.
+Next: finish B source-specific 30-day measurements. For C, a fixed-runner paired
+profile and broader snapshot ownership plus writer-contention redesign need a
+new A and B input proof before any C 100-save campaign; prior copy-only and
+writer candidates cannot meet the original 1.10 gate. Keep old STOP as history.
 Requirements now match 1M/capacity2M and iPhone17ProMax100k→250k→1M;
-full-feature gameplay is still required. B torn-tail recover→append→recover needs proof.
+full-feature gameplay is still required. B torn-tail continuation has bounded
+proof, while Stage2–4 and physical iPhone acceptance remain unimplemented.
 
 Reports: Docs/Daily/2026-10-06-R005-OUTCOME.md and 2026-10-06-R005-REPO-WRITER.md.
 Raw evidence/all failures: Experiments/R005Swift/review-20261005.json and failures.json.

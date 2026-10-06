@@ -823,13 +823,15 @@
     }
   ],
   "reuse": {
-    "status": "revalidated previous A/B, not newly measured",
+    "status": "historical A revalidation applies only to unchanged A inputs; previous B measurements cannot be reused after B source repair",
     "source": "fa9c44656d6a7544f5cd0255781c64fde3e9ce1f",
     "run": 36875130222,
     "chosen": "S",
     "A_B_inputs": "byte-equal, normal dispatch equal after removing STAGE_C-only code",
     "BRecords": 60,
-    "priorTSan": "retained unchanged A/B evidence; candidate C safety separate"
+    "priorTSan": "retained unchanged A/B evidence; candidate C safety separate",
+    "BReuseAfter20261006Repair": false,
+    "BMeasurementOnRepairedSource": "pending"
   },
   "limits": [
     "C remains open on S and H",
@@ -837,7 +839,7 @@
     "No new 1M/100-save acceptance campaign; both new performance candidates failed bounded checks and were rolled back.",
     "no production change, main merge, IPA or iPhone acceptance",
     "no causal improvement inferred from different hosted CI runs",
-    "manifest torn-tail resume-write risk remains source-reviewed, not fixed in this C-only scope",
+    "manifest torn-tail continuation fixed and bounded Debug/Release/TSan SIGKILL proof passed at a65a5912; 30-day B and physical power cut remain separate",
     "Chat app disconnect cause unverified; continuity persists in repository"
   ],
   "failureRegistry": "Experiments/R005Swift/failures.json",
@@ -1091,5 +1093,81 @@
       "artifactSHA256": "837e044786e2c4551a47785b7949074a69f6ba3a0cbda3caa95e4ec574400beb",
       "scope": "exact artifact verification and byte-equal rollback only; no new measurement"
     }
-  ]
+  ],
+  "bRecovery20261006": {
+    "status": "pass",
+    "scope": "B torn-manifest SIGKILL recovery/continuation only; 30-day quota remeasurement pending",
+    "repository": "bdr-design/NEXORA",
+    "branch": "diagnostic/r005-design-1m-20260930",
+    "source": "a65a5912be0116564f2a5d075da5c83b0c6b9e12",
+    "tree": "87512388b1ddcb35e8476f9b06872edda336384b",
+    "run": 37503555309,
+    "job": 112406374925,
+    "workflowConclusion": "success",
+    "artifact": 11430977253,
+    "artifactSHA256": "32618114c48dec880bda4dd70e9daeb282aa508dcd664ff6c4d0856c7ee014ef",
+    "checks": {
+      "SIGKILLPoints": 5,
+      "recoverAppendRecoverCases": 8,
+      "tailBytes": [
+        1,
+        7,
+        31,
+        63
+      ],
+      "priorCommittedSegments": [
+        -1,
+        0
+      ],
+      "modes": [
+        "Debug",
+        "Release",
+        "TSan"
+      ],
+      "fullCorruptFrameRejected": true,
+      "shortCommittedSummaryRejected": true,
+      "unrecoveredAppendRejectedAndHealed": true,
+      "transportAndS_H100k": [
+        "Debug",
+        "Release"
+      ]
+    },
+    "rawEvidence": [
+      {
+        "path": "Experiments/R005Swift/Evidence/20261006/37503555309-B-RECOVERY-debug.json",
+        "sha256": "455e1987983c788c03f02ff50abdfe16acd648dc9cb95cd955e61d9301388ce5",
+        "originalName": "B-RECOVERY-debug.json"
+      },
+      {
+        "path": "Experiments/R005Swift/Evidence/20261006/37503555309-B-RECOVERY-release.json",
+        "sha256": "455e1987983c788c03f02ff50abdfe16acd648dc9cb95cd955e61d9301388ce5",
+        "originalName": "B-RECOVERY-release.json"
+      },
+      {
+        "path": "Experiments/R005Swift/Evidence/20261006/37503555309-B-RECOVERY-tsan.json",
+        "sha256": "455e1987983c788c03f02ff50abdfe16acd648dc9cb95cd955e61d9301388ce5",
+        "originalName": "B-RECOVERY-tsan.json"
+      },
+      {
+        "path": "Experiments/R005Swift/Evidence/20261006/37503555309-proof-gates.txt",
+        "sha256": "f7930142d5833a582612bda4f0f690508d5794dadb7218e4503100c13044921d",
+        "originalName": "proof-gates.txt"
+      },
+      {
+        "path": "Experiments/R005Swift/Evidence/20261006/37503555309-source-guard-before.txt",
+        "sha256": "5c4f078b1ed80138eb250ecfe4fe07975f6a3c96d033cd1928dfa6eed11c86db",
+        "originalName": "source-guard-before.txt"
+      },
+      {
+        "path": "Experiments/R005Swift/Evidence/20261006/37503555309-source-guard-after.txt",
+        "sha256": "5c4f078b1ed80138eb250ecfe4fe07975f6a3c96d033cd1928dfa6eed11c86db",
+        "originalName": "source-guard-after.txt"
+      }
+    ],
+    "limitations": [
+      "SIGKILL is not a physical power-cut test",
+      "This run did not execute 30-day Stage B/quota campaign",
+      "This run did not measure C overhead or close C"
+    ]
+  }
 }

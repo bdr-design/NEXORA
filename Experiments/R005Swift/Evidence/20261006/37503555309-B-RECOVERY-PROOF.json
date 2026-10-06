@@ -1,0 +1,76 @@
+{
+  "status": "pass",
+  "scope": "B torn-manifest SIGKILL recovery/continuation only; 30-day quota remeasurement pending",
+  "repository": "bdr-design/NEXORA",
+  "branch": "diagnostic/r005-design-1m-20260930",
+  "source": "a65a5912be0116564f2a5d075da5c83b0c6b9e12",
+  "tree": "87512388b1ddcb35e8476f9b06872edda336384b",
+  "run": 37503555309,
+  "job": 112406374925,
+  "workflowConclusion": "success",
+  "artifact": 11430977253,
+  "artifactSHA256": "32618114c48dec880bda4dd70e9daeb282aa508dcd664ff6c4d0856c7ee014ef",
+  "checks": {
+    "SIGKILLPoints": 5,
+    "recoverAppendRecoverCases": 8,
+    "tailBytes": [
+      1,
+      7,
+      31,
+      63
+    ],
+    "priorCommittedSegments": [
+      -1,
+      0
+    ],
+    "modes": [
+      "Debug",
+      "Release",
+      "TSan"
+    ],
+    "fullCorruptFrameRejected": true,
+    "shortCommittedSummaryRejected": true,
+    "unrecoveredAppendRejectedAndHealed": true,
+    "transportAndS_H100k": [
+      "Debug",
+      "Release"
+    ]
+  },
+  "rawEvidence": [
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37503555309-B-RECOVERY-debug.json",
+      "sha256": "455e1987983c788c03f02ff50abdfe16acd648dc9cb95cd955e61d9301388ce5",
+      "originalName": "B-RECOVERY-debug.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37503555309-B-RECOVERY-release.json",
+      "sha256": "455e1987983c788c03f02ff50abdfe16acd648dc9cb95cd955e61d9301388ce5",
+      "originalName": "B-RECOVERY-release.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37503555309-B-RECOVERY-tsan.json",
+      "sha256": "455e1987983c788c03f02ff50abdfe16acd648dc9cb95cd955e61d9301388ce5",
+      "originalName": "B-RECOVERY-tsan.json"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37503555309-proof-gates.txt",
+      "sha256": "f7930142d5833a582612bda4f0f690508d5794dadb7218e4503100c13044921d",
+      "originalName": "proof-gates.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37503555309-source-guard-before.txt",
+      "sha256": "5c4f078b1ed80138eb250ecfe4fe07975f6a3c96d033cd1928dfa6eed11c86db",
+      "originalName": "source-guard-before.txt"
+    },
+    {
+      "path": "Experiments/R005Swift/Evidence/20261006/37503555309-source-guard-after.txt",
+      "sha256": "5c4f078b1ed80138eb250ecfe4fe07975f6a3c96d033cd1928dfa6eed11c86db",
+      "originalName": "source-guard-after.txt"
+    }
+  ],
+  "limitations": [
+    "SIGKILL is not a physical power-cut test",
+    "This run did not execute 30-day Stage B/quota campaign",
+    "This run did not measure C overhead or close C"
+  ]
+}
