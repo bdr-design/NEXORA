@@ -184,6 +184,34 @@ enum Snapshot {
         return out
     }
 
+    // Writer-owned fixed metadata: little-endian keys followed by digest space.
+    static func canonicalMetadata(_ counts: [UInt32]) -> [UInt8] {
+        precondition(counts.count == 4)
+        var bytes: [UInt8] = []
+        bytes.reserveCapacity(counts.reduce(0) { $0 + Int($1) } * 38)
+        for kind in UInt16(0)...UInt16(3) {
+            for index in UInt32(0)..<counts[Int(kind)] {
+                appendLE(kind, into: &bytes)
+                appendLE(index, into: &bytes)
+                for _ in 0..<32 { bytes.append(0) }
+            }
+        }
+        return bytes
+    }
+
+    static func storeDigest(_ hash: NXRHash, into bytes: inout [UInt8], at offset: Int) {
+        precondition(hash.status == 0 && offset >= 0 && offset <= bytes.count - 32)
+        @inline(__always) func word(_ value: UInt64, into target: inout [UInt8], at start: Int) {
+            for i in 0..<8 {
+                target[start + i] = UInt8(truncatingIfNeeded: value >> UInt64(56 - i * 8))
+            }
+        }
+        word(hash.a, into: &bytes, at: offset)
+        word(hash.b, into: &bytes, at: offset + 8)
+        word(hash.c, into: &bytes, at: offset + 16)
+        word(hash.d, into: &bytes, at: offset + 24)
+    }
+
     static func record(kind: UInt16, index: UInt32, elements: UInt32, payloadBytes: Int,
                        appendPayload: (inout [UInt8]) -> Void) -> [UInt8] {
         var bytes: [UInt8] = []

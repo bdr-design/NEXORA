@@ -65,7 +65,7 @@ jobs:
             rm -rf "../../c-results/transport-$mode"
           done
       - name: Bounded diagnostic micro only
-        if: ${{ contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-micro-recover]') && !contains(github.event.head_commit.message, '[r005-transport-verify]') && !contains(github.event.head_commit.message, '[r005-profile]') }}
+        if: ${{ contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-micro-recover]') && !contains(github.event.head_commit.message, '[r005-transport-verify]') && !contains(github.event.head_commit.message, '[r005-profile]') && !contains(github.event.head_commit.message, '[r005-writer-micro]') }}
         run: |
           set -euo pipefail
           cd Experiments/R005Swift
@@ -82,6 +82,24 @@ jobs:
           DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" stage-c-micro ../../c-results/micro-s S > ../../c-results/MICRO-S.json
           DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" stage-c-micro ../../c-results/micro-h H > ../../c-results/MICRO-H.json
           rm -rf ../../c-results/components-store ../../c-results/micro-s ../../c-results/micro-h
+      - name: Bounded writer proof and selected S micro
+        if: contains(github.event.head_commit.message, '[r005-writer-micro]')
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          trap 'rm -rf ../../c-results/writer-micro-store ../../c-results/writer-tsan-store ../../c-results/writer-tsan-smoke' EXIT
+          export NXR_ALLOCATOR_DYLIB="$PWD/../../c-results/AllocationObserver.dylib"
+          bin=.build-c-release/release/nxr-swift-probe
+          variant="$(python3 -c 'import json; print(json.load(open("../../c-results/STAGE005-A.json"))["decisionA"]["chosen"])')"
+          test "$variant" = S
+          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" stage-c-allocation-probes S > ../../c-results/allocation-probes-S.json
+          for mode in debug release; do
+            python3 -B stage005_c_mid_record.py ".build-c-$mode/$mode/nxr-swift-probe" "../../c-results/mid-record-$mode.json"
+          done
+          swift build --scratch-path .build-c-tsan --sanitize=thread -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../c-results/build-tsan.txt
+          TSAN_OPTIONS=halt_on_error=1 .build-c-tsan/debug/nxr-swift-probe stage-c-transport-checks ../../c-results/writer-tsan-store > ../../c-results/writer-tsan.json 2> ../../c-results/writer-tsan-stderr.txt
+          TSAN_OPTIONS=halt_on_error=1 .build-c-tsan/debug/nxr-swift-probe stage-c-smoke ../../c-results/writer-tsan-smoke S 100000 > ../../c-results/writer-tsan-smoke.json 2> ../../c-results/writer-tsan-smoke-stderr.txt
+          DYLD_INSERT_LIBRARIES="$NXR_ALLOCATOR_DYLIB" "$bin" stage-c-micro ../../c-results/writer-micro-store S > ../../c-results/MICRO-S.json
       - name: Same-run phase diagnosis and advisory call-stack sample on S
         if: contains(github.event.head_commit.message, '[r005-profile]')
         run: |

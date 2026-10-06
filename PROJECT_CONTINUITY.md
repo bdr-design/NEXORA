@@ -1,3 +1,20 @@
+# Repository continuation — 2026-10-06 / Asia-Riyadh
+
+Owner «استخدم المستودع» directs continuation from the live repo through Apple CI.
+Base HEAD 37c0203569b3c8240278d80765f6aadb369e14cc, tree
+0e9edfef55c5475c373d7f13bd87ec2799004a70; main unchanged at 38ce39cf.
+AGENTS/live continuity reread, five local C blobs verified against live tree.
+New candidate changes writer metadata and batch I/O only, retaining old producer
+records and utility QoS. It does not restore the failed pool/background candidates.
+Estimates/ownership/failure trace in Docs/Daily/2026-10-06-R005-REPO-WRITER.md.
+Next: Debug/Release exact file oracle + invalid records + S/H 100k restore + K3,
+bounded TSan, then S 1M/5-save micro. Current attempt count 0 of maximum 2.
+Do not repeat full C unless micro supports every unchanged timing/allocation gate.
+C OPEN on S/H; previous failures and original thresholds retained. No production,
+merge or iPhone acceptance. Earlier checkpoint below is historical for this resume.
+
+---
+
 # NEXORA — current checkpoint / نقطة الاستئناف
 
 Updated 2026-10-05. Only bdr-design/NEXORA, diagnostic/r005-design-1m-20260930.

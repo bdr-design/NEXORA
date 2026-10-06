@@ -3,6 +3,81 @@ import Foundation
 import ProbePlatform
 import Synchronization
 
+// Existing digest/footer helpers serve as an independent v2 file oracle.
+private func stageCMicroWriterFiles(_ directory: String) throws -> [String: Any] {
+    let world = try SwiftWorld(count: 4096)
+    try world.seedFixture()
+    let state = StageCState(world: world)
+    let counts = state.expectedCounts
+    var records: [(StageCRecordKey, [UInt8])] = [
+        (.init(kind: 0, index: 0), Snapshot.controlRecord(world))
+    ]
+    for chunk in (0..<state.nodeChunks).reversed() {
+        records.append((.init(kind: 2, index: UInt32(chunk)), Snapshot.nodeRecord(world.wheel, chunk: chunk)))
+    }
+    for chunk in (0..<state.assetChunks).reversed() {
+        records.append((.init(kind: 1, index: UInt32(chunk)), Snapshot.assetRecord(world, chunk: chunk)))
+    }
+    for chunk in (0..<state.groupChunks).reversed() {
+        records.append((.init(kind: 3, index: UInt32(chunk)), Snapshot.groupRecord(world, chunk: chunk)))
+    }
+    var expected = Snapshot.filePrefix()
+    var referenceDigests: [StageCRecordKey: Data] = [:]
+    for (key, record) in records {
+        let digest = Snapshot.digestBytes(record, range: 16..<record.count)
+        expected.append(contentsOf: record)
+        expected.append(digest)
+        referenceDigests[key] = digest
+    }
+    var canonical = Data()
+    for kind in UInt16(0)...UInt16(3) {
+        for index in UInt32(0)..<counts[Int(kind)] {
+            Snapshot.appendLE(kind, into: &canonical)
+            Snapshot.appendLE(index, into: &canonical)
+            canonical.append(referenceDigests[.init(kind: kind, index: index)]!)
+        }
+    }
+    expected.append(Snapshot.footer(counts: counts, totalBytes: UInt64(expected.count + 64),
+                                    canonicalDigestInput: canonical))
+    func write(_ bytes: [[UInt8]], name: String) throws -> StageCSnapshotFileResult {
+        let path = directory + "/" + name
+        try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true)
+        let queue = StageCRecordQueue(capacity: max(1, bytes.count))
+        let counters = StageCWriterCounters()
+        for record in bytes {
+            _ = counters.queued.add(record.count + 32, ordering: .relaxed)
+            queue.push(record)
+        }
+        queue.finish()
+        let result = try StageCSnapshotWriter.run(queue, counters: counters,
+            directory: path, epoch: 1, expectedCounts: counts)
+        try require(counters.queued.load(ordering: .relaxed) == 0, "micro drained batch byte count")
+        return result
+    }
+    let result = try write(records.map { $0.1 }, name: "valid")
+    let actual = try Data(contentsOf: URL(fileURLWithPath: directory + "/valid/snapshot-1.bin"))
+    try require(actual == expected && result.bytes == UInt64(expected.count), "micro exact v2 file oracle")
+    try require(result.batchFlushes >= 3, "micro multiple batch flushes")
+    var outOfRange = records[0].1; outOfRange[4] = 1
+    var reserved = records[0].1; reserved[2] = 1
+    let invalid: [(String, [[UInt8]])] = [
+        ("duplicate", [records[0].1, records[0].1]),
+        ("missing", [records[0].1]), ("out-of-range", [outOfRange]),
+        ("reserved", [reserved]), ("short", [[0, 1, 2]])
+    ]
+    var rejected = 0
+    for (name, bytes) in invalid {
+        do { _ = try write(bytes, name: name) }
+        catch ProbeError.corruption { rejected += 1 }
+        try require(!FileManager.default.fileExists(atPath: directory + "/" + name + "/snapshot-1.commit"),
+                    "micro invalid record must not commit")
+    }
+    try require(rejected == invalid.count, "micro writer record rejection")
+    return ["status":"pass", "population":world.count, "exactFileBytes":actual.count,
+            "records":records.count, "batchFlushes":result.batchFlushes,
+            "noncanonicalInputOrder":true, "rejectedRecordCases":rejected]
+}
+
 func stageCMicroTransportChecks(_ directory: String) throws -> [String: Any] {
     try FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true)
     let empty = StageCRecordQueue(capacity: 1)
@@ -56,9 +131,14 @@ func stageCMicroTransportChecks(_ directory: String) throws -> [String: Any] {
     try require(hex == knownSHA && digest == oldDigest &&
                 Snapshot.digestBytes([UInt8](abc), range: 0..<3) == oldDigest,
                 "micro independent SHA-256 and digest encoding")
+    var fixedDigest = [UInt8](repeating: 0, count: 32)
+    Snapshot.storeDigest(Snapshot.hashData(abc), into: &fixedDigest, at: 0)
+    try require(Data(fixedDigest) == oldDigest, "micro fixed digest known bytes")
+    let writerFiles = try stageCMicroWriterFiles(directory + "/writer-files")
     return ["status":"pass","fifoRecords":10000,"emptyFinish":true,
             "exactWrittenBytes":10000,"rejectedMisuse":rejected,
             "knownSHA256":true,"legacyDigestEncoding":true,
+            "writerFiles":writerFiles,
             "scope":"queue/writer lifecycle checks, not Stage C acceptance"]
 }
 
