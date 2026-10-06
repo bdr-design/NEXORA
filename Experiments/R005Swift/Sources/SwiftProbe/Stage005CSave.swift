@@ -15,7 +15,17 @@ struct StageCSnapshotFileResult: Sendable {
     let writerAllocationBytes: UInt64
     let writerAllocationObserverAvailable: Bool
     let peakQueuedBytes: Int
+    var retainedEpochBufferBytes: Int = 0
+    var snapshotSource: String = "record_queue"
 }
+
+#if EPOCH_PAGES
+struct StageCEpochCompletion {
+    let epoch: UInt32
+    let ownerID: ObjectIdentifier
+    fileprivate init(epoch: UInt32, ownerID: ObjectIdentifier) { self.epoch = epoch; self.ownerID = ownerID }
+}
+#endif
 
 final class StageCWriterCounters: Sendable {
     let queued = Atomic<Int>(0)
@@ -97,7 +107,13 @@ final class StageCRecordQueue: Sendable {
 final class SnapshotSink: Sendable {
     let epoch: UInt32
     let counters: StageCWriterCounters
-    private let queue: StageCRecordQueue
+    private let queue: StageCRecordQueue?
+#if EPOCH_PAGES
+    private let pendingEpoch: PendingEpochSnapshot?
+    private let ownerID: ObjectIdentifier?
+    private let expectedCounts: [UInt32]
+    private let retainedEpochBufferBytes: Int
+#endif
 
     init(directory: String, epoch: UInt32, expectedCounts: [UInt32]) {
         self.epoch = epoch
@@ -106,6 +122,10 @@ final class SnapshotSink: Sendable {
         let queue = StageCRecordQueue(capacity: capacity)
         self.counters = counters
         self.queue = queue
+#if EPOCH_PAGES
+        pendingEpoch = nil; ownerID = nil
+        self.expectedCounts = expectedCounts; retainedEpochBufferBytes = 0
+#endif
         let dispatchSubmittedNS = nx_now()
         DispatchQueue.global(qos: .utility).async {
             let writerStartNS = nx_now()
@@ -137,7 +157,59 @@ final class SnapshotSink: Sendable {
         }
     }
 
+#if EPOCH_PAGES
+    init(pagedDirectory directory: String, epoch: UInt32, expectedCounts: [UInt32],
+         ownerID: ObjectIdentifier, retainedEpochBufferBytes: Int) {
+        self.epoch = epoch; self.expectedCounts = expectedCounts; self.ownerID = ownerID
+        self.retainedEpochBufferBytes = retainedEpochBufferBytes
+        queue = nil
+        let counters = StageCWriterCounters(), pending = PendingEpochSnapshot()
+        self.counters = counters; pendingEpoch = pending
+        let submitted = nx_now()
+        DispatchQueue.global(qos: .utility).async {
+            let running = nx_now()
+            counters.dispatchToRunNS.store(running >= submitted ? running - submitted : 0, ordering: .releasing)
+            nx_alloc_begin()
+            do {
+                if let consumed = try StageCSnapshotWriter.consumePending(pending, directory: directory, expectedCounts: expectedCounts) {
+                    let result = consumed.0, waitNS = consumed.1
+                    counters.bytes.store(result.bytes, ordering: .releasing)
+                    counters.chunks.store(result.chunks, ordering: .releasing)
+                    counters.writeNS.store(result.writeNS, ordering: .releasing)
+                    counters.queueWaitNS.store(waitNS, ordering: .releasing)
+                    counters.recordProcessWriteNS.store(result.recordProcessWriteNS, ordering: .releasing)
+                    counters.finalizeNS.store(result.finalizeNS, ordering: .releasing)
+                } else { counters.failed.store(1, ordering: .releasing) }
+            } catch { counters.failed.store(1, ordering: .releasing) }
+            let allocation = nx_alloc_end()
+            counters.writerAllocations.store(allocation.calls, ordering: .releasing)
+            counters.writerAllocationBytes.store(allocation.bytes, ordering: .releasing)
+            counters.writerAllocationObserverAvailable.store(Int(allocation.available), ordering: .releasing)
+            // Every temporary frozen value above has left scope before release.
+            counters.done.store(1, ordering: .releasing)
+        }
+    }
+
+    deinit { pendingEpoch?.cancelIfUnused() }
+    func accepts(owner: AnyObject, counts: [UInt32]) -> Bool {
+        pendingEpoch != nil && ownerID == ObjectIdentifier(owner) && expectedCounts == counts
+    }
+    func publish(_ view: FrozenStageCSnapshot) {
+        precondition(view.epoch == epoch)
+        pendingEpoch!.publish(view)
+    }
+    func cancelUnused() {
+        if let pendingEpoch { pendingEpoch.cancelIfUnused() }
+        else if counters.done.load(ordering: .acquiring) == 0 { queue?.finish() }
+    }
+    func completionToken() -> StageCEpochCompletion? {
+        guard pendingEpoch != nil, let ownerID, counters.done.load(ordering: .acquiring) == 1 else { return nil }
+        return StageCEpochCompletion(epoch: epoch, ownerID: ownerID)
+    }
+#endif
+
     func emit(_ record: [UInt8]) {
+        guard let queue else { preconditionFailure("immutable snapshot has no record queue") }
         let queuedBytes = record.count + 32
         let now = counters.queued.add(queuedBytes, ordering: .relaxed).newValue
         var seen = counters.peak.load(ordering: .relaxed)
@@ -152,14 +224,14 @@ final class SnapshotSink: Sendable {
         queue.push(record)
     }
 
-    func finish() { queue.finish() }
+    func finish() { queue?.finish() }
 
     func resultIfDone() throws -> StageCSnapshotFileResult? {
         guard counters.done.load(ordering: .acquiring) == 1 else { return nil }
         guard counters.failed.load(ordering: .acquiring) == 0 else {
             throw ProbeError.invalid("stage C background snapshot writer failed")
         }
-        return StageCSnapshotFileResult(bytes: counters.bytes.load(ordering: .acquiring),
+        let result = StageCSnapshotFileResult(bytes: counters.bytes.load(ordering: .acquiring),
             chunks: counters.chunks.load(ordering: .acquiring),
             writeNS: counters.writeNS.load(ordering: .acquiring),
             dispatchToRunNS: counters.dispatchToRunNS.load(ordering: .acquiring),
@@ -170,6 +242,16 @@ final class SnapshotSink: Sendable {
             writerAllocationBytes: counters.writerAllocationBytes.load(ordering: .acquiring),
             writerAllocationObserverAvailable: counters.writerAllocationObserverAvailable.load(ordering: .acquiring) == 1,
             peakQueuedBytes: counters.peak.load(ordering: .acquiring))
+#if EPOCH_PAGES
+        var decorated = result
+        if pendingEpoch != nil {
+            decorated.retainedEpochBufferBytes = retainedEpochBufferBytes
+            decorated.snapshotSource = "immutable_epoch_pages"
+        }
+        return decorated
+#else
+        return result
+#endif
     }
 }
 
@@ -195,7 +277,6 @@ enum StageCSnapshotWriter {
         }
         let start = nx_now()
         let tmp = directory + "/snapshot-\(epoch).tmp"
-        let final = directory + "/snapshot-\(epoch).bin"
         guard FileManager.default.createFile(atPath: tmp, contents: nil) else {
             throw ProbeError.invalid("stage C tmp create")
         }
@@ -240,9 +321,7 @@ enum StageCSnapshotWriter {
             recordProcessWriteNS &+= nx_now() - recordStart
         }
 
-        let finalizeStart = nx_now()
         guard counts == expectedCounts else { throw ProbeError.corruption("stage C missing record") }
-        nx_kill_point("c.k4.before_footer")
         var canonical = Data(capacity: digests.count * 38)
         for kind in UInt16(0)...UInt16(3) {
             for index in UInt32(0)..<expectedCounts[Int(kind)] {
@@ -253,6 +332,20 @@ enum StageCSnapshotWriter {
                 canonical.append(digest)
             }
         }
+        return try finalize(handle: handle, directory: directory, epoch: epoch, counts: counts,
+                            canonical: canonical, bytesWritten: bytesWritten, start: start,
+                            queueWaitNS: queueWaitNS, recordProcessWriteNS: recordProcessWriteNS,
+                            peakQueuedBytes: counters.peak.load(ordering: .relaxed))
+    }
+
+    static func finalize(handle: FileHandle, directory: String, epoch: UInt32,
+                         counts: [UInt32], canonical: Data, bytesWritten: UInt64,
+                         start: UInt64, queueWaitNS: UInt64, recordProcessWriteNS: UInt64,
+                         peakQueuedBytes: Int) throws -> StageCSnapshotFileResult {
+        let finalizeStart = nx_now()
+        let tmp = directory + "/snapshot-\(epoch).tmp"
+        let final = directory + "/snapshot-\(epoch).bin"
+        nx_kill_point("c.k4.before_footer")
         let totalBytes = bytesWritten + 64
         let footer = Snapshot.footer(counts: counts, totalBytes: totalBytes, canonicalDigestInput: canonical)
         try handle.write(contentsOf: footer)
@@ -284,19 +377,24 @@ enum StageCSnapshotWriter {
             if FileManager.default.fileExists(atPath: oldMarker) { try FileManager.default.removeItem(atPath: oldMarker) }
             guard nx_sync_dir(directory) == 0 else { throw ProbeError.invalid("stage C generation cleanup sync") }
         }
-        return StageCSnapshotFileResult(bytes: totalBytes, chunks: digests.count,
+        return StageCSnapshotFileResult(bytes: totalBytes, chunks: counts.reduce(0) { $0 + Int($1) },
             writeNS: nx_now() - start, dispatchToRunNS: 0, queueWaitNS: queueWaitNS,
             recordProcessWriteNS: recordProcessWriteNS, finalizeNS: nx_now() - finalizeStart,
             writerAllocations: 0, writerAllocationBytes: 0,
             writerAllocationObserverAvailable: false,
-            peakQueuedBytes: counters.peak.load(ordering: .relaxed))
+            peakQueuedBytes: peakQueuedBytes)
     }
 }
 
 final class StageCState {
+#if EPOCH_PAGES
+    private let ownerID: ObjectIdentifier
+    let preparedOwnedBytes: Int
+#endif
     let assetChunks: Int
     let nodeChunks: Int
     let groupChunks: Int
+    let expectedCounts: [UInt32]
     private var assetSaved: ContiguousArray<UInt32>
     private var nodeSaved: ContiguousArray<UInt32>
     private var groupSaved: ContiguousArray<UInt32>
@@ -310,29 +408,54 @@ final class StageCState {
     private(set) var lastResult: StageCSnapshotFileResult? = nil
 
     init(world: SwiftWorld) {
+#if EPOCH_PAGES
+        ownerID = ObjectIdentifier(world)
+        world.stageCPreparePages()
+        preparedOwnedBytes = world.ownedBytes
+#endif
         assetChunks = (world.count + 255) >> 8
         nodeChunks = (world.wheel.capacity + 511) >> 9
         groupChunks = (world.groupAmounts.count + 2047) >> 11
+        expectedCounts = [1, UInt32(assetChunks), UInt32(nodeChunks), UInt32(groupChunks)]
         assetSaved = .init(repeating: 0, count: assetChunks)
         nodeSaved = .init(repeating: 0, count: nodeChunks)
         groupSaved = .init(repeating: 0, count: groupChunks)
     }
     init(world: HybridWorld) {
+#if EPOCH_PAGES
+        ownerID = ObjectIdentifier(world)
+        world.stageCPreparePages()
+        preparedOwnedBytes = world.ownedBytes
+#endif
         assetChunks = (world.count + 255) >> 8
         nodeChunks = (world.wheel.capacity + 511) >> 9
         groupChunks = (world.groupAmounts.count + 2047) >> 11
+        expectedCounts = [1, UInt32(assetChunks), UInt32(nodeChunks), UInt32(groupChunks)]
         assetSaved = .init(repeating: 0, count: assetChunks)
         nodeSaved = .init(repeating: 0, count: nodeChunks)
         groupSaved = .init(repeating: 0, count: groupChunks)
     }
 
-    var expectedCounts: [UInt32] {
-        [1, UInt32(assetChunks), UInt32(nodeChunks), UInt32(groupChunks)]
-    }
     var totalChunks: Int { assetChunks + nodeChunks + groupChunks }
     var inFlight: Bool { sink != nil }
 
+    func prepareSink(directory: String, epoch: UInt32) -> SnapshotSink {
+#if EPOCH_PAGES
+        return SnapshotSink(pagedDirectory: directory, epoch: epoch, expectedCounts: expectedCounts,
+                            ownerID: ownerID, retainedEpochBufferBytes: preparedOwnedBytes)
+#else
+        return SnapshotSink(directory: directory, epoch: epoch, expectedCounts: expectedCounts)
+#endif
+    }
+
     func begin(world: SwiftWorld, preparedSink: SnapshotSink) throws {
+#if EPOCH_PAGES
+        guard ownerID == ObjectIdentifier(world), preparedSink.accepts(owner: world, counts: expectedCounts),
+              sink == nil, !capturing, world.stageCCanFreezePages(preparedSink.epoch) else {
+            preparedSink.cancelUnused()
+            throw ProbeError.invalid("stage C frozen save owner/pool/epoch")
+        }
+#endif
         guard sink == nil, !capturing, preparedSink.epoch > epoch else {
             throw ProbeError.invalid("stage C save already active/epoch")
         }
@@ -344,20 +467,45 @@ final class StageCState {
         barrierBytes = 0
         barrierNS = 0
         lastResult = nil
+#if EPOCH_PAGES
+        let frozen = world.stageCFreezePages(epoch)
+        preparedSink.publish(frozen)
+#else
         preparedSink.emit(Snapshot.controlRecord(world))
+#endif
         nx_kill_point("c.k1.after_begin")
     }
     func begin(world: HybridWorld, preparedSink: SnapshotSink) throws {
+#if EPOCH_PAGES
+        guard ownerID == ObjectIdentifier(world), preparedSink.accepts(owner: world, counts: expectedCounts),
+              sink == nil, !capturing, world.stageCCanFreezePages(preparedSink.epoch) else {
+            preparedSink.cancelUnused()
+            throw ProbeError.invalid("stage C frozen save owner/pool/epoch")
+        }
+#endif
         guard sink == nil, !capturing, preparedSink.epoch > epoch else {
             throw ProbeError.invalid("stage C save already active/epoch")
         }
         epoch=preparedSink.epoch;sink=preparedSink;capturing=true;serviceCursor=0
         barrierEmits=0;barrierBytes=0;barrierNS=0;lastResult=nil
+#if EPOCH_PAGES
+        let frozen = world.stageCFreezePages(epoch)
+        preparedSink.publish(frozen)
+#else
         preparedSink.emit(Snapshot.controlRecord(world))
+#endif
         nx_kill_point("c.k1.after_begin")
     }
 
     @inline(__always) func willWriteAsset(_ world: SwiftWorld, index: Int) {
+#if EPOCH_PAGES
+        guard capturing && world.stageCNeedsAssetCopy(index) else { return }
+        let start = nx_now(), bytes = world.stageCCloneAsset(index)
+        if bytes > 0 {
+            barrierNS += nx_now() - start; barrierBytes += bytes; barrierEmits += 1
+            if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
+        }
+#else
         guard capturing else { return }
         let chunk = index >> 8
         if assetSaved[chunk] != epoch, let sink {
@@ -370,9 +518,18 @@ final class StageCState {
             barrierEmits += 1
             if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
         }
+#endif
     }
 
     @inline(__always) func willWriteNode(_ wheel: TimingWheel, index: Int) {
+#if EPOCH_PAGES
+        guard capturing && wheel.stageCNeedsNodeCopy(index) else { return }
+        let start = nx_now(), bytes = wheel.stageCClonePage(index)
+        if bytes > 0 {
+            barrierNS += nx_now() - start; barrierBytes += bytes; barrierEmits += 1
+            if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
+        }
+#else
         guard capturing else { return }
         let chunk = index >> 9
         if nodeSaved[chunk] != epoch, let sink {
@@ -385,9 +542,18 @@ final class StageCState {
             barrierEmits += 1
             if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
         }
+#endif
     }
 
     @inline(__always) func willWriteGroup(_ world: SwiftWorld, index: Int) {
+#if EPOCH_PAGES
+        guard capturing && world.stageCNeedsGroupCopy(index) else { return }
+        let start = nx_now(), bytes = world.stageCCloneGroup(index)
+        if bytes > 0 {
+            barrierNS += nx_now() - start; barrierBytes += bytes; barrierEmits += 1
+            if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
+        }
+#else
         guard capturing else { return }
         let chunk = index >> 11
         if groupSaved[chunk] != epoch, let sink {
@@ -400,8 +566,17 @@ final class StageCState {
             barrierEmits += 1
             if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
         }
+#endif
     }
     @inline(__always) func willWriteAsset(_ world: HybridWorld, index: Int) {
+#if EPOCH_PAGES
+        guard capturing && world.stageCNeedsAssetCopy(index) else { return }
+        let start = nx_now(), bytes = world.stageCCloneAsset(index)
+        if bytes > 0 {
+            barrierNS += nx_now() - start; barrierBytes += bytes; barrierEmits += 1
+            if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
+        }
+#else
         guard capturing else { return }
         let chunk=index>>8
         if assetSaved[chunk] != epoch, let sink {
@@ -410,8 +585,17 @@ final class StageCState {
             assetSaved[chunk]=epoch;barrierEmits += 1
             if barrierEmits==1 { nx_kill_point("c.k2.after_first_barrier") }
         }
+#endif
     }
     @inline(__always) func willWriteNode(_ wheel: HybridTimingWheel, index: Int) {
+#if EPOCH_PAGES
+        guard capturing && wheel.stageCNeedsNodeCopy(index) else { return }
+        let start = nx_now(), bytes = wheel.stageCClonePage(index)
+        if bytes > 0 {
+            barrierNS += nx_now() - start; barrierBytes += bytes; barrierEmits += 1
+            if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
+        }
+#else
         guard capturing else { return }
         let chunk=index>>9
         if nodeSaved[chunk] != epoch, let sink {
@@ -420,8 +604,17 @@ final class StageCState {
             nodeSaved[chunk]=epoch;barrierEmits += 1
             if barrierEmits==1 { nx_kill_point("c.k2.after_first_barrier") }
         }
+#endif
     }
     @inline(__always) func willWriteGroup(_ world: HybridWorld, index: Int) {
+#if EPOCH_PAGES
+        guard capturing && world.stageCNeedsGroupCopy(index) else { return }
+        let start = nx_now(), bytes = world.stageCCloneGroup(index)
+        if bytes > 0 {
+            barrierNS += nx_now() - start; barrierBytes += bytes; barrierEmits += 1
+            if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
+        }
+#else
         guard capturing else { return }
         let chunk=index>>11
         if groupSaved[chunk] != epoch, let sink {
@@ -430,6 +623,7 @@ final class StageCState {
             groupSaved[chunk]=epoch;barrierEmits += 1
             if barrierEmits==1 { nx_kill_point("c.k2.after_first_barrier") }
         }
+#endif
     }
 
     private func emitCanonicalIfUnsaved(_ world: SwiftWorld, canonical: Int) {
@@ -455,6 +649,20 @@ final class StageCState {
     }
 
     func service(world: SwiftWorld, budgetNS: UInt64) throws {
+#if EPOCH_PAGES
+        guard let currentSink = sink else { return }
+        do {
+            if let result = try currentSink.resultIfDone() {
+                guard let completion = currentSink.completionToken() else { throw ProbeError.invariant("missing epoch completion") }
+                world.stageCReleasePages(completion)
+                capturing = false; serviceCursor = totalChunks; lastResult = result; sink = nil
+            }
+        } catch {
+            if capturing, let completion = currentSink.completionToken() { world.stageCReleasePages(completion); capturing = false }
+            // Keep the failed sink in flight; a failed save requires recovery.
+            throw error
+        }
+#else
         guard sink != nil else { return }
         if capturing {
             let deadline = nx_now() &+ budgetNS
@@ -471,6 +679,7 @@ final class StageCState {
             lastResult = result
             sink = nil
         }
+#endif
     }
 
     func waitForCommit(world: SwiftWorld, serviceBudgetNS: UInt64 = 500_000) throws -> StageCSnapshotFileResult {
@@ -508,6 +717,20 @@ final class StageCState {
         }
     }
     func service(world: HybridWorld, budgetNS: UInt64) throws {
+#if EPOCH_PAGES
+        guard let currentSink = sink else { return }
+        do {
+            if let result = try currentSink.resultIfDone() {
+                guard let completion = currentSink.completionToken() else { throw ProbeError.invariant("missing epoch completion") }
+                world.stageCReleasePages(completion)
+                capturing = false; serviceCursor = totalChunks; lastResult = result; sink = nil
+            }
+        } catch {
+            if capturing, let completion = currentSink.completionToken() { world.stageCReleasePages(completion); capturing = false }
+            // Keep the failed sink in flight; a failed save requires recovery.
+            throw error
+        }
+#else
         guard sink != nil else { return }
         if capturing {
             let deadline=nx_now() &+ budgetNS
@@ -517,6 +740,7 @@ final class StageCState {
             if serviceCursor==totalChunks { sink?.finish();capturing=false }
         }
         if !capturing,let result=try sink?.resultIfDone() { lastResult=result;sink=nil }
+#endif
     }
     func waitForCommit(world: HybridWorld, serviceBudgetNS: UInt64 = 500_000) throws -> StageCSnapshotFileResult {
         var spins=0

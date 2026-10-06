@@ -1702,5 +1702,76 @@
         "file": "EPOCH-100k-release.json"
       }
     ]
+  },
+  "wordPageMicro20261007": {
+    "status": "micro-ownership-verified",
+    "acceptance": false,
+    "source": "f09272dc5a194f4481b37b47350188153a40f865",
+    "tree": "6d3ca63043081493ce6a9eaa1f22eac1059efebc",
+    "run": 37539359684,
+    "job": 112528277704,
+    "artifact": 11447833132,
+    "artifactSHA256": "c0f089a134dc8983852f4b781c33cb451382fc4fd0827acb9173d66ef795987b",
+    "rawZIP": "Experiments/R005Swift/Evidence/20261007/37539359684-r005-word-pages-micro.zip",
+    "C100SavePerformance": null,
+    "Cacceptance": "OPEN independently on S and H",
+    "matrix": [
+      {
+        "status": "micro-ownership-verified",
+        "acceptance": false,
+        "assets": 4096,
+        "legs": 16,
+        "allocationPolicy": "observe",
+        "releaseAllocationGate": null,
+        "Cacceptance": "OPEN independently on S and H",
+        "file": "EPOCH-4096-debug.json"
+      },
+      {
+        "status": "micro-ownership-verified",
+        "acceptance": false,
+        "assets": 4096,
+        "legs": 16,
+        "allocationPolicy": "zero",
+        "releaseAllocationGate": "verified-zero",
+        "Cacceptance": "OPEN independently on S and H",
+        "file": "EPOCH-4096-release.json"
+      },
+      {
+        "status": "micro-ownership-verified",
+        "acceptance": false,
+        "assets": 4096,
+        "legs": 16,
+        "allocationPolicy": "functional",
+        "releaseAllocationGate": null,
+        "Cacceptance": "OPEN independently on S and H",
+        "file": "EPOCH-4096-tsan.json"
+      },
+      {
+        "status": "micro-ownership-verified",
+        "acceptance": false,
+        "assets": 100000,
+        "legs": 16,
+        "allocationPolicy": "zero",
+        "releaseAllocationGate": "verified-zero",
+        "Cacceptance": "OPEN independently on S and H",
+        "file": "EPOCH-100k-release.json"
+      }
+    ],
+    "wordCodecBoundaries": {
+      "fieldRoundTrips": 10543,
+      "reference": "independent existing S Snapshot.assetRecord after typed SwiftWorld restore",
+      "sizes": [
+        1,
+        3,
+        7,
+        8,
+        9,
+        15,
+        255,
+        256,
+        257
+      ],
+      "status": "pass"
+    }
   }
 }

@@ -114,6 +114,14 @@ enum Snapshot {
         }
     }
 
+#if EPOCH_PAGES
+    static func append<T: BitwiseCopyable & Sendable>(_ column: EpochRowsView<T>, _ range: Range<Int>, into bytes: inout [UInt8]) {
+        column.append(range, into: &bytes)
+    }
+    static func append<T: FixedWidthInteger & BitwiseCopyable & Sendable>(_ column: EpochColumn<T>, _ range: Range<Int>, into bytes: inout [UInt8]) {
+        for index in range { appendLE(column[index], into: &bytes) }
+    }
+#endif
     static func appendBoolBytes(_ column: ContiguousArray<Bool>, _ range: Range<Int>,
                                 into bytes: inout [UInt8]) {
         guard !range.isEmpty else { return }
@@ -211,6 +219,9 @@ enum Snapshot {
         let range = lo..<min(lo + 256, world.count)
         return record(kind: 1, index: UInt32(chunk), elements: UInt32(range.count),
                       payloadBytes: range.count * 65) { bytes in
+#if EPOCH_PAGES
+            world.stageCAppendAssetPage(chunk, into: &bytes)
+#else
             append(world.generations, range, into: &bytes)
             append(world.airports, range, into: &bytes)
             append(world.destinations, range, into: &bytes)
@@ -224,6 +235,7 @@ enum Snapshot {
             append(world.entities, range, into: &bytes)
             append(world.policies, range, into: &bytes)
             append(world.origins, range, into: &bytes)
+#endif
         }
     }
 
@@ -256,11 +268,15 @@ enum Snapshot {
         let range = lo..<min(lo + 256, world.count)
         return record(kind: 1, index: UInt32(chunk), elements: UInt32(range.count),
                       payloadBytes: range.count * 68) { bytes in
+#if EPOCH_PAGES
+            world.stageCAppendAssetPage(chunk, into: &bytes)
+#else
             append(world.hot, range, into: &bytes)
             append(world.entity, range, into: &bytes)
             append(world.policy, range, into: &bytes)
             append(world.origin, range, into: &bytes)
             append(world.departure, range, into: &bytes)
+#endif
         }
     }
 

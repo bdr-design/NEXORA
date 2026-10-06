@@ -1,0 +1,616 @@
+{
+  "status": "micro-ownership-verified",
+  "acceptance": false,
+  "source": "f09272dc5a194f4481b37b47350188153a40f865",
+  "tree": "6d3ca63043081493ce6a9eaa1f22eac1059efebc",
+  "run": 37539359684,
+  "job": 112528277704,
+  "artifact": 11447833132,
+  "artifactSHA256": "c0f089a134dc8983852f4b781c33cb451382fc4fd0827acb9173d66ef795987b",
+  "rawZIP": "Experiments/R005Swift/Evidence/20261007/37539359684-r005-word-pages-micro.zip",
+  "C100SavePerformance": null,
+  "Cacceptance": "OPEN independently on S and H",
+  "matrix": [
+    {
+      "status": "micro-ownership-verified",
+      "acceptance": false,
+      "assets": 4096,
+      "legs": 16,
+      "allocationPolicy": "observe",
+      "releaseAllocationGate": null,
+      "Cacceptance": "OPEN independently on S and H",
+      "file": "EPOCH-4096-debug.json"
+    },
+    {
+      "status": "micro-ownership-verified",
+      "acceptance": false,
+      "assets": 4096,
+      "legs": 16,
+      "allocationPolicy": "zero",
+      "releaseAllocationGate": "verified-zero",
+      "Cacceptance": "OPEN independently on S and H",
+      "file": "EPOCH-4096-release.json"
+    },
+    {
+      "status": "micro-ownership-verified",
+      "acceptance": false,
+      "assets": 4096,
+      "legs": 16,
+      "allocationPolicy": "functional",
+      "releaseAllocationGate": null,
+      "Cacceptance": "OPEN independently on S and H",
+      "file": "EPOCH-4096-tsan.json"
+    },
+    {
+      "status": "micro-ownership-verified",
+      "acceptance": false,
+      "assets": 100000,
+      "legs": 16,
+      "allocationPolicy": "zero",
+      "releaseAllocationGate": "verified-zero",
+      "Cacceptance": "OPEN independently on S and H",
+      "file": "EPOCH-100k-release.json"
+    }
+  ],
+  "rawEntries": [
+    {
+      "name": "EPOCH-100k-release.json",
+      "bytes": 62772,
+      "sha256": "dbc187dc5951efdfae940cb3efc90078df40a2eabc18a7d1ebfb131fb54e6ac1"
+    },
+    {
+      "name": "EPOCH-100k-release.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "AllocationObserver.dylib",
+      "bytes": 51112,
+      "sha256": "3d6c815f9354aeb8b58eac6d62fafd5a878edf7b6b2820e08b2d2b32508f33c6"
+    },
+    {
+      "name": "EPOCH-4096-debug.json",
+      "bytes": 63287,
+      "sha256": "6f64c55c0a2872ff9632116e33b8f525399070a45bbb32d2550e15b2b04991da"
+    },
+    {
+      "name": "EPOCH-4096-release.json",
+      "bytes": 62169,
+      "sha256": "3df8e8f423b7d7243d4e57806e40b9bec84f0b13263c34bc9de8d298db86198d"
+    },
+    {
+      "name": "EPOCH-4096-debug.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "EPOCH-4096-release.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "EPOCH-4096-tsan.json",
+      "bytes": 63544,
+      "sha256": "08688bfad8bd76a3859b64746fafda3cc11ecd76a251ff3bc2bbe59432b4df3b"
+    },
+    {
+      "name": "EPOCH-4096-tsan.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "build-debug.txt",
+      "bytes": 1699,
+      "sha256": "5c6f89f39d80977a38901fd9bd7b7564a3c8fd6777165cadeed0e73b9bc8271b"
+    },
+    {
+      "name": "build-release.txt",
+      "bytes": 477,
+      "sha256": "39a46f56e676fa65c258cd6aeb3deaf265944e056bd5bad64cd77bc0787d44db"
+    },
+    {
+      "name": "build-tsan.txt",
+      "bytes": 1699,
+      "sha256": "348d34d6de32d8e893d1551c0ec498af713988bd3d4b38d28c01d21a4251e906"
+    },
+    {
+      "name": "commit.txt",
+      "bytes": 41,
+      "sha256": "60595f092b04259009b5d07499fadde3fb08a71df051d653dc8cabe15e268303"
+    },
+    {
+      "name": "environment.txt",
+      "bytes": 251,
+      "sha256": "b0e84a90ca88d5c49dda9478f26391635e87e380a8e087fb4b0a9fd5847a4296"
+    },
+    {
+      "name": "hot-layout-source.txt",
+      "bytes": 877,
+      "sha256": "e7d59a11b4b80f58e1ed4baf1ead2b4f2a7a443605764a585b775b034ec7db82"
+    },
+    {
+      "name": "micro-100k-validation.txt",
+      "bytes": 263,
+      "sha256": "9d909487f08abf07e882284d0df0caf894cfb321cff614dd7baf3e79a98a9e37"
+    },
+    {
+      "name": "micro-4096-debug-validation.txt",
+      "bytes": 251,
+      "sha256": "3212cfd8ee027fc7d3d9048b70a0a98039865938df72988f4cea62f31d36079e"
+    },
+    {
+      "name": "micro-4096-release-validation.txt",
+      "bytes": 261,
+      "sha256": "87e3d440985f24c922664edac83c4691a4eb5c4c3057bc1c6e9d84b0d044ec8d"
+    },
+    {
+      "name": "micro-4096-tsan-validation.txt",
+      "bytes": 253,
+      "sha256": "64a1881d17a5311e025a6f583bf345dfd4d6c7d26611d7f5a8a07e40b1dd3917"
+    },
+    {
+      "name": "proof-gates.txt",
+      "bytes": 2597,
+      "sha256": "997495e85302dd7ebbfc68b1e3af012d99a81dcbd9d8c029789479a98b15c1dd"
+    },
+    {
+      "name": "scope.txt",
+      "bytes": 161,
+      "sha256": "c9a26a6105ce58b9dfa9929522f1f6b9dd6e18f011c72eeb5ce322930363abdd"
+    },
+    {
+      "name": "source-guard-after.txt",
+      "bytes": 270,
+      "sha256": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7"
+    },
+    {
+      "name": "source-guard-before.txt",
+      "bytes": 270,
+      "sha256": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7"
+    },
+    {
+      "name": "source-sha256.txt",
+      "bytes": 2650,
+      "sha256": "223181170c1602d77b7690ceea4939a55d0dc38307987d7696ff51f96a2340ab"
+    },
+    {
+      "name": "tree.txt",
+      "bytes": 41,
+      "sha256": "0d2ce9f0e9032996104e0e0d06178ba6c9b24c8319eb9c6805209bd240d22fad"
+    }
+  ],
+  "wordCodecBoundaries": {
+    "fieldRoundTrips": 10543,
+    "reference": "independent existing S Snapshot.assetRecord after typed SwiftWorld restore",
+    "sizes": [
+      1,
+      3,
+      7,
+      8,
+      9,
+      15,
+      255,
+      256,
+      257
+    ],
+    "status": "pass"
+  },
+  "release100k": [
+    {
+      "representation": "rows",
+      "writerMode": "none",
+      "cloneStrategy": "elementLoop",
+      "reservedPayloadBytes": 14737392,
+      "mutationNS": [
+        1174709,
+        1181750,
+        1332250
+      ],
+      "cloneNS": [
+        null,
+        null,
+        null
+      ],
+      "writerNS": [
+        null,
+        null,
+        null
+      ],
+      "ownerLoopNS": [
+        1186417,
+        1188375,
+        1347959
+      ]
+    },
+    {
+      "representation": "packedSoA",
+      "writerMode": "none",
+      "cloneStrategy": "elementLoop",
+      "reservedPayloadBytes": 13175360,
+      "mutationNS": [
+        6878875,
+        7225125,
+        7365875
+      ],
+      "cloneNS": [
+        null,
+        null,
+        null
+      ],
+      "writerNS": [
+        null,
+        null,
+        null
+      ],
+      "ownerLoopNS": [
+        6900000,
+        7243084,
+        7388500
+      ]
+    },
+    {
+      "representation": "byteBulk",
+      "writerMode": "none",
+      "cloneStrategy": "replaceSubrange",
+      "reservedPayloadBytes": 13175360,
+      "mutationNS": [
+        6463208,
+        7345458,
+        6757083
+      ],
+      "cloneNS": [
+        null,
+        null,
+        null
+      ],
+      "writerNS": [
+        null,
+        null,
+        null
+      ],
+      "ownerLoopNS": [
+        6477583,
+        7366667,
+        6777750
+      ]
+    },
+    {
+      "representation": "wordSoA",
+      "writerMode": "none",
+      "cloneStrategy": "replaceSubrange",
+      "reservedPayloadBytes": 13175360,
+      "mutationNS": [
+        4431250,
+        4505625,
+        4283459
+      ],
+      "cloneNS": [
+        null,
+        null,
+        null
+      ],
+      "writerNS": [
+        null,
+        null,
+        null
+      ],
+      "ownerLoopNS": [
+        4457667,
+        4524458,
+        4303125
+      ]
+    },
+    {
+      "representation": "rows",
+      "writerMode": "direct",
+      "cloneStrategy": "elementLoop",
+      "reservedPayloadBytes": 14737392,
+      "mutationNS": [
+        2188125,
+        4054708,
+        2097334
+      ],
+      "cloneNS": [
+        731509,
+        1513086,
+        878340
+      ],
+      "writerNS": [
+        26171416,
+        26393583,
+        28025333
+      ],
+      "ownerLoopNS": [
+        27048541,
+        26789375,
+        28406416
+      ]
+    },
+    {
+      "representation": "packedSoA",
+      "writerMode": "direct",
+      "cloneStrategy": "elementLoop",
+      "reservedPayloadBytes": 13175360,
+      "mutationNS": [
+        43554709,
+        42803666,
+        42094167
+      ],
+      "cloneNS": [
+        36447787,
+        35583913,
+        35304427
+      ],
+      "writerNS": [
+        16151542,
+        20062417,
+        15864542
+      ],
+      "ownerLoopNS": [
+        43997000,
+        43183833,
+        42593833
+      ]
+    },
+    {
+      "representation": "byteBulk",
+      "writerMode": "direct",
+      "cloneStrategy": "replaceSubrange",
+      "reservedPayloadBytes": 13175360,
+      "mutationNS": [
+        7225708,
+        7044333,
+        9177083
+      ],
+      "cloneNS": [
+        308611,
+        325159,
+        466870
+      ],
+      "writerNS": [
+        14845250,
+        18854042,
+        15469291
+      ],
+      "ownerLoopNS": [
+        15227375,
+        19552959,
+        16069042
+      ]
+    },
+    {
+      "representation": "wordSoA",
+      "writerMode": "direct",
+      "cloneStrategy": "replaceSubrange",
+      "reservedPayloadBytes": 13175360,
+      "mutationNS": [
+        4510584,
+        4157917,
+        4009917
+      ],
+      "cloneNS": [
+        286833,
+        309454,
+        278572
+      ],
+      "writerNS": [
+        21923500,
+        23728959,
+        20269708
+      ],
+      "ownerLoopNS": [
+        22334208,
+        24052667,
+        20604167
+      ]
+    },
+    {
+      "representation": "rows",
+      "writerMode": "paced",
+      "cloneStrategy": "elementLoop",
+      "reservedPayloadBytes": 14737392,
+      "mutationNS": [
+        2053750,
+        2440875,
+        1826375
+      ],
+      "cloneNS": [
+        772820,
+        901507,
+        689053
+      ],
+      "writerNS": [
+        66045750,
+        66050667,
+        64392666
+      ],
+      "ownerLoopNS": [
+        66468709,
+        66374708,
+        64844292
+      ]
+    },
+    {
+      "representation": "packedSoA",
+      "writerMode": "paced",
+      "cloneStrategy": "elementLoop",
+      "reservedPayloadBytes": 13175360,
+      "mutationNS": [
+        36004167,
+        35517084,
+        34960125
+      ],
+      "cloneNS": [
+        30051073,
+        29635630,
+        29102291
+      ],
+      "writerNS": [
+        57319500,
+        57355000,
+        58276583
+      ],
+      "ownerLoopNS": [
+        57801709,
+        57730583,
+        58646333
+      ]
+    },
+    {
+      "representation": "byteBulk",
+      "writerMode": "paced",
+      "cloneStrategy": "replaceSubrange",
+      "reservedPayloadBytes": 13175360,
+      "mutationNS": [
+        6124917,
+        6275542,
+        6394083
+      ],
+      "cloneNS": [
+        240032,
+        310206,
+        281385
+      ],
+      "writerNS": [
+        50357041,
+        51501000,
+        51628333
+      ],
+      "ownerLoopNS": [
+        50665375,
+        51896792,
+        51967750
+      ]
+    },
+    {
+      "representation": "wordSoA",
+      "writerMode": "paced",
+      "cloneStrategy": "replaceSubrange",
+      "reservedPayloadBytes": 13175360,
+      "mutationNS": [
+        4485625,
+        4976292,
+        4921000
+      ],
+      "cloneNS": [
+        273997,
+        380250,
+        307839
+      ],
+      "writerNS": [
+        57625458,
+        58702333,
+        60717667
+      ],
+      "ownerLoopNS": [
+        57960125,
+        59138334,
+        61042834
+      ]
+    },
+    {
+      "representation": "rows",
+      "writerMode": "none",
+      "cloneStrategy": "elementLoop",
+      "reservedPayloadBytes": 14737392,
+      "mutationNS": [
+        1297041,
+        1349916,
+        1307125
+      ],
+      "cloneNS": [
+        null,
+        null,
+        null
+      ],
+      "writerNS": [
+        null,
+        null,
+        null
+      ],
+      "ownerLoopNS": [
+        1314084,
+        1365167,
+        1317709
+      ]
+    },
+    {
+      "representation": "packedSoA",
+      "writerMode": "none",
+      "cloneStrategy": "elementLoop",
+      "reservedPayloadBytes": 13175360,
+      "mutationNS": [
+        6876292,
+        7415875,
+        6530208
+      ],
+      "cloneNS": [
+        null,
+        null,
+        null
+      ],
+      "writerNS": [
+        null,
+        null,
+        null
+      ],
+      "ownerLoopNS": [
+        6893250,
+        7431333,
+        6538583
+      ]
+    },
+    {
+      "representation": "byteBulk",
+      "writerMode": "none",
+      "cloneStrategy": "replaceSubrange",
+      "reservedPayloadBytes": 13175360,
+      "mutationNS": [
+        6627750,
+        7162625,
+        8436916
+      ],
+      "cloneNS": [
+        null,
+        null,
+        null
+      ],
+      "writerNS": [
+        null,
+        null,
+        null
+      ],
+      "ownerLoopNS": [
+        6641417,
+        7176542,
+        8495958
+      ]
+    },
+    {
+      "representation": "wordSoA",
+      "writerMode": "none",
+      "cloneStrategy": "replaceSubrange",
+      "reservedPayloadBytes": 13175360,
+      "mutationNS": [
+        5043916,
+        5803833,
+        4573833
+      ],
+      "cloneNS": [
+        null,
+        null,
+        null
+      ],
+      "writerNS": [
+        null,
+        null,
+        null
+      ],
+      "ownerLoopNS": [
+        5097292,
+        5820208,
+        4598792
+      ]
+    }
+  ]
+}

@@ -1,4 +1,24 @@
-# NEXORA — current checkpoint / 2026-10-06
+# NEXORA — current checkpoint / 2026-10-07
+Conditional integration checkpoint: existing SwiftWorld/HybridWorld now have
+experimental EPOCH_PAGES storage and an immutable v2 writer; default owners
+remain available from the same permitted line. Pre-edit estimates and source
+identity are in 2026-10-07-R005-PAGED-CANDIDATE.md. Release zero-allocation,
+canonical cross-build and Debug/Release/TSan bounded proof are pending on Apple.
+Completion tokens plus a non-inlined writer frame guard pool reuse; unused and
+rejected writers cancel. No A/B/K1M/C100 ran; C OPEN S/H and all failures retained.
+
+Word/bulk micro run37539359684 SUCCESS on livef09272dc5a194f4481b37b47350188153a40f865,
+tree6d3ca630. Artifact11447833132 ZIP SHA256
+c0f089a134dc8983852f4b781c33cb451382fc4fd0827acb9173d66ef795987b independently
+verified. Debug/Release/TSan4096 thenRelease100k;16legs×3epochs per mode,
+10,543 unaligned-field round-trips and exact canonical S records at nine sizes.
+Release freeze/mutation/release zero allocations, TSan unavailable=null. At100k
+word bulk clone0.274–0.380ms/6.5MB; byte bulk0.240–0.467ms proves bulk API is
+the copy win. Word control mutation4.283–5.804ms vsrows1.175–1.350ms/800k writes,
+so accessor cost remains material. Direct frozen writer credible for a bounded
+integration candidate; no pacing win claimed. Next: estimate/review conditional
+EPOCH_PAGES integration into existing S/H, then A/B/TSan/K1–K10 before C100.
+No new game/module, no main merge, all failures retained; C OPEN on S/H.
 
 Latest measured checkpoint 2026-10-07: immutable asset-page micro run37538110239
 SUCCESS on live1a1a216884f7baf61e044011733a9f1a041b637d/tree8033487f. Artifact

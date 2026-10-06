@@ -54,6 +54,16 @@ import Glibc
             guard args.count==2 else {throw ProbeError.invalid("stage-b-recover-crash directory")}
             result=try stageBRecoverCrash(args[1])
 #if STAGE_C
+#if EPOCH_PAGES
+        case "paged-candidate-lifecycle":
+            guard args.count == 3 else { throw ProbeError.invalid("paged-candidate-lifecycle directory S|H") }
+            result = try stageCPagedLifecycle(args[1], variant: args[2])
+#endif
+        case "paged-candidate-checks":
+            guard args.count == 5, let count = Int(args[3]) else {
+                throw ProbeError.invalid("paged-candidate-checks directory S|H N observe|zero|functional")
+            }
+            result = try stageCPagedChecks(args[1], variant: args[2], count: count, allocationPolicy: args[4])
         case "epoch-pages-micro":
             guard args.count == 3, let count = Int(args[2]) else {
                 throw ProbeError.invalid("epoch-pages-micro directory 4096|100000")

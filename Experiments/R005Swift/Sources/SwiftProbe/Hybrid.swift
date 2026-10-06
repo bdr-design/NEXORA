@@ -1,7 +1,7 @@
 import Foundation
 import ProbePlatform
 
-struct HotAsset: BitwiseCopyable, Equatable {
+struct HotAsset: BitwiseCopyable, Equatable, Sendable {
     var accruedOperation: UInt64
     var completed: UInt64
     var fare: Int64
@@ -29,7 +29,7 @@ struct HotAsset: BitwiseCopyable, Equatable {
     }
 }
 
-struct EventNode: BitwiseCopyable, Equatable {
+struct EventNode: BitwiseCopyable, Equatable, Sendable {
     var due: UInt64
     var operation: UInt64
     var asset: UInt32
@@ -71,7 +71,12 @@ func hybridLayoutSelftest() throws -> [String: Any] {
 }
 
 final class HybridTimingWheel {
+#if EPOCH_PAGES
+    private let nodePages: EpochBuffer<EventNode>
+    var nodes: EpochRowsView<EventNode> { nodePages.view }
+#else
     private(set) var nodes: ContiguousArray<EventNode>
+#endif
     private var heads = ContiguousArray(repeating: none, count: 2048)
     private var tails = ContiguousArray(repeating: none, count: 2048)
     private var sorted = ContiguousArray(repeating: true, count: 2048)
@@ -102,23 +107,44 @@ final class HybridTimingWheel {
     init(capacity: Int, mutation: Mutation = .none) throws {
         guard capacity > 0, capacity <= 2_000_000 else { throw ProbeError.invalid("wheel capacity") }
         self.mutation = mutation
+#if EPOCH_PAGES
+        nodePages = EpochBuffer(repeating: EventNode(), count: capacity, pageShift: 9)
+#else
         nodes = .init(repeating: EventNode(), count: capacity)
+#endif
         if capacity > 1 {
-            for i in 0..<(capacity - 1) { nodes[i].next = UInt32(i + 1) }
+            for i in 0..<(capacity - 1) { writeNodeNext(i, UInt32(i + 1))}
         }
-        nodes[capacity - 1].next = none
+        writeNodeNext(capacity - 1, none)
         free = 0
     }
 
     var capacity: Int { nodes.count }
 
     var ownedBytes: Int {
-        nodes.capacity * MemoryLayout<EventNode>.stride +
-        (heads.capacity + tails.capacity) * MemoryLayout<UInt32>.stride +
+#if EPOCH_PAGES
+        let storage = nodePages.ownedBytes
+#else
+        let storage = nodes.capacity * MemoryLayout<EventNode>.stride
+#endif
+        return storage + (heads.capacity + tails.capacity) * MemoryLayout<UInt32>.stride +
         sorted.capacity * MemoryLayout<Bool>.stride +
         occupied.capacity * MemoryLayout<UInt64>.stride
     }
 
+    @inline(__always) private func writeNode(_ index: Int, _ value: EventNode) {
+#if EPOCH_PAGES
+        nodePages.setElement(at: index, to: value)
+#else
+        nodes[index] = value
+#endif
+    }
+    @inline(__always) private func writeNodeNext(_ index: Int, _ value: UInt32) {
+        var row = nodes[index]; row.next = value; writeNode(index, row)
+    }
+    @inline(__always) private func writeNodeLive(_ index: Int, _ value: UInt8) {
+        var row = nodes[index]; row.live = value; writeNode(index, row)
+    }
     @inline(__always) private func bucket(_ time: UInt64) -> Int {
         let difference = time ^ cursor
         let level = difference == 0 ? 0 : (63 - difference.leadingZeroBitCount) / 8
@@ -140,7 +166,7 @@ final class HybridTimingWheel {
 #if STAGE_C
         stageCState?.willWriteNode(self, index: i)
 #endif
-        nodes[i].next = none
+        writeNodeNext(i, none)
         if tail == none {
             heads[b] = id
             tails[b] = id
@@ -150,7 +176,7 @@ final class HybridTimingWheel {
 #if STAGE_C
             stageCState?.willWriteNode(self, index: i)
 #endif
-            nodes[i].next = heads[b]
+            writeNodeNext(i, heads[b])
             heads[b] = id
             sorted[b] = true
         } else {
@@ -158,7 +184,7 @@ final class HybridTimingWheel {
 #if STAGE_C
             stageCState?.willWriteNode(self, index: Int(tail))
 #endif
-            nodes[Int(tail)].next = id
+            writeNodeNext(Int(tail), id)
             tails[b] = id
         }
         if mutation == .omitTieBreaker { sorted[b] = true }
@@ -173,8 +199,8 @@ final class HybridTimingWheel {
 #if STAGE_C
         stageCState?.willWriteNode(self, index: i)
 #endif
-        nodes[i] = EventNode(due: event.due, operation: event.operation, asset: event.asset,
-                             generation: event.generation, next: none, kind: event.kind, live: 1)
+        writeNode(i, EventNode(due: event.due, operation: event.operation, asset: event.asset,
+                             generation: event.generation, next: none, kind: event.kind, live: 1))
         insertNode(id, into: bucket(event.due))
         pending += 1
         return id
@@ -204,7 +230,7 @@ final class HybridTimingWheel {
 #if STAGE_C
                     stageCState?.willWriteNode(self, index: Int(outTail))
 #endif
-                    nodes[Int(outTail)].next = none
+                    writeNodeNext(Int(outTail), none)
                 }
                 heads[leaf] = outHead
                 tails[leaf] = outTail
@@ -258,7 +284,7 @@ final class HybridTimingWheel {
 #if STAGE_C
                 stageCState?.willWriteNode(self, index: Int(outTail))
 #endif
-                nodes[Int(outTail)].next = picked
+                writeNodeNext(Int(outTail), picked)
             }
             outTail = picked
         default:
@@ -297,8 +323,8 @@ final class HybridTimingWheel {
                 stageCState?.willWriteNode(self, index: Int(id))
                 stageCState?.willWriteNode(self, index: Int(b))
 #endif
-                nodes[Int(id)].next = nodes[Int(b)].next
-                nodes[Int(b)].next = id
+                writeNodeNext(Int(id), nodes[Int(b)].next)
+                writeNodeNext(Int(b), id)
                 heads[leaf] = b
                 fired = true
             }
@@ -344,8 +370,8 @@ final class HybridTimingWheel {
         stageCState?.willWriteNode(self, index: Int(id))
 #endif
         heads[leaf] = nodes[Int(id)].next
-        nodes[Int(id)].live = 0
-        nodes[Int(id)].next = free
+        writeNodeLive(Int(id), 0)
+        writeNodeNext(Int(id), free)
         free = id
         pending -= 1
         if mutation == .duplicate && !fired { ghost = value; fired = true }
@@ -358,6 +384,14 @@ final class HybridTimingWheel {
         return value
     }
 #if STAGE_C
+#if EPOCH_PAGES
+    func stageCPreparePages() { nodePages.preparePool() }
+    func stageCCanFreezePages(_ epoch: UInt32) -> Bool { nodePages.canFreeze(epoch: epoch) }
+    func stageCFreezePages(_ epoch: UInt32) -> FrozenEpochBuffer<EventNode> { nodePages.freeze(epoch: epoch) }
+    @inline(__always) func stageCNeedsNodeCopy(_ index: Int) -> Bool { nodePages.needsCopy(page: index >> 9) }
+    func stageCClonePage(_ index: Int) -> Int { nodePages.ensureWritable(page: index >> 9) }
+    func stageCReleasePages(_ epoch: UInt32) { nodePages.releaseCompleted(epoch: epoch) }
+#endif
     func stageCAppendNodeChunk(_ range: Range<Int>, into data: inout [UInt8]) {
         Snapshot.append(nodes, range, into: &data)
     }
@@ -399,7 +433,7 @@ final class HybridTimingWheel {
         guard i>=0 && i<capacity,kind<=2,live<=1,reserved==0 else {
             throw ProbeError.corruption("stage C hybrid node")
         }
-        nodes[i]=EventNode(due:due,operation:operation,asset:asset,generation:generation,next:next,kind:kind,live:live)
+        writeNode(i, EventNode(due:due,operation:operation,asset:asset,generation:generation,next:next,kind:kind,live:live))
     }
 #endif
 }
@@ -407,12 +441,24 @@ final class HybridTimingWheel {
 final class HybridWorld {
     let count: Int
     let wheel: HybridTimingWheel
+#if EPOCH_PAGES
+    private let hotPages: EpochBuffer<HotAsset>
+    private let coldPages: EpochWordColumns
+    private let groupPages: EpochBuffer<Int64>
+    var hot: EpochRowsView<HotAsset> { hotPages.view }
+    var entity: EpochColumn<UInt32> { coldPages.column(base: 0, width: 4, as: UInt32.self) }
+    var policy: EpochColumn<UInt32> { coldPages.column(base: 4, width: 4, as: UInt32.self) }
+    var origin: EpochColumn<UInt32> { coldPages.column(base: 8, width: 4, as: UInt32.self) }
+    var departure: EpochColumn<UInt64> { coldPages.column(base: 12, width: 8, as: UInt64.self) }
+    var groupAmounts: EpochRowsView<Int64> { groupPages.view }
+#else
     private(set) var hot: ContiguousArray<HotAsset>
     private(set) var entity: ContiguousArray<UInt32>
     private(set) var policy: ContiguousArray<UInt32>
     private(set) var origin: ContiguousArray<UInt32>
     private(set) var departure: ContiguousArray<UInt64>
     private(set) var groupAmounts: ContiguousArray<Int64>
+#endif
     private var outputs: ContiguousArray<Completion>
     private(set) var now: UInt64 = 0
     private(set) var revenue: Int64 = 0
@@ -430,28 +476,95 @@ final class HybridWorld {
         guard (1...2_000_000).contains(count) else { throw ProbeError.invalid("asset capacity") }
         self.count = count
         wheel = try HybridTimingWheel(capacity: eventCapacity ?? count, mutation: mutation)
+#if EPOCH_PAGES
+        hotPages = EpochBuffer(repeating: HotAsset(), count: count, pageShift: 8)
+        coldPages = EpochWordColumns(count: count, pageShift: 8, bytesPerElement: 20)
+        groupPages = EpochBuffer(repeating: 0, count: (count + 15) / 16, pageShift: 11)
+#else
         hot = .init(repeating: HotAsset(), count: count)
         entity = .init(repeating: 0, count: count)
         policy = .init(repeating: 0, count: count)
         origin = .init(repeating: 1, count: count)
         departure = .init(repeating: 0, count: count)
         groupAmounts = .init(repeating: 0, count: (count + 15) / 16)
+#endif
         outputs = .init(repeating: .empty, count: 1024)
+#if EPOCH_PAGES
+        for i in 0..<count { writeOrigin(i, 1) }
+#endif
         for i in 0..<count {
-            hot[i].contract = UInt32(i / 16)
-            entity[i] = UInt32(i % 32)
+            writeHotContract(i, UInt32(i / 16))
+            writeEntity(i, UInt32(i % 32))
         }
     }
 
     var ownedBytes: Int {
+#if EPOCH_PAGES
+        return wheel.ownedBytes + hotPages.ownedBytes + coldPages.buffer.ownedBytes + groupPages.ownedBytes +
+        outputs.capacity * MemoryLayout<Completion>.stride
+#else
         wheel.ownedBytes +
         hot.capacity * MemoryLayout<HotAsset>.stride +
         (entity.capacity + policy.capacity + origin.capacity) * MemoryLayout<UInt32>.stride +
         departure.capacity * MemoryLayout<UInt64>.stride +
         groupAmounts.capacity * MemoryLayout<Int64>.stride +
         outputs.capacity * MemoryLayout<Completion>.stride
+#endif
     }
-
+    @inline(__always) private func writeEntity(_ index: Int, _ value: UInt32) {
+#if EPOCH_PAGES
+        coldPages.set(base: 0, width: 4, index: index, value: value)
+#else
+        entity[index] = value
+#endif
+    }
+    @inline(__always) private func writePolicy(_ index: Int, _ value: UInt32) {
+#if EPOCH_PAGES
+        coldPages.set(base: 4, width: 4, index: index, value: value)
+#else
+        policy[index] = value
+#endif
+    }
+    @inline(__always) private func writeOrigin(_ index: Int, _ value: UInt32) {
+#if EPOCH_PAGES
+        coldPages.set(base: 8, width: 4, index: index, value: value)
+#else
+        origin[index] = value
+#endif
+    }
+    @inline(__always) private func writeDeparture(_ index: Int, _ value: UInt64) {
+#if EPOCH_PAGES
+        coldPages.set(base: 12, width: 8, index: index, value: value)
+#else
+        departure[index] = value
+#endif
+    }
+    @inline(__always) private func writeGroupAmounts(_ index: Int, _ value: Int64) {
+#if EPOCH_PAGES
+        groupPages.setElement(at: index, to: value)
+#else
+        groupAmounts[index] = value
+#endif
+    }
+    @inline(__always) private func writeHot(_ index: Int, _ value: HotAsset) {
+#if EPOCH_PAGES
+        hotPages.setElement(at: index, to: value)
+#else
+        hot[index] = value
+#endif
+    }
+    @inline(__always) private func writeHotContract(_ index: Int, _ value: UInt32) {
+        var row = hot[index]; row.contract = value; writeHot(index, row)
+    }
+    @inline(__always) private func writeHotFare(_ index: Int, _ value: Int64) {
+        var row = hot[index]; row.fare = value; writeHot(index, row)
+    }
+    @inline(__always) private func writeHotActive(_ index: Int, _ value: UInt8) {
+        var row = hot[index]; row.active = value; writeHot(index, row)
+    }
+    @inline(__always) private func writeHotGeneration(_ index: Int, _ value: UInt32) {
+        var row = hot[index]; row.generation = value; writeHot(index, row)
+    }
     func output(_ index: Int) -> Completion { outputs[index] }
 
     func seedFixture() throws {
@@ -469,10 +582,10 @@ final class HybridWorld {
 #endif
         _ = try wheel.schedule(Event(due: due, operation: operation, asset: UInt32(i),
                                      generation: hot[i].generation, kind: kind))
-        origin[i] = hot[i].airport
-        departure[i] = now
-        hot[i].fare = amount
-        hot[i].active = 1
+        writeOrigin(i, hot[i].airport)
+        writeDeparture(i, now)
+        writeHotFare(i, amount)
+        writeHotActive(i, 1)
     }
 
     func invalidateGeneration(_ i: Int) throws {
@@ -480,7 +593,7 @@ final class HybridWorld {
 #if STAGE_C
         stageCState?.willWriteAsset(self, index: i)
 #endif
-        hot[i].generation += 1
+        writeHotGeneration(i, hot[i].generation + 1)
     }
 
     func addCash(_ value: Int64) throws {
@@ -558,14 +671,14 @@ final class HybridWorld {
 #endif
                 revenue = r.partialValue
                 receivable = d.partialValue
-                groupAmounts[g] = s.partialValue
+                writeGroupAmounts(g, s.partialValue)
                 cash = c.partialValue
                 a.accruedOperation = e.operation
                 a.completed += 1
                 a.active = 0
                 a.airport = a.destination
                 a.changeEpoch = changeEpoch
-                hot[i] = a
+                writeHot(i, a)
                 now = e.due
                 processed += 1
                 _ = try wheel.consume(id)
@@ -578,6 +691,37 @@ final class HybridWorld {
                            stop: emitted == budget ? .budget : .work)
     }
 #if STAGE_C
+#if EPOCH_PAGES
+    func stageCPreparePages() { hotPages.preparePool(); coldPages.buffer.preparePool(); groupPages.preparePool(); wheel.stageCPreparePages() }
+    func stageCCanFreezePages(_ epoch: UInt32) -> Bool {
+        hotPages.canFreeze(epoch: epoch) && coldPages.buffer.canFreeze(epoch: epoch) &&
+        groupPages.canFreeze(epoch: epoch) && wheel.stageCCanFreezePages(epoch)
+    }
+    func stageCFreezePages(_ epoch: UInt32) -> FrozenStageCSnapshot {
+        precondition(stageCCanFreezePages(epoch))
+        let control = Snapshot.controlRecord(self)
+        return FrozenStageCSnapshot(epoch: epoch, control: control,
+            layout: .h(hot: hotPages.freeze(epoch: epoch), cold: coldPages.buffer.freeze(epoch: epoch),
+                       nodes: wheel.stageCFreezePages(epoch), groups: groupPages.freeze(epoch: epoch)))
+    }
+    func stageCAppendAssetPage(_ chunk: Int, into bytes: inout [UInt8]) {
+        let start = chunk << 8, elements = min(256, count - start)
+        hotPages.appendRows(start..<(start + elements), into: &bytes)
+        coldPages.buffer.appendPackedPage(chunk, payloadBytes: elements * 20, into: &bytes)
+    }
+    @inline(__always) func stageCNeedsAssetCopy(_ index: Int) -> Bool { hotPages.needsCopy(page: index >> 8) || coldPages.buffer.needsCopy(page: index >> 8) }
+    @inline(__always) func stageCNeedsGroupCopy(_ index: Int) -> Bool { groupPages.needsCopy(page: index >> 11) }
+    func stageCCloneAsset(_ index: Int) -> Int {
+        hotPages.ensureWritable(page: index >> 8) + coldPages.buffer.ensureWritable(page: index >> 8)
+    }
+    func stageCCloneGroup(_ index: Int) -> Int { groupPages.ensureWritable(page: index >> 11) }
+    func stageCReleasePages(_ completion: StageCEpochCompletion) {
+        precondition(completion.ownerID == ObjectIdentifier(self))
+        let epoch = completion.epoch
+        hotPages.releaseCompleted(epoch: epoch); coldPages.buffer.releaseCompleted(epoch: epoch)
+        groupPages.releaseCompleted(epoch: epoch); wheel.stageCReleasePages(epoch)
+    }
+#endif
     func stageCInstall(_ state: StageCState) { stageCState=state; wheel.stageCState=state }
     func stageCUninstall() { wheel.stageCState=nil; stageCState=nil }
     func restoreScalars(now:UInt64,revenue:Int64,receivable:Int64,cash:Int64,processed:UInt64,hash:UInt64) throws {
@@ -590,11 +734,11 @@ final class HybridWorld {
               value.reserved0==0,value.reserved1==0,Int(value.contract)<groupAmounts.count,entity<32 else {
             throw ProbeError.corruption("stage C hybrid asset")
         }
-        hot[i]=value;self.entity[i]=entity;self.policy[i]=policy;self.origin[i]=origin;self.departure[i]=departure
+        writeHot(i, value);writeEntity(i, entity);writePolicy(i, policy);writeOrigin(i, origin);writeDeparture(i, departure)
     }
     func restoreGroup(_ i:Int,_ amount:Int64) throws {
         guard i>=0 && i<groupAmounts.count,amount>=0 else { throw ProbeError.corruption("stage C hybrid group") }
-        groupAmounts[i]=amount
+        writeGroupAmounts(i, amount)
     }
     func stageCAppendControl(into data:inout [UInt8]) {
         Snapshot.appendLE(UInt32(count),into:&data);Snapshot.appendLE(UInt32(wheel.capacity),into:&data)

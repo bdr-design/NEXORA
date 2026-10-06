@@ -39,6 +39,16 @@ enum WheelStep { case work, ready(UInt32), drained, beyondTarget }
 /// Hierarchical 8x256 wheel, exact UInt64 times, resumable cascade and linked merge-sort.
 /// Bucket order is proved dynamically; an already sorted bucket avoids sorting work.
 final class TimingWheel {
+#if EPOCH_PAGES
+    private let nodePages: EpochWordColumns
+    var due: EpochColumn<UInt64> { nodePages.column(base: 0, width: 8, as: UInt64.self) }
+    var operation: EpochColumn<UInt64> { nodePages.column(base: 8, width: 8, as: UInt64.self) }
+    var asset: EpochColumn<UInt32> { nodePages.column(base: 16, width: 4, as: UInt32.self) }
+    var generation: EpochColumn<UInt32> { nodePages.column(base: 20, width: 4, as: UInt32.self) }
+    var next: EpochColumn<UInt32> { nodePages.column(base: 24, width: 4, as: UInt32.self) }
+    var kind: EpochColumn<UInt8> { nodePages.column(base: 28, width: 1, as: UInt8.self) }
+    var live: EpochColumn<UInt8> { nodePages.column(base: 29, width: 1, as: UInt8.self) }
+#else
     private(set) var due: ContiguousArray<UInt64>
     private(set) var operation: ContiguousArray<UInt64>
     private(set) var asset: ContiguousArray<UInt32>
@@ -46,6 +56,7 @@ final class TimingWheel {
     private(set) var kind: ContiguousArray<UInt8>
     private(set) var live: ContiguousArray<UInt8>
     private var next: ContiguousArray<UInt32>
+#endif
     private var heads = ContiguousArray(repeating: none, count: 2048)
     private var tails = ContiguousArray(repeating: none, count: 2048)
     private var sorted = ContiguousArray(repeating: true, count: 2048)
@@ -68,6 +79,10 @@ final class TimingWheel {
     init(capacity: Int, mutation: Mutation = .none) throws {
         guard capacity > 0, capacity <= 2_000_000 else { throw ProbeError.invalid("wheel capacity") }
         self.mutation = mutation
+#if EPOCH_PAGES
+        nodePages = EpochWordColumns(count: capacity, pageShift: 9, bytesPerElement: 30)
+        for i in 0..<capacity { writeAsset(i, none); writeNext(i, none) }
+#else
         due = .init(repeating: 0, count: capacity)
         operation = .init(repeating: 0, count: capacity)
         asset = .init(repeating: none, count: capacity)
@@ -75,13 +90,68 @@ final class TimingWheel {
         kind = .init(repeating: 0, count: capacity)
         live = .init(repeating: 0, count: capacity)
         next = .init(repeating: none, count: capacity)
-        for i in 0..<(capacity - 1) { next[i] = UInt32(i + 1) }; free = 0
+#endif
+        for i in 0..<(capacity - 1) { writeNext(i, UInt32(i + 1))}; free = 0
     }
     var capacity: Int { due.count }
     var ownedBytes: Int {
+#if EPOCH_PAGES
+        nodePages.buffer.ownedBytes + (heads.capacity + tails.capacity) * 4 +
+        sorted.capacity * MemoryLayout<Bool>.stride + occupied.capacity * 8
+#else
         (due.capacity + operation.capacity) * 8 +
         (asset.capacity + generation.capacity + next.capacity + heads.capacity + tails.capacity) * 4 +
         kind.capacity + live.capacity + sorted.capacity * MemoryLayout<Bool>.stride + occupied.capacity * 8
+#endif
+    }
+    @inline(__always) private func writeDue(_ index: Int, _ value: UInt64) {
+#if EPOCH_PAGES
+        nodePages.set(base: 0, width: 8, index: index, value: value)
+#else
+        due[index] = value
+#endif
+    }
+    @inline(__always) private func writeOperation(_ index: Int, _ value: UInt64) {
+#if EPOCH_PAGES
+        nodePages.set(base: 8, width: 8, index: index, value: value)
+#else
+        operation[index] = value
+#endif
+    }
+    @inline(__always) private func writeAsset(_ index: Int, _ value: UInt32) {
+#if EPOCH_PAGES
+        nodePages.set(base: 16, width: 4, index: index, value: value)
+#else
+        asset[index] = value
+#endif
+    }
+    @inline(__always) private func writeGeneration(_ index: Int, _ value: UInt32) {
+#if EPOCH_PAGES
+        nodePages.set(base: 20, width: 4, index: index, value: value)
+#else
+        generation[index] = value
+#endif
+    }
+    @inline(__always) private func writeNext(_ index: Int, _ value: UInt32) {
+#if EPOCH_PAGES
+        nodePages.set(base: 24, width: 4, index: index, value: value)
+#else
+        next[index] = value
+#endif
+    }
+    @inline(__always) private func writeKind(_ index: Int, _ value: UInt8) {
+#if EPOCH_PAGES
+        nodePages.set(base: 28, width: 1, index: index, value: value)
+#else
+        kind[index] = value
+#endif
+    }
+    @inline(__always) private func writeLive(_ index: Int, _ value: UInt8) {
+#if EPOCH_PAGES
+        nodePages.set(base: 29, width: 1, index: index, value: value)
+#else
+        live[index] = value
+#endif
     }
     @inline(__always) private func bucket(_ time: UInt64) -> Int {
         let difference = time ^ cursor
@@ -100,7 +170,7 @@ final class TimingWheel {
 #if STAGE_C
         stageCState?.willWriteNode(self, index: i)
 #endif
-        next[i] = none
+        writeNext(i, none)
         if tail == none {
             heads[b] = id; tails[b] = id; sorted[b] = true; setOccupied(b, true)
         } else if mutation == .reverseCascade && cascading {
@@ -108,13 +178,13 @@ final class TimingWheel {
 #if STAGE_C
             stageCState?.willWriteNode(self, index: i)
 #endif
-            next[i] = heads[b]; heads[b] = id; sorted[b] = true
+            writeNext(i, heads[b]); heads[b] = id; sorted[b] = true
         } else {
             if operation[Int(tail)] > operation[i] { sorted[b] = false }
 #if STAGE_C
             stageCState?.willWriteNode(self, index: Int(tail))
 #endif
-            next[Int(tail)] = id; tails[b] = id
+            writeNext(Int(tail), id); tails[b] = id
         }
         if mutation == .omitTieBreaker { sorted[b] = true }
     }
@@ -125,8 +195,8 @@ final class TimingWheel {
 #if STAGE_C
         stageCState?.willWriteNode(self, index: i)
 #endif
-        due[i] = event.due; operation[i] = event.operation; asset[i] = event.asset
-        generation[i] = event.generation; kind[i] = event.kind; live[i] = 1
+        writeDue(i, event.due); writeOperation(i, event.operation); writeAsset(i, event.asset)
+        writeGeneration(i, event.generation); writeKind(i, event.kind); writeLive(i, 1)
         insertNode(id, into: bucket(event.due)); pending += 1
         return id
     }
@@ -150,7 +220,7 @@ final class TimingWheel {
 #if STAGE_C
                     stageCState?.willWriteNode(self, index: Int(outTail))
 #endif
-                    next[Int(outTail)] = none
+                    writeNext(Int(outTail), none)
                 }
                 heads[leaf] = outHead; tails[leaf] = outTail
                 if merges <= 1 { sorted[leaf] = true; sortPhase = 0; return }
@@ -173,7 +243,7 @@ final class TimingWheel {
 #if STAGE_C
                 stageCState?.willWriteNode(self, index: Int(outTail))
 #endif
-                next[Int(outTail)] = picked
+                writeNext(Int(outTail), picked)
             }
             outTail = picked
         default: throw ProbeError.invariant("sort phase")
@@ -200,7 +270,7 @@ final class TimingWheel {
                 stageCState?.willWriteNode(self, index: Int(id))
                 stageCState?.willWriteNode(self, index: Int(b))
 #endif
-                next[Int(id)] = next[Int(b)]; next[Int(b)] = id; heads[leaf] = b; fired = true
+                writeNext(Int(id), next[Int(b)]); writeNext(Int(b), id); heads[leaf] = b; fired = true
             }
             let ready = heads[leaf]
             guard due[Int(ready)] == cursor else { throw ProbeError.invariant("wrong wheel slot/time") }
@@ -236,13 +306,25 @@ final class TimingWheel {
         stageCState?.willWriteNode(self, index: Int(id))
 #endif
         heads[leaf] = next[Int(id)]
-        live[Int(id)] = 0; next[Int(id)] = free; free = id; pending -= 1
+        writeLive(Int(id), 0); writeNext(Int(id), free); free = id; pending -= 1
         if mutation == .duplicate && !fired { ghost = value; fired = true }
         return value
     }
     func takeGhost() -> Event? { let value = ghost; ghost = nil; return value }
 #if STAGE_C
+#if EPOCH_PAGES
+    func stageCPreparePages() { nodePages.buffer.preparePool() }
+    func stageCCanFreezePages(_ epoch: UInt32) -> Bool { nodePages.buffer.canFreeze(epoch: epoch) }
+    func stageCFreezePages(_ epoch: UInt32) -> FrozenEpochBuffer<UInt64> { nodePages.buffer.freeze(epoch: epoch) }
+    @inline(__always) func stageCNeedsNodeCopy(_ index: Int) -> Bool { nodePages.buffer.needsCopy(page: index >> 9) }
+    func stageCClonePage(_ index: Int) -> Int { nodePages.buffer.ensureWritable(page: index >> 9) }
+    func stageCReleasePages(_ epoch: UInt32) { nodePages.buffer.releaseCompleted(epoch: epoch) }
+#endif
     func stageCAppendNodeChunk(_ range: Range<Int>, into data: inout [UInt8]) {
+#if EPOCH_PAGES
+        precondition(range.lowerBound & 511 == 0 && range.count == min(512, capacity - range.lowerBound))
+        nodePages.buffer.appendPackedPage(range.lowerBound >> 9, payloadBytes: range.count * 30, into: &data)
+#else
         Snapshot.append(due, range, into: &data)
         Snapshot.append(operation, range, into: &data)
         Snapshot.append(asset, range, into: &data)
@@ -250,6 +332,7 @@ final class TimingWheel {
         Snapshot.append(next, range, into: &data)
         Snapshot.append(kind, range, into: &data)
         Snapshot.append(live, range, into: &data)
+#endif
     }
     func stageCAppendControl(into data: inout [UInt8]) {
         Snapshot.appendLE(cursor, into: &data)
@@ -292,8 +375,8 @@ final class TimingWheel {
         guard i >= 0 && i < capacity, valueKind <= 2, valueLive <= 1 else {
             throw ProbeError.corruption("stage C node")
         }
-        due[i] = valueDue; operation[i] = valueOperation; asset[i] = valueAsset
-        generation[i] = valueGeneration; next[i] = valueNext; kind[i] = valueKind; live[i] = valueLive
+        writeDue(i, valueDue); writeOperation(i, valueOperation); writeAsset(i, valueAsset)
+        writeGeneration(i, valueGeneration); writeNext(i, valueNext); writeKind(i, valueKind); writeLive(i, valueLive)
     }
 #endif
 }
@@ -309,6 +392,24 @@ struct SliceResult {
 final class SwiftWorld {
     let count: Int
     let wheel: TimingWheel
+#if EPOCH_PAGES
+    private let assetPages: EpochWordColumns
+    private let groupPages: EpochBuffer<Int64>
+    var generations: EpochColumn<UInt32> { assetPages.column(base: 0, width: 4, as: UInt32.self) }
+    var airports: EpochColumn<UInt32> { assetPages.column(base: 4, width: 4, as: UInt32.self) }
+    var destinations: EpochColumn<UInt32> { assetPages.column(base: 8, width: 4, as: UInt32.self) }
+    var departures: EpochColumn<UInt64> { assetPages.column(base: 12, width: 8, as: UInt64.self) }
+    var fares: EpochColumn<Int64> { assetPages.column(base: 20, width: 8, as: Int64.self) }
+    var completed: EpochColumn<UInt64> { assetPages.column(base: 28, width: 8, as: UInt64.self) }
+    var accruedOperations: EpochColumn<UInt64> { assetPages.column(base: 36, width: 8, as: UInt64.self) }
+    var active: EpochColumn<UInt8> { assetPages.column(base: 44, width: 1, as: UInt8.self) }
+    var contracts: EpochColumn<UInt32> { assetPages.column(base: 45, width: 4, as: UInt32.self) }
+    var changeEpochs: EpochColumn<UInt32> { assetPages.column(base: 49, width: 4, as: UInt32.self) }
+    var entities: EpochColumn<UInt32> { assetPages.column(base: 53, width: 4, as: UInt32.self) }
+    var policies: EpochColumn<UInt32> { assetPages.column(base: 57, width: 4, as: UInt32.self) }
+    var origins: EpochColumn<UInt32> { assetPages.column(base: 61, width: 4, as: UInt32.self) }
+    var groupAmounts: EpochRowsView<Int64> { groupPages.view }
+#else
     private(set) var generations: ContiguousArray<UInt32>
     private(set) var airports: ContiguousArray<UInt32>
     private(set) var destinations: ContiguousArray<UInt32>
@@ -323,6 +424,7 @@ final class SwiftWorld {
     private(set) var policies: ContiguousArray<UInt32>
     private(set) var origins: ContiguousArray<UInt32>
     private(set) var groupAmounts: ContiguousArray<Int64>
+#endif
     private var outputs: ContiguousArray<Completion>
     private(set) var now: UInt64 = 0
     private(set) var revenue: Int64 = 0
@@ -338,6 +440,10 @@ final class SwiftWorld {
     init(count: Int, eventCapacity: Int? = nil, mutation: Mutation = .none) throws {
         guard (1...2_000_000).contains(count) else { throw ProbeError.invalid("asset capacity") }
         self.count = count; wheel = try TimingWheel(capacity: eventCapacity ?? count, mutation: mutation)
+#if EPOCH_PAGES
+        assetPages = EpochWordColumns(count: count, pageShift: 8, bytesPerElement: 65)
+        groupPages = EpochBuffer(repeating: 0, count: (count + 15) / 16, pageShift: 11)
+#else
         generations = .init(repeating: 0, count: count); airports = .init(repeating: 1, count: count)
         destinations = .init(repeating: 2, count: count); departures = .init(repeating: 0, count: count)
         fares = .init(repeating: 0, count: count); completed = .init(repeating: 0, count: count)
@@ -346,15 +452,122 @@ final class SwiftWorld {
         entities = .init(repeating: 0, count: count); policies = .init(repeating: 0, count: count)
         origins = .init(repeating: 1, count: count)
         groupAmounts = .init(repeating: 0, count: (count + 15) / 16)
+#endif
         outputs = .init(repeating: .empty, count: 1024)
-        for i in 0..<count { contracts[i] = UInt32(i / 16); entities[i] = UInt32(i % 32) }
+#if EPOCH_PAGES
+        for i in 0..<count { writeAirports(i, 1); writeDestinations(i, 2); writeOrigins(i, 1) }
+#endif
+        for i in 0..<count { writeContracts(i, UInt32(i / 16)); writeEntities(i, UInt32(i % 32))}
     }
     var ownedBytes: Int {
+#if EPOCH_PAGES
+        wheel.ownedBytes + assetPages.buffer.ownedBytes + groupPages.ownedBytes +
+        outputs.capacity * MemoryLayout<Completion>.stride
+#else
         wheel.ownedBytes +
         (generations.capacity + airports.capacity + destinations.capacity + contracts.capacity +
          changeEpochs.capacity + entities.capacity + policies.capacity + origins.capacity) * 4 +
         (departures.capacity + fares.capacity + completed.capacity + accruedOperations.capacity) * 8 +
         active.capacity + groupAmounts.capacity * 8 + outputs.capacity * MemoryLayout<Completion>.stride
+#endif
+    }
+    @inline(__always) private func writeGenerations(_ index: Int, _ value: UInt32) {
+#if EPOCH_PAGES
+        assetPages.set(base: 0, width: 4, index: index, value: value)
+#else
+        generations[index] = value
+#endif
+    }
+    @inline(__always) private func writeAirports(_ index: Int, _ value: UInt32) {
+#if EPOCH_PAGES
+        assetPages.set(base: 4, width: 4, index: index, value: value)
+#else
+        airports[index] = value
+#endif
+    }
+    @inline(__always) private func writeDestinations(_ index: Int, _ value: UInt32) {
+#if EPOCH_PAGES
+        assetPages.set(base: 8, width: 4, index: index, value: value)
+#else
+        destinations[index] = value
+#endif
+    }
+    @inline(__always) private func writeDepartures(_ index: Int, _ value: UInt64) {
+#if EPOCH_PAGES
+        assetPages.set(base: 12, width: 8, index: index, value: value)
+#else
+        departures[index] = value
+#endif
+    }
+    @inline(__always) private func writeFares(_ index: Int, _ value: Int64) {
+#if EPOCH_PAGES
+        assetPages.set(base: 20, width: 8, index: index, value: value)
+#else
+        fares[index] = value
+#endif
+    }
+    @inline(__always) private func writeCompleted(_ index: Int, _ value: UInt64) {
+#if EPOCH_PAGES
+        assetPages.set(base: 28, width: 8, index: index, value: value)
+#else
+        completed[index] = value
+#endif
+    }
+    @inline(__always) private func writeAccruedOperations(_ index: Int, _ value: UInt64) {
+#if EPOCH_PAGES
+        assetPages.set(base: 36, width: 8, index: index, value: value)
+#else
+        accruedOperations[index] = value
+#endif
+    }
+    @inline(__always) private func writeActive(_ index: Int, _ value: UInt8) {
+#if EPOCH_PAGES
+        assetPages.set(base: 44, width: 1, index: index, value: value)
+#else
+        active[index] = value
+#endif
+    }
+    @inline(__always) private func writeContracts(_ index: Int, _ value: UInt32) {
+#if EPOCH_PAGES
+        assetPages.set(base: 45, width: 4, index: index, value: value)
+#else
+        contracts[index] = value
+#endif
+    }
+    @inline(__always) private func writeChangeEpochs(_ index: Int, _ value: UInt32) {
+#if EPOCH_PAGES
+        assetPages.set(base: 49, width: 4, index: index, value: value)
+#else
+        changeEpochs[index] = value
+#endif
+    }
+    @inline(__always) private func writeEntities(_ index: Int, _ value: UInt32) {
+#if EPOCH_PAGES
+        assetPages.set(base: 53, width: 4, index: index, value: value)
+#else
+        entities[index] = value
+#endif
+    }
+    @inline(__always) private func writePolicies(_ index: Int, _ value: UInt32) {
+#if EPOCH_PAGES
+        assetPages.set(base: 57, width: 4, index: index, value: value)
+#else
+        policies[index] = value
+#endif
+    }
+    @inline(__always) private func writeOrigins(_ index: Int, _ value: UInt32) {
+#if EPOCH_PAGES
+        assetPages.set(base: 61, width: 4, index: index, value: value)
+#else
+        origins[index] = value
+#endif
+    }
+    @inline(__always) private func writeGroupAmounts(_ index: Int, _ value: Int64) {
+#if EPOCH_PAGES
+        groupPages.setElement(at: index, to: value)
+#else
+        groupAmounts[index] = value
+#endif
     }
     func output(_ index: Int) -> Completion { outputs[index] }
     func seedFixture() throws {
@@ -369,14 +582,14 @@ final class SwiftWorld {
         stageCState?.willWriteAsset(self, index: i)
 #endif
         _ = try wheel.schedule(Event(due: due, operation: operation, asset: UInt32(i), generation: generations[i], kind: kind))
-        origins[i] = airports[i]; departures[i] = now; fares[i] = amount; active[i] = 1
+        writeOrigins(i, airports[i]); writeDepartures(i, now); writeFares(i, amount); writeActive(i, 1)
     }
     func invalidateGeneration(_ i: Int) throws {
         guard i >= 0 && i < count, generations[i] < UInt32.max else { throw ProbeError.invalid("generation") }
 #if STAGE_C
         stageCState?.willWriteAsset(self, index: i)
 #endif
-        generations[i] += 1
+        writeGenerations(i, generations[i] + 1)
     }
     func addCash(_ value: Int64) throws {
         let sum = cash.addingReportingOverflow(value)
@@ -393,13 +606,13 @@ final class SwiftWorld {
                       policy: UInt32, origin: UInt32) throws {
         guard airport > 0, destination > 0, origin > 0, fare >= 0, active <= 1,
               Int(contract) < groupAmounts.count, entity < 32 else { throw ProbeError.corruption("asset columns") }
-        generations[i] = gen; airports[i] = airport; destinations[i] = destination; departures[i] = departure
-        fares[i] = fare; completed[i] = trips; accruedOperations[i] = last; self.active[i] = active
-        contracts[i] = contract; changeEpochs[i] = assetChangeEpoch; entities[i] = entity
-        policies[i] = policy; origins[i] = origin
+        writeGenerations(i, gen); writeAirports(i, airport); writeDestinations(i, destination); writeDepartures(i, departure)
+        writeFares(i, fare); writeCompleted(i, trips); writeAccruedOperations(i, last); writeActive(i, active)
+        writeContracts(i, contract); writeChangeEpochs(i, assetChangeEpoch); writeEntities(i, entity)
+        writePolicies(i, policy); writeOrigins(i, origin)
     }
     func restoreGroup(_ i: Int, _ amount: Int64) throws {
-        guard amount >= 0 else { throw ProbeError.corruption("group amount") }; groupAmounts[i] = amount
+        guard amount >= 0 else { throw ProbeError.corruption("group amount") }; writeGroupAmounts(i, amount)
     }
     @inline(__always) private func hash(_ event: Event, _ amount: Int64) {
         sequenceHash = (sequenceHash ^ event.due) &* 1099511628211
@@ -451,9 +664,9 @@ final class SwiftWorld {
                 stageCState?.willWriteAsset(self, index: i)
                 stageCState?.willWriteGroup(self, index: g)
 #endif
-                revenue = newRevenue.partialValue; receivable = newDue.partialValue; groupAmounts[g] = newGroup.partialValue
-                cash = newCash.partialValue; accruedOperations[i] = event.operation; completed[i] += 1
-                active[i] = 0; airports[i] = destinations[i]; changeEpochs[i] = changeEpoch
+                revenue = newRevenue.partialValue; receivable = newDue.partialValue; writeGroupAmounts(g, newGroup.partialValue)
+                cash = newCash.partialValue; writeAccruedOperations(i, event.operation); writeCompleted(i, completed[i] + 1)
+                writeActive(i, 0); writeAirports(i, destinations[i]); writeChangeEpochs(i, changeEpoch)
                 now = event.due; processed += 1
                 _ = try wheel.consume(node)
                 hash(event, amount)
@@ -463,6 +676,31 @@ final class SwiftWorld {
         return SliceResult(events: emitted, units: work, reached: now, stop: emitted == budget ? .budget : .work)
     }
 #if STAGE_C
+#if EPOCH_PAGES
+    func stageCPreparePages() { assetPages.buffer.preparePool(); groupPages.preparePool(); wheel.stageCPreparePages() }
+    func stageCCanFreezePages(_ epoch: UInt32) -> Bool {
+        assetPages.buffer.canFreeze(epoch: epoch) && groupPages.canFreeze(epoch: epoch) && wheel.stageCCanFreezePages(epoch)
+    }
+    func stageCFreezePages(_ epoch: UInt32) -> FrozenStageCSnapshot {
+        precondition(stageCCanFreezePages(epoch))
+        let control = Snapshot.controlRecord(self)
+        return FrozenStageCSnapshot(epoch: epoch, control: control,
+            layout: .s(assets: assetPages.buffer.freeze(epoch: epoch),
+                       nodes: wheel.stageCFreezePages(epoch), groups: groupPages.freeze(epoch: epoch)))
+    }
+    func stageCAppendAssetPage(_ chunk: Int, into bytes: inout [UInt8]) {
+        assetPages.buffer.appendPackedPage(chunk, payloadBytes: min(256, count - (chunk << 8)) * 65, into: &bytes)
+    }
+    @inline(__always) func stageCNeedsAssetCopy(_ index: Int) -> Bool { assetPages.buffer.needsCopy(page: index >> 8) }
+    @inline(__always) func stageCNeedsGroupCopy(_ index: Int) -> Bool { groupPages.needsCopy(page: index >> 11) }
+    func stageCCloneAsset(_ index: Int) -> Int { assetPages.buffer.ensureWritable(page: index >> 8) }
+    func stageCCloneGroup(_ index: Int) -> Int { groupPages.ensureWritable(page: index >> 11) }
+    func stageCReleasePages(_ completion: StageCEpochCompletion) {
+        precondition(completion.ownerID == ObjectIdentifier(self))
+        let epoch = completion.epoch
+        assetPages.buffer.releaseCompleted(epoch: epoch); groupPages.releaseCompleted(epoch: epoch); wheel.stageCReleasePages(epoch)
+    }
+#endif
     func stageCInstall(_ state: StageCState) {
         stageCState = state
         wheel.stageCState = state

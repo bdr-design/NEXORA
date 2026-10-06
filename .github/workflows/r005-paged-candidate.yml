@@ -1,0 +1,84 @@
+name: R005 bounded immutable full-state candidate
+on:
+  push:
+    branches: ["diagnostic/r005-design-1m-20260930"]
+permissions:
+  contents: read
+jobs:
+  bounded-paged-candidate:
+    if: ${{ contains(github.event.head_commit.message, '[r005-paged-candidate]') && contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-c-targeted]') && !contains(github.event.head_commit.message, '[r005-epoch-pages]') && !contains(github.event.head_commit.message, '[r005-micro]') }}
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Record source and build flags before execution
+        run: |
+          set -euo pipefail
+          mkdir -p paged-results
+          git rev-parse HEAD > paged-results/commit.txt
+          git rev-parse HEAD^{tree} > paged-results/tree.txt
+          swift --version > paged-results/environment.txt
+          xcodebuild -version >> paged-results/environment.txt
+          sw_vers >> paged-results/environment.txt
+          sysctl hw.model hw.ncpu hw.memsize >> paged-results/environment.txt
+          printf '%s\n' 'baseline: STAGE_C' 'candidate: STAGE_C EPOCH_PAGES' 'scope: diagnostic only; no A/B/C reuse or evaluator' > paged-results/build-flags.txt
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > paged-results/source-guard-before.txt
+          python3 -B -m unittest discover -s Experiments/R005Swift/tests -v > paged-results/proof-gates.txt 2>&1
+      - name: Build both owners and the candidate with Thread Sanitizer
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          swift build --scratch-path .build-paged-base-debug -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../paged-results/build-base-debug.txt
+          swift build --scratch-path .build-paged-base-release -c release -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../paged-results/build-base-release.txt
+          swift build --scratch-path .build-paged-debug -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../paged-results/build-candidate-debug.txt
+          swift build --scratch-path .build-paged-release -c release -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../paged-results/build-candidate-release.txt
+          swift build --scratch-path .build-paged-tsan --sanitize=thread -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../paged-results/build-candidate-tsan.txt
+          cc -dynamiclib -O2 -Wall -Wextra -Werror AllocationObserver.c -ISources/ProbePlatform/include -o ../../paged-results/AllocationObserver.dylib
+      - name: Existing order, rejection and v2 transport checks in Debug Release TSan
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          for mode in debug release tsan; do
+            config="$mode"
+            if test "$mode" = tsan; then config=debug; fi
+            bin=".build-paged-$mode/$config/nxr-swift-probe"
+            export TSAN_OPTIONS=halt_on_error=1
+            "$bin" selftest > "../../paged-results/selftest-$mode.json"
+            "$bin" hybrid-selftest > "../../paged-results/hybrid-layout-$mode.json"
+            "$bin" hybrid-mutants > "../../paged-results/hybrid-mutants-$mode.json"
+            "$bin" order 4096 > "../../paged-results/order-$mode.json"
+            "$bin" hybrid-order 4096 > "../../paged-results/hybrid-order-$mode.json"
+            "$bin" stage-c-transport-checks "../../paged-results/transport-$mode" > "../../paged-results/transport-$mode.json"
+            rm -rf "../../paged-results/transport-$mode"
+            for variant in S H; do
+              "$bin" paged-candidate-lifecycle "../../paged-results/lifecycle-$mode-$variant" "$variant" > "../../paged-results/lifecycle-$mode-$variant.json" 2> "../../paged-results/lifecycle-$mode-$variant.stderr.txt"
+              rm -rf "../../paged-results/lifecycle-$mode-$variant"
+            done
+          done
+      - name: Compare legacy and candidate canonical files, epochs, WAL and allocation observations
+        run: |
+          set -euo pipefail
+          cd Experiments/R005Swift
+          python3 -B paged_candidate.py .build-paged-base-release/release/nxr-swift-probe .build-paged-debug/debug/nxr-swift-probe .build-paged-release/release/nxr-swift-probe .build-paged-tsan/debug/nxr-swift-probe ../../paged-results/matrix ../../paged-results/AllocationObserver.dylib 2>&1 | tee ../../paged-results/matrix-run.txt
+      - name: Always enforce source and unsafe boundaries
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > paged-results/source-guard-after.txt
+          bad="$(grep -rnE 'Unsafe|withUnsafe' Experiments/R005Swift/Sources/SwiftProbe --include='*.swift' | grep -v '/Snapshot.swift:' || true)"
+          test -z "$bad"
+          ! grep -rnE '@unchecked Sendable|nonisolated\(unsafe\)|unowned\(unsafe\)|Unmanaged|UnsafeMutable|unsafeBitCast' Experiments/R005Swift/Sources/SwiftProbe --include='*.swift'
+          git diff --exit-code
+          find Experiments/R005Swift/Sources -type f -exec shasum -a 256 {} \; > paged-results/source-sha256.txt
+          echo 'Conditional full-state integration only. Historical failures retained; C OPEN on S/H. A/B/1M K1-K10 and C100 not run.' > paged-results/scope.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r005-paged-candidate-results
+          path: paged-results/
+          if-no-files-found: error

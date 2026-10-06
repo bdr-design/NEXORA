@@ -94,7 +94,7 @@ private func stageCPrepareInitial(directory: String, count: Int)
     let state = StageCState(world: world)
     world.stageCInstall(state)
     let wal = try StageCWAL(directory: directory, epoch: 1)
-    let sink = SnapshotSink(directory: directory, epoch: 1, expectedCounts: state.expectedCounts)
+    let sink = state.prepareSink(directory: directory, epoch: 1)
     try state.begin(world: world, preparedSink: sink)
     let result = try state.waitForCommit(world: world)
     return (world, state, wal, result)
@@ -233,8 +233,7 @@ func stageCRun(_ directory: String, count: Int = 1_000_000,
             epoch &+= 1
             guard epoch > 1 else { throw ProbeError.invalid("stage C epoch overflow") }
             let nextWAL = try StageCWAL(directory: directory, epoch: epoch)
-            let sink = SnapshotSink(directory: directory, epoch: epoch,
-                                    expectedCounts: state.expectedCounts)
+            let sink = state.prepareSink(directory: directory, epoch: epoch)
             let begin = nx_now()
             try state.begin(world: world, preparedSink: sink)
             let finish = nx_now()
@@ -535,7 +534,7 @@ private func stageCPairedLeg(fixtureDirectory: String, directory: String,
                     throw ProbeError.invariant("paired profile state install")
                 }
                 let preparedSink = try stageCPairedMeasure("snapshot sink setup") {
-                    SnapshotSink(directory: directory, epoch: 2, expectedCounts: installedState.expectedCounts)
+                    installedState.prepareSink(directory: directory, epoch: 2)
                 }
                 sinkSetup = preparedSink.measurement
                 let beganSave = try stageCPairedMeasure("begin save") {
@@ -819,7 +818,7 @@ func stageCCrashAction(_ directory: String, point: String) throws -> [String: An
     let state = StageCState(world: world); world.stageCInstall(state)
     guard recovered.epoch == 1 else { throw ProbeError.invariant("stage C crash base epoch") }
     let wal2 = try StageCWAL(directory: directory, epoch: 2)
-    let sink = SnapshotSink(directory: directory, epoch: 2, expectedCounts: state.expectedCounts)
+    let sink = state.prepareSink(directory: directory, epoch: 2)
     try state.begin(world: world, preparedSink: sink)
 
     if point == "c.k2.after_first_barrier" {
@@ -851,7 +850,7 @@ func stageCWALChainCrashAction(_ directory: String) throws -> [String: Any] {
     let world = recovered.world
     let state = StageCState(world: world); world.stageCInstall(state)
     let wal2 = try StageCWAL(directory: directory, epoch: 2)
-    let sink = SnapshotSink(directory: directory, epoch: 2, expectedCounts: state.expectedCounts)
+    let sink = state.prepareSink(directory: directory, epoch: 2)
     try state.begin(world: world, preparedSink: sink)
     let p = try world.advance(to: 600, budget: 1)
     try require(p.events == 1, "stage C chain crash event")
