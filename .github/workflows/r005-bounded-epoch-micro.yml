@@ -1,0 +1,273 @@
+name: R005 isolated bounded epoch ownership micro
+on:
+  push:
+    branches: ["diagnostic/r005-design-1m-20260930"]
+permissions:
+  contents: read
+concurrency:
+  group: r005-bounded-epoch-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  routing-guard:
+    if: ${{ contains(github.event.head_commit.message, '[r005-bounded-epoch-micro]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require an evidence-only micro marker and no execution marker
+        env:
+          HEAD_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          python3 - <<'PYCODE'
+          import os,re
+          markers=set(re.findall(r'\[r005-[^]]+\]',os.environ['HEAD_MESSAGE']))
+          assert markers=={'[r005-bounded-epoch-micro]','[r005-evidence-only]'},markers
+          PYCODE
+
+  bounded-ownership-micro:
+    needs: routing-guard
+    if: ${{ contains(github.event.head_commit.message, '[r005-bounded-epoch-micro]') && contains(github.event.head_commit.message, '[r005-evidence-only]') }}
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Record exact unchanged runtime inputs
+        run: |
+          set -euo pipefail
+          mkdir -p bounded-ownership-results
+          git rev-parse HEAD > bounded-ownership-results/commit.txt
+          git rev-parse HEAD^{tree} > bounded-ownership-results/tree.txt
+          swift --version > bounded-ownership-results/environment.txt
+          xcodebuild -version >> bounded-ownership-results/environment.txt
+          sysctl hw.model hw.ncpu hw.memsize >> bounded-ownership-results/environment.txt
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > bounded-ownership-results/source-guard-before.txt
+          python3 -B Experiments/R005Swift/candidate_proof_inputs.py write bounded-ownership-results/runtime-inputs.json
+          shasum -a 256 Experiments/R005Swift/Evidence/20261007/BoundedEpochOwnershipMicro.swift \
+            Experiments/R005Swift/Evidence/20261007/prepare-bounded-ownership-study.py \
+            Experiments/R005Swift/Evidence/20261007/verify-bounded-ownership-study.py \
+            .github/workflows/r005-bounded-epoch-micro.yml \
+            Checks/financial-diagnostics.py \
+            > bounded-ownership-results/study-input-sha256.txt
+
+      - name: Prepare one disposable package and prove the exact diff
+        run: |
+          set -euo pipefail
+          mkdir -p .bounded-ownership-study/current
+          cp Experiments/R005Swift/Package.swift .bounded-ownership-study/current/
+          cp -R Experiments/R005Swift/Sources .bounded-ownership-study/current/Sources
+          python3 -B Experiments/R005Swift/Evidence/20261007/prepare-bounded-ownership-study.py .bounded-ownership-study/current
+          python3 -B - <<'PYCODE'
+          import hashlib,json,pathlib
+          actual=pathlib.Path('Experiments/R005Swift/Sources')
+          temporary=pathlib.Path('.bounded-ownership-study/current/Sources')
+          actual_files={str(p.relative_to(actual)):hashlib.sha256(p.read_bytes()).hexdigest()
+                        for p in sorted(actual.rglob('*')) if p.is_file()}
+          temporary_files={str(p.relative_to(temporary)):hashlib.sha256(p.read_bytes()).hexdigest()
+                           for p in sorted(temporary.rglob('*')) if p.is_file()}
+          assert len(actual_files)==24,actual_files.keys()
+          assert set(temporary_files)==set(actual_files)|{'SwiftProbe/BoundedEpochOwnershipMicro.swift'}
+          changed=[p for p in actual_files if actual_files[p]!=temporary_files[p]]
+          assert changed==['SwiftProbe/Main.swift'],changed
+          report={'actual':actual_files,'temporary':temporary_files,'changed':changed,
+                  'added':['SwiftProbe/BoundedEpochOwnershipMicro.swift']}
+          pathlib.Path('bounded-ownership-results/study-source.json').write_text(json.dumps(report,indent=2)+'\n')
+          PYCODE
+          cc -dynamiclib -O2 -Wall -Wextra -Werror Experiments/R005Swift/AllocationObserver.c \
+            -IExperiments/R005Swift/Sources/ProbePlatform/include \
+            -o bounded-ownership-results/AllocationObserver.dylib
+
+      - name: Build Debug Release and TSan with strict warnings
+        run: |
+          set -euo pipefail
+          for mode in debug release tsan; do
+            args=(-c debug)
+            if test "$mode" = release; then args=(-c release); fi
+            if test "$mode" = tsan; then args=(-c debug --sanitize=thread); fi
+            (cd .bounded-ownership-study/current && swift build --scratch-path ".build-$mode" "${args[@]}" \
+              -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -DBOUNDED_EPOCH_MICRO \
+              -Xswiftc -warnings-as-errors -Xcc -Werror) 2>&1 | tee "bounded-ownership-results/build-$mode.txt"
+          done
+
+      - name: Run the complete small gate then conditionally scale to 100k
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PYCODE'
+          import hashlib,json,os,pathlib,subprocess
+          root=pathlib.Path('bounded-ownership-results')
+          package=pathlib.Path('.bounded-ownership-study/current')
+          observer=(root/'AllocationObserver.dylib').resolve()
+          rows=[];references={}
+          required={'atomicBeginPublish','reserveAllBeforePayloadControlWAL','ownerTryOnceNoWait','writerIOOutsideGate',
+                    'boundedScratchWriteBeforePrefix','writerFailurePoisonsEpoch',
+                    'exclusiveFlatSnapshotDirectory','retireFrameBeforeReleasePrefix',
+                    'acquirePrefixBeforeCredit','memoryReclaimSeparateFromCommit','canonicalCold20Bytes'}
+          def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+          def validate(row,count,slots,policy):
+              assert row['status']=='diagnostic-pass' and row['acceptance'] is False
+              assert row['decision']=='MICRO_PROTOCOL_PASS_NOT_INTEGRATION_ELIGIBLE'
+              assert row['integrationEligible'] is False
+              assert row['assets']==count and row['slots']==slots and row['epochs']==3
+              assert row['bytesPerAsset']==20 and row['pageAssets']==256 and row['fullPageBytes']==5120
+              assert row['allocationPolicy']==policy and row['C100']=='NOT_RUN' and row['safeToRunH1M'] is False
+              assert set(row['invariants'])==required
+              assert len(row['main']['epochs'])==3 and row['main']['partialToFullSerialExact'] is (slots==1)
+              pages=(count+255)//256
+              expected_writer_bytes=count*20+pages*16
+              setup=row['main']['setup']
+              assert type(setup['ns']) is int and setup['ns']>0
+              if policy=='functional':
+                  assert setup['allocationAvailable'] is False
+                  assert setup['allocations'] is None and setup['allocationBytes'] is None
+              else:
+                  assert setup['allocationAvailable'] is True
+                  assert type(setup['allocations']) is int and setup['allocations']>0
+                  assert type(setup['allocationBytes']) is int and setup['allocationBytes']>0
+              for epoch in row['main']['epochs']:
+                  number=epoch['epoch']
+                  assert epoch['recovered']['byteExact'] is True and epoch['recovered']['orderExact'] is True
+                  assert epoch['frozenDigest']==epoch['recovered']['digest']
+                  assert epoch['recovered']['pages']==pages
+                  assert epoch['state']['successfulCommits']==number
+                  assert epoch['state']['writerPoisoned'] is False
+                  assert all(epoch['state']['slotReady'])
+                  assert all(type(capacity) is int and 640<=capacity<=1280
+                             for capacity in epoch['state']['liveWordCapacities'])
+                  assert all(type(capacity) is int and 640<=capacity<=1280
+                             for capacity in epoch['state']['slotWordCapacities'])
+                  assert epoch['writerBytes']==expected_writer_bytes
+                  assert 5136<=epoch['writerScratchCapacityBytes']<=10240
+                  for field in ('writerSetupNS','writerCallWallNS','writerBuildNS','writerSinkNS',
+                                'serviceNS','runtimeLoopNS'):
+                      assert type(epoch[field]) is int and epoch[field]>0,(number,field,epoch[field])
+                  assert epoch['writerBuildNS']<=epoch['writerCallWallNS']<=epoch['runtimeLoopNS']
+                  assert epoch['writerSinkNS']<=epoch['writerCallWallNS']
+                  assert epoch['serviceNS']<=epoch['runtimeLoopNS']
+                  if number==1:
+                      assert epoch['writerAliasHeldDuringKPressure'] is True
+                      assert epoch['kPressureOutcome']==('writerReading' if slots==1 else 'capacity')
+                      assert type(epoch['heldWriterWallNS']) is int and epoch['heldWriterWallNS']>0
+                      assert epoch['ownerGateBusyNS'] is None
+                  elif number==2:
+                      assert epoch['writerAliasHeldDuringKPressure'] is None
+                      assert epoch['kPressureOutcome'] is None
+                      assert epoch['heldWriterWallNS'] is None and epoch['ownerGateBusyNS'] is None
+                  else:
+                      assert epoch['writerAliasHeldDuringKPressure'] is None
+                      assert epoch['kPressureOutcome'] is None
+                      assert type(epoch['heldWriterWallNS']) is int and epoch['heldWriterWallNS']>0
+                      assert type(epoch['ownerGateBusyNS']) is int
+                      assert 0<epoch['ownerGateBusyNS']<50_000_000
+              memory=row['main']['memory']
+              components=('livePayloadCapacityBytes','slotPayloadCapacityBytes',
+                          'directoryReferenceBytes','pageMapBytes','slotRecordBytes',
+                          'commandScratchBytes','pageWrapperAllowanceBytes',
+                          'storeControlAllowanceBytes','atomicControlAllowanceBytes')
+              assert all(type(memory[k]) is int and memory[k]>=0 for k in components)
+              assert memory['pageWrapperCount']==pages+slots
+              assert memory['pageWrapperAllowanceBytes']==64*(pages+slots)
+              assert memory['storeControlAllowanceBytes']==512
+              assert memory['atomicControlAllowanceBytes']==192
+              assert memory['declaredBytesExcludingAllocatorHeaders']==sum(memory[k] for k in components)
+              assert memory['fullPageCapacityBytes']==5120
+              assert pages*5120<=memory['livePayloadCapacityBytes']<=pages*10240
+              assert slots*5120<=memory['slotPayloadCapacityBytes']<=slots*10240
+              assert 0<memory['directoryReferenceBytes']<=pages*32
+              assert 0<memory['pageMapBytes']<=pages*8
+              assert 0<memory['slotRecordBytes']<=slots*128
+              assert 0<memory['commandScratchBytes']<=max(8,slots+1)*16
+              assert memory['pageReferenceStride']==8
+              assert 0<memory['slotRecordStride']<=64
+              declared_upper=(pages*10240+slots*10240+pages*32+pages*8+slots*128+
+                              max(8,slots+1)*16+64*(pages+slots)+512+192)
+              assert memory['declaredBytesExcludingAllocatorHeaders']<=declared_upper
+              tail=count-(pages-1)*256
+              assert memory['tailElements']==tail
+              assert memory['tailCanonicalBytes']==tail*20
+              assert memory['tailPhysicalWordBytes']==((tail*20+7)//8)*8
+              negative=row['negative']
+              assert negative['publishedCancelAfterMutation'] is True
+              assert negative['aliasHeldBlockedTerminal'] is True
+              assert negative['partialWriterRecordsBeforeFailure']==1
+              assert all(v is True for k,v in row['negative'].items() if k!='partialWriterRecordsBeforeFailure')
+              if policy=='functional':
+                  assert row['cAllocationPositiveControl'] is None and row['swiftAllocationPositiveControl'] is None
+              else:
+                  assert type(row['cAllocationPositiveControl']) is int and row['cAllocationPositiveControl']>0
+                  assert type(row['swiftAllocationPositiveControl']) is int and row['swiftAllocationPositiveControl']>0
+              labels=[sample['label'] for sample in row['allocationSamples']]
+              assert labels.count('epoch1-held-k-pressure-reject')==1
+              assert labels.count('epoch1-prefix-credit-service')==1
+              assert labels.count('epoch3-owner-gate-busy-reject')==1
+              for sample in row['allocationSamples']:
+                  assert type(sample['ns']) is int and sample['ns']>0
+                  if policy=='functional':
+                      assert sample['allocationAvailable'] is False
+                      assert sample['allocations'] is None and sample['allocationBytes'] is None
+                  else:
+                      assert sample['allocationAvailable'] is True
+                      if policy=='zero':assert sample['allocations']==sample['allocationBytes']==0,sample
+              exact=[(e['frozenDigest'],e['liveDigest'],e['recovered']['digest']) for e in row['main']['epochs']]
+              if count in references:assert references[count]==exact
+              else:references[count]=exact
+          def execute(mode,count,slots,policy):
+              config='debug' if mode=='tsan' else mode
+              binary=(package/f'.build-{mode}'/config/'nxr-swift-probe').resolve()
+              env=os.environ.copy();env['TSAN_OPTIONS']='halt_on_error=1'
+              if mode!='tsan':env['DYLD_INSERT_LIBRARIES']=str(observer)
+              label=f'{mode}-{count}-K{slots}'
+              cp=subprocess.run([str(binary),'bounded-epoch-ownership-micro',str(count),str(slots),policy],
+                                env=env,text=True,capture_output=True,timeout=1200)
+              out=root/f'{label}.json';err=root/f'{label}.stderr.txt'
+              out.write_text(cp.stdout);err.write_text(cp.stderr)
+              assert cp.returncode==0 and not cp.stderr,(label,cp.returncode,cp.stderr)
+              row=json.loads(cp.stdout);validate(row,count,slots,policy)
+              rows.append({'mode':mode,'assets':count,'slots':slots,'policy':policy,
+                           'file':out.name,'sha256':sha(out)})
+              return row
+          for mode,policy in [('debug','observe'),('release','zero'),('tsan','functional')]:
+              execute(mode,257,1,policy);execute(mode,4096,2,policy)
+          assert all(json.loads((root/r['file']).read_text())['safeToRunH100k'] is True for r in rows)
+          scaled=execute('release',100000,2,'zero')
+          report={'status':'diagnostic-verified','acceptance':False,
+                  'decision':'MICRO_PROTOCOL_PASS_NOT_INTEGRATION_ELIGIBLE',
+                  'integrationEligible':False,
+                  'smallGateCases':6,'scaledCases':1,'rows':rows,
+                  'safeToRunH100k':True,'safeToRunH1M':False,
+                  'H1M':'NOT_RUN','fullH':'NOT_MEASURED','fullHMemoryVerdict':'NOT_FIXED',
+                  'C5':'NOT_RUN','C100':'NOT_RUN',
+                  'actualRuntimeInputsUnchanged':True,
+                  'memoryVerdict':'Micro component capacities are bounded; NOT_MEASURED_FULL_H and NOT_FIXED.',
+                  'limitations':['K+1 rejection is not integrated into the unchanged gameplay transcript.',
+                                 'Flat-directory micro does not prove current nested root/leaf integration.',
+                                 'No A/B/K/C, full S/H memory, phys_footprint, UI, app, device, or cross-process qualification.']}
+          (root/'BOUNDED-OWNERSHIP-STUDY.json').write_text(json.dumps(report,indent=2)+'\n')
+          print(json.dumps({'status':report['status'],'decision':report['decision'],
+                            'smallGateCases':6,'scaledAssets':scaled['assets'],'C100':'NOT_RUN'},indent=2))
+          PYCODE
+
+      - name: Always prove actual sources unchanged and inventory raw evidence
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > bounded-ownership-results/source-guard-after.txt
+          python3 -B Experiments/R005Swift/candidate_proof_inputs.py check bounded-ownership-results/runtime-inputs.json
+          git diff --exit-code
+          rm -rf .bounded-ownership-study
+          python3 -B - <<'PYCODE'
+          import hashlib,json,pathlib
+          root=pathlib.Path('bounded-ownership-results')
+          files={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest()
+                 for p in sorted(root.rglob('*')) if p.is_file() and p.name!='RAW-MANIFEST.json'}
+          (root/'RAW-MANIFEST.json').write_text(json.dumps({'files':files},indent=2)+'\n')
+          PYCODE
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r005-bounded-epoch-ownership-micro
+          path: bounded-ownership-results/
+          if-no-files-found: error

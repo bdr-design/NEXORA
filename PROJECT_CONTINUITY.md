@@ -1,5 +1,17 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Bounded ownership micro IMPLEMENTED/STATIC_PASS/NOT_RUN: actual24 Sources and
+42 runtime inputs unchanged; disposable H-cold20B flat pages use atomic
+begin→publish, stable token, K1/K2 buffers, one sequential scratch/file, and
+write-before-retire/release-prefix. Static guard/preparer/YAML/Python checks
+PASS; Apple Debug/Release/TSan257/K1+4096/K2 then conditional Release100k/K2
+pending. Decision is always MICRO_PROTOCOL_PASS_NOT_INTEGRATION_ELIGIBLE:
+K1 held-page pressure=writerReading, K2=capacity, no production backpressure
+transcript/full-H proof. Corrected H1M preflight incl wrapper allowance is
+191409758B(K1)/191414966B(K2) with known writer requests, above128 target;
+allocator headers/phys unmeasured and memory NOT_FIXED. All C failures stay;
+no H1M/C5/C100/A/B/K/main/results/Stage2–4/app/IPA/device action.
+
 Morning checkpoint: actual42 observer inputs fixed; fresh37563538884 A/B and
 Debug/Release/TSan S/H1M K/WAL verified. H C5 FAILED1.3822529614; memory
 210772320B/1M NOT_FIXED; C OPEN S/H. Writer37568520463 and bitmap37570450804
