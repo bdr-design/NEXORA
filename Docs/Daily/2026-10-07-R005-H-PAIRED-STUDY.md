@@ -78,3 +78,20 @@ delta. لا يُستنتج أنC نجحت منratio هذهالحلقة؛ لا س
 هذه النتيجة مصنفةdiagnosticThresholdMisses للذاكرة، مع بقاء workflow SUCCESS
 لتنفيذ الفحص فقط. actualRuntime لم يتغير. C5 التالي يستخدم إثبات71432ea4
 الكامل وA المختارة مسبقًا؛ لا قرار A بديل، لا C100 من هذا التشخيص.
+
+## Copy-observer successor paired diagnosis — PREPARED/NOT_RUN
+
+Following verified bounded37562941693, the same disposable H harness will
+measure the fixed observer successor without changing any actual42inputs.
+Source22e5428d/treee5fbde7e is currently in fresh37563538884 full qualification;
+its A alone is preselected for later C. This H study is not an A alternative
+or a five-save retry. Debug/Release4096, then one Release H1M ABBA fixture
+with unchanged1024/65536 budget, exact transcript/output/recovery and separate
+advance/service/reschedule/WAL/writer/full-loop. Calibration and post-phase
+capacity scan remain outside advance but disclosed, full-loop work preserved.
+
+Pre-execution allocation estimate unchanged: new observer reference assignments
+are O(1) at begin, callback only on first copied page; no extra per-event
+allocation expected after bounded Release zero proof. Whole spare-image pool
+is still over200B/asset; new measurements cannot change that budget or count
+capacity as physical footprint. No C100, production or device acceptance.

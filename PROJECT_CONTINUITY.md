@@ -1,5 +1,12 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Observer fresh source22e5428d/treee5fbde7e, local8675891 exact tree, running
+37563538884: A/base and six1M K parts independent, Release H alreadySUCCESS;
+remaining parts pending. This run's A solely preselected for C. Same-source
+H1M paired diagnostic PREPARED with existing disposable harness, no actual42
+input changes; bounded gain4.6% is modest/not C proof. All failed/cancelled
+evidence retained, source C pins0/PENDING; memory NOT_FIXED, no C100/main/device.
+
 Corrected copy-observer37562941693 SUCCESS onb543b495/tree507cd804:
 artifact11457379432 ZIP SHA256
 d0394dbe35f95e67f9af41e311010219bdeb8e7c9b213a614a8075b6aa63cebc verified
