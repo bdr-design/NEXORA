@@ -1,5 +1,20 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+At03:36UTC complete AGENTS/continuity re-read, live91544240/tree29ee5f98
+and main38ce39cf verified, only allowed successors. Fresh37563538884 ALL
+SUCCESS; final artifact11458419655 ZIP SHA256
+e62b577d4cd881bf14c1a1aaf1b188923f98c395490446308c99fc3607125b3f
+independently verified against base/42inputs/6parts: A solely H, B60/quota,
+60K1–K10/6chains/18torn/12corrupt and bounded44/132/6lifecycle PASS. Qualified
+C source pins updated; exactly one real H1M five-save next, micro pins0/PENDING.
+Stamp37565498376 independently verified artifact11458713104 SHA256
+42e9b16257da0d0fc288e134cd0fcf3f1ee36d04e80d65e53a864e41df632937:
+32cases/96epochs/12lifecycle PASS, Releasezero/TSan null. H1M advance ratio
+1.24623/full-loop1.22714, +9801 requested setup allocations/+235240B observed;
++666688B conservative owned allowance. NOT_ADOPTED, actual42inputs unchanged.
+C OPEN S/H, memory210.77B/asset NOT_FIXED, all failures retained; no C100,
+main/result files/Stage2–4/app/IPA/device acceptance.
+
 Fresh37563538884 base independently verified artifact11458012733 SHA256
 5d5d14d897ad326d65ee9e3b1ac1ed9d7eb64078e2fd79d276144f92b5a74c38:
 A180samples solely selectsH ratio0.3827900323, B60/quota320/1472reject/832MiB,

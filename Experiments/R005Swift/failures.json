@@ -28,7 +28,9 @@
     "2026-10-07 a progress-display mapper assumed queued GitHub job steps was an array; API correctly returned null for a queued part. Display TypeError corrected with an empty fallback. This did not alter workflow execution, source, tests or proof; all queued/in-progress results remain pending.",
     "2026-10-07 isolated page-stamp-study preparation initially wrote the H80N copy assertion for both S/H; local audit corrected it before any publication/execution to packed S ceil8(65N)+ceil8(30N)+8ceil(N/16) and H80N+8ceil(N/16). No raw measurement, actual runtime or gate changed.",
     "2026-10-07 ad-hoc H result display guessed release-1000000.json, which is not the artifact name; FileNotFound had no writes or metric effect. Result is read through verified H-PAIRED-STUDY summaries rather than a guessed filename.",
-    "2026-10-07 before corrected stamp execution, review found paged-candidate-checks finite size list omitted1M. Disposable harness only now accepts explicit1M in both arms, while actual Sources/command limits remain unchanged. No prior stamp Swift build/result existed; no C threshold or acceptance test reduced."
+    "2026-10-07 before corrected stamp execution, review found paged-candidate-checks finite size list omitted1M. Disposable harness only now accepts explicit1M in both arms, while actual Sources/command limits remain unchanged. No prior stamp Swift build/result existed; no C threshold or acceptance test reduced.",
+    "2026-10-07 ad-hoc stamp result display used Path indexing rather than joining, raised TypeError before summary output and made no writes. Correct independent verifier joined paths and verified all raw hashes/source transformations before any decision. No measurement or acceptance result altered.",
+    "2026-10-07 evidence checkpoint script assumed a SOURCE-PREFLIGHT.md file existed, stopped on FileNotFound after writing the intended workflow/docs/continuity updates. Source guard, all23existing proof tests, exact42manifest and diff-check subsequently PASS. Preflight record placed in the existing copy-observer daily doc; no runtime or evidence metric was modified."
   ],
   "apple": [
     {

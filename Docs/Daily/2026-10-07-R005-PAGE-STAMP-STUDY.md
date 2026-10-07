@@ -1,6 +1,6 @@
 # R005 page-stamp ownership micro — estimate before isolated edits
 
-PREPARED / NOT_RUN. Actual42 runtime inputs remain the verified observer source.
+COMPLETED / NOT_ADOPTED. Actual42 runtime inputs remain the verified observer source.
 Current full qualification37563538884 on22e5428d/treee5fbde7e retains its sole
 prospectively selected A; all failures and C<=1.10 unchanged. H paired37564011879
 is a separate same-fixture component probe. No actual hot-source mutation here.
@@ -59,3 +59,24 @@ finite test-size list in BOTH arms; actual public command/owner limits and all
 acceptance gates unchanged. This enables the owner's required1M study rather
 than substituting a small smoke. Source differences remain setup harness only
 in base, setup harness+EpochPages in stamp. No new simulation model.
+
+Corrected37565498376 SUCCESS on91544240/tree29ee5f98, artifact11458713104,
+ZIP SHA25642e9b16257da0d0fc288e134cd0fcf3f1ee36d04e80d65e53a864e41df632937.
+Independent verifier reconstructs both disposable source transformations and
+checks exact actual42inputs, all6builds,32canonical cases/96epochs,12lifecycle,
+Release scoped zero and TSan null. No actual runtime source changed.
+
+| H fixture | Base median advance | Stamp median advance | Stamp/base | Full-loop ratio | Additional requested setup bytes |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 100k | 30.261537ms | 32.494957ms | 1.073804 | 1.065345 | 23504B |
+| 1M | 446.072699ms | 555.910497ms | 1.246233 | 1.227143 | 235240B |
+
+At1M stamps add median9801 requested setup allocations (constructor's9799
+boxes plus array/setup effects); declared owned allowance adds666688B, from
+210772320 to211439008B. Observed requested allocation bytes differ from the
+conservative64B/box budget, which is not phys_footprint. Writer median improved
+in this held mixed harness (ratio0.845405) while simulation became slower; this
+is not a contention diagnosis or C result. Samples overlap and are limited.
+Decision: NOT_ADOPTED. No credible1M simulation gain and extra memory/setup work
+violates the purpose of this candidate. Preserve its raw evidence and the first
+shell FAILED run. Do not copy its metadata into the actual hot owner.

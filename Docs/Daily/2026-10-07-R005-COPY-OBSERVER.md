@@ -150,3 +150,19 @@ and matrix/ABBA NOT_RUN. Artifact11457343944 ZIP SHA256
 24b9a369d810de4f36ea122eda3dd0024aea578eae7c865813e5061a19fd55fd verified.
 This cannot replace the earlier failed build or any failed C ratio. C OPEN S/H
 and full spare-image memory failure NOT_FIXED; product/IPA/device remain gated.
+
+Full successor qualification37563538884 is now independently VERIFIED:
+source22e5428d8dd601e368d4d150aed3a2f788ce60c1,
+treee5fbde7ef6bdef48b24af7256f16050a82758478,
+artifact11458419655 ZIP SHA256
+e62b577d4cd881bf14c1a1aaf1b188923f98c395490446308c99fc3607125b3f.
+A180samples prospectively solely selectsH ratio0.3827900323; source-bound B60/
+quota, Debug/Release/TSan S/H1M K1–K10 and continuations PASS. Manifest42inputs
+still equals current actual source. Qualified five-save pins bind this proof;
+C100 remains blocked by0/PENDING micro pins until a real qualifying diagnostic.
+Full-spare memory remains NOT_FIXED; no production/iPhone smoothness follows.
+
+03:36UTC preflight: complete AGENTS and continuity read, allowed live91544240/
+tree29ee5f98 and localcc5cd946 identical tree/clean, main38ce39cf reverified.
+No denied branch/reference code opened; actual42inputs stay fixed. All local
+source-guard/selftest and23existing proof-gate tests PASS after pin preparation.
