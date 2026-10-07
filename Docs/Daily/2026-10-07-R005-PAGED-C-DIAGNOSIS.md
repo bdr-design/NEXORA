@@ -74,3 +74,35 @@ Debug/Release/TSan وcanonical/WAL/lifecycle أولًا. أي تقدم يؤهل 
 احتساب كل الحالة، ولا تعادل احتياطي ADR القديم1MiB. تحسين وصول الصفوف لا
 يعالج ذلك وحده. Stage2–4 وiPhone/IPA ودمج main وملفات النتائج النهائية
 تبقى وراء C الحقيقي وقرار المالك؛ التصور الأولي منفصل ومعلن.
+
+## تنفيذ مرشح محدود — Apple pending
+
+تقدير الخطوة السابقة نُشر عند11907a64/tree059bd870 قبل تعديل hot path.
+التنفيذ الجديد يحافظ على payload وcanonical bytes: getter قصير inline،
+updateElement عبر borrow غير هارب بعد ensureWritable، وتجميع تعديلي node
+consume وH schedule في mutation واحدة. لا تعطيل exclusivity أو COW أو أي
+تحقق، ولا فرع timing يبطئ idle. cold setters الأربع تسجل أول نسخها؛ hot
+completion لا ينسخ cold. بارير H يعد الآن الصفحتين الفيزيائيتين عند الحاجة
+كلًا مستقلة؛ المقاييس التاريخية لم تتغير ولا يعاد وصفها.
+
+أضيف فحص held-epoch حتمي257: اكتمال كل الأحداث ينسخ hot/nodes/groups فقط،
+ثم reschedule قبل إطلاق الكاتب ينسخ cold20B/asset. يتطابق frozen snapshot
+مع الحالة السابقة، وWAL recovery مع live mirror بعد إعادة الجدولة. هذا
+حالة سلامة فعلية للحد الجديد، وليس استنتاجًا من compilation.
+
+توقع حجم النسخ لفحص H100k كامل: السابق10,050,000B مقابل الجديد8,050,000B
+لكل epoch لا يكتب cold. يبقى pool المحجوز كاملًا؛ هذه20% من payload copy
+في هذه الحالة فقط، وليس وعدًا20% في الأداء أو الذاكرة. لا تخصيص advance/
+service متوقع، لكنه يحتاج Release observer مع ضوابطه الموجبة وTSan مستقلًا.
+
+bounded workflow يحفظ Default/Debug/Release/TSan canonical/mirror checks ثم
+يفتح فقط commit d415c96c المسموح للمقارنة، دون قراءة أي فرع ممنوع. previous
+runtime manifest يجب أن يختلف عن الجديد في أربعة ملفات hot/test المحددة
+فقط، مع نفس flags. H100k old/new/new/old على المضيف نفسه، نفس ثلاثة epochs
+والـfixture/transcript/digests؛ هذا workload يتضمن mirror تحققًا ولا يدعي
+pure timing أو A/C. المجلد السابق يُحذف بعد الفحص، ولا يصبح تنفيذًا بديلًا.
+
+local guard/selftest و23gate tests وdiff-check PASS. Swift/TSan والـborrow
+والنسخ/الأزمنة ما زالت Apple pending. pins C صارت0/PENDING لأن42runtime
+inputs تغيرت؛ دليل d415 لا يؤهل المصدر الجديد. لا micro1M أوC100 قبل إعادة
+AB/K الكاملة على المصدر المؤهل التالي.

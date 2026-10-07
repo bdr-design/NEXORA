@@ -595,6 +595,16 @@ final class StageCState {
         }
 #endif
     }
+#if EPOCH_PAGES
+    @inline(__always) func willWriteColdAsset(_ world: HybridWorld, index: Int) {
+        guard capturing && world.stageCNeedsColdAssetCopy(index) else { return }
+        let start = nx_now(), bytes = world.stageCCloneColdAsset(index)
+        if bytes > 0 {
+            barrierNS += nx_now() - start; barrierBytes += bytes; barrierEmits += 1
+            if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
+        }
+    }
+#endif
     @inline(__always) func willWriteNode(_ wheel: HybridTimingWheel, index: Int) {
 #if EPOCH_PAGES
         guard capturing && wheel.stageCNeedsNodeCopy(index) else { return }

@@ -65,6 +65,66 @@ jobs:
           set -euo pipefail
           cd Experiments/R005Swift
           python3 -B paged_candidate.py .build-paged-base-release/release/nxr-swift-probe .build-paged-debug/debug/nxr-swift-probe .build-paged-release/release/nxr-swift-probe .build-paged-tsan/debug/nxr-swift-probe ../../paged-results/matrix ../../paged-results/AllocationObserver.dylib 2>&1 | tee ../../paged-results/matrix-run.txt
+      - name: Read only the permitted previous paged source for paired diagnosis
+        uses: actions/checkout@v4
+        with:
+          ref: d415c96c3b05b721960b3679c02f05a2aa3024da
+          path: .previous-paged-source
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Same-host old and new H 100k ABBA bounded comparison
+        run: |
+          set -euo pipefail
+          trap 'rm -rf .previous-paged-source' EXIT
+          test "$(git -C .previous-paged-source rev-parse HEAD)" = d415c96c3b05b721960b3679c02f05a2aa3024da
+          python3 -B .previous-paged-source/Experiments/R005Swift/candidate_proof_inputs.py write paged-results/previous-runtime-inputs.json
+          python3 -B Experiments/R005Swift/candidate_proof_inputs.py write paged-results/runtime-inputs.json
+          python3 -B - <<'PYCODE'
+          import hashlib,json,pathlib
+          assert hashlib.sha256(pathlib.Path('paged-results/previous-runtime-inputs.json').read_bytes()).hexdigest()=='71ad34a9bc0a69b41c48a414900ae9fa9e46cdbd257e114d86d6b7dd317edd52'
+          old=json.loads(pathlib.Path('paged-results/previous-runtime-inputs.json').read_text())
+          new=json.loads(pathlib.Path('paged-results/runtime-inputs.json').read_text())
+          assert old['sourceFlags']==new['sourceFlags'] and set(old['paths'])==set(new['paths'])
+          changed={p for p in old['paths'] if old['paths'][p]!=new['paths'][p]}
+          expected={'Experiments/R005Swift/Sources/SwiftProbe/'+f for f in
+              ('EpochPages.swift','Hybrid.swift','Stage005CSave.swift','Stage005CPagedChecks.swift')}
+          assert changed==expected,(changed,expected)
+          PYCODE
+          (cd .previous-paged-source/Experiments/R005Swift && swift build --scratch-path .build-previous -c release -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror) 2>&1 | tee paged-results/build-previous-paged-release.txt
+          python3 -B - <<'PYCODE'
+          import hashlib,json,os,pathlib,shutil,statistics,subprocess,sys
+          sys.path.insert(0,'Experiments/R005Swift')
+          from paged_candidate import validate,comparable
+          p=pathlib.Path('paged-results/accessor-comparison');p.mkdir()
+          bins={'old':pathlib.Path('.previous-paged-source/Experiments/R005Swift/.build-previous/release/nxr-swift-probe').resolve(),
+              'new':pathlib.Path('Experiments/R005Swift/.build-paged-release/release/nxr-swift-probe').resolve()}
+          env=os.environ.copy();env['DYLD_INSERT_LIBRARIES']=str(pathlib.Path('paged-results/AllocationObserver.dylib').resolve())
+          rows=[];reference=None
+          for ordinal,arm in enumerate(('old','new','new','old'),1):
+              label=f'{ordinal}-{arm}';store=(p/f'store-{label}').resolve()
+              result=subprocess.run([str(bins[arm]),'paged-candidate-checks',str(store),'H','100000','zero'],env=env,text=True,capture_output=True,timeout=900)
+              f=p/f'{label}.json';f.write_text(result.stdout);(p/f'{label}.stderr.txt').write_text(result.stderr)
+              assert result.returncode==0 and not result.stderr,(arm,result.stderr)
+              row=json.loads(result.stdout);validate(row,variant='H',count=100000,policy='zero',candidate=True)
+              if reference is None:reference=comparable(row)
+              else:assert comparable(row)==reference
+              expected_bytes=10050000 if arm=='old' else 8050000
+              assert all(epoch['barrierBytes']==expected_bytes for epoch in row['epochs'])
+              rows.append({'arm':arm,'file':f.name,'sha256':hashlib.sha256(f.read_bytes()).hexdigest(),
+                  'advanceNS':[e['advanceNS'] for e in row['epochs']],
+                  'barrierNS':[e['barrierNS'] for e in row['epochs']],
+                  'barrierBytes':[e['barrierBytes'] for e in row['epochs']],
+                  'fullLoopNS':[e['fullLoopNS'] for e in row['epochs']]})
+              shutil.rmtree(store)
+          old=statistics.median(n for row in rows if row['arm']=='old' for n in row['advanceNS'])
+          new=statistics.median(n for row in rows if row['arm']=='new' for n in row['advanceNS'])
+          report={'status':'diagnostic-verified','acceptance':False,'layout':'H','assets':100000,
+              'order':['old','new','new','old'],'rows':rows,'medianAdvanceNS':{'old':old,'new':new},
+              'diagnosticNewToOldRatio':new/old,'C100':'NOT_RUN',
+              'scope':'same-host bounded mirror/order/WAL test, not pure simulation timing or A/C acceptance; no pacing or idle padding'}
+          (p/'ACCESSOR-COMPARISON.json').write_text(json.dumps(report,indent=2)+'\n')
+          print(json.dumps(report))
+          PYCODE
       - name: Always enforce source and unsafe boundaries
         if: always()
         run: |

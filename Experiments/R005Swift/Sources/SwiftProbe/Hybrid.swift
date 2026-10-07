@@ -140,10 +140,18 @@ final class HybridTimingWheel {
 #endif
     }
     @inline(__always) private func writeNodeNext(_ index: Int, _ value: UInt32) {
+#if EPOCH_PAGES
+        nodePages.updateElement(at: index) { $0.next = value }
+#else
         var row = nodes[index]; row.next = value; writeNode(index, row)
+#endif
     }
     @inline(__always) private func writeNodeLive(_ index: Int, _ value: UInt8) {
+#if EPOCH_PAGES
+        nodePages.updateElement(at: index) { $0.live = value }
+#else
         var row = nodes[index]; row.live = value; writeNode(index, row)
+#endif
     }
     @inline(__always) private func bucket(_ time: UInt64) -> Int {
         let difference = time ^ cursor
@@ -370,8 +378,15 @@ final class HybridTimingWheel {
         stageCState?.willWriteNode(self, index: Int(id))
 #endif
         heads[leaf] = nodes[Int(id)].next
+#if EPOCH_PAGES
+        let nextFree = free
+        nodePages.updateElement(at: Int(id)) { row in
+            row.live = 0; row.next = nextFree
+        }
+#else
         writeNodeLive(Int(id), 0)
         writeNodeNext(Int(id), free)
+#endif
         free = id
         pending -= 1
         if mutation == .duplicate && !fired { ghost = value; fired = true }
@@ -513,6 +528,9 @@ final class HybridWorld {
     }
     @inline(__always) private func writeEntity(_ index: Int, _ value: UInt32) {
 #if EPOCH_PAGES
+#if STAGE_C
+        stageCState?.willWriteColdAsset(self, index: index)
+#endif
         coldPages.set(base: 0, width: 4, index: index, value: value)
 #else
         entity[index] = value
@@ -520,6 +538,9 @@ final class HybridWorld {
     }
     @inline(__always) private func writePolicy(_ index: Int, _ value: UInt32) {
 #if EPOCH_PAGES
+#if STAGE_C
+        stageCState?.willWriteColdAsset(self, index: index)
+#endif
         coldPages.set(base: 4, width: 4, index: index, value: value)
 #else
         policy[index] = value
@@ -527,6 +548,9 @@ final class HybridWorld {
     }
     @inline(__always) private func writeOrigin(_ index: Int, _ value: UInt32) {
 #if EPOCH_PAGES
+#if STAGE_C
+        stageCState?.willWriteColdAsset(self, index: index)
+#endif
         coldPages.set(base: 8, width: 4, index: index, value: value)
 #else
         origin[index] = value
@@ -534,6 +558,9 @@ final class HybridWorld {
     }
     @inline(__always) private func writeDeparture(_ index: Int, _ value: UInt64) {
 #if EPOCH_PAGES
+#if STAGE_C
+        stageCState?.willWriteColdAsset(self, index: index)
+#endif
         coldPages.set(base: 12, width: 8, index: index, value: value)
 #else
         departure[index] = value
@@ -554,16 +581,32 @@ final class HybridWorld {
 #endif
     }
     @inline(__always) private func writeHotContract(_ index: Int, _ value: UInt32) {
+#if EPOCH_PAGES
+        hotPages.updateElement(at: index) { $0.contract = value }
+#else
         var row = hot[index]; row.contract = value; writeHot(index, row)
+#endif
     }
     @inline(__always) private func writeHotFare(_ index: Int, _ value: Int64) {
+#if EPOCH_PAGES
+        hotPages.updateElement(at: index) { $0.fare = value }
+#else
         var row = hot[index]; row.fare = value; writeHot(index, row)
+#endif
     }
     @inline(__always) private func writeHotActive(_ index: Int, _ value: UInt8) {
+#if EPOCH_PAGES
+        hotPages.updateElement(at: index) { $0.active = value }
+#else
         var row = hot[index]; row.active = value; writeHot(index, row)
+#endif
     }
     @inline(__always) private func writeHotGeneration(_ index: Int, _ value: UInt32) {
+#if EPOCH_PAGES
+        hotPages.updateElement(at: index) { $0.generation = value }
+#else
         var row = hot[index]; row.generation = value; writeHot(index, row)
+#endif
     }
     func output(_ index: Int) -> Completion { outputs[index] }
 
@@ -584,8 +627,12 @@ final class HybridWorld {
                                      generation: hot[i].generation, kind: kind))
         writeOrigin(i, hot[i].airport)
         writeDeparture(i, now)
+#if EPOCH_PAGES
+        hotPages.updateElement(at: i) { row in row.fare = amount; row.active = 1 }
+#else
         writeHotFare(i, amount)
         writeHotActive(i, 1)
+#endif
     }
 
     func invalidateGeneration(_ i: Int) throws {
@@ -709,11 +756,13 @@ final class HybridWorld {
         hotPages.appendRows(start..<(start + elements), into: &bytes)
         coldPages.buffer.appendPackedPage(chunk, payloadBytes: elements * 20, into: &bytes)
     }
-    @inline(__always) func stageCNeedsAssetCopy(_ index: Int) -> Bool { hotPages.needsCopy(page: index >> 8) || coldPages.buffer.needsCopy(page: index >> 8) }
+    @inline(__always) func stageCNeedsAssetCopy(_ index: Int) -> Bool { hotPages.needsCopy(page: index >> 8) }
+    @inline(__always) func stageCNeedsColdAssetCopy(_ index: Int) -> Bool { coldPages.buffer.needsCopy(page: index >> 8) }
     @inline(__always) func stageCNeedsGroupCopy(_ index: Int) -> Bool { groupPages.needsCopy(page: index >> 11) }
     func stageCCloneAsset(_ index: Int) -> Int {
-        hotPages.ensureWritable(page: index >> 8) + coldPages.buffer.ensureWritable(page: index >> 8)
+        hotPages.ensureWritable(page: index >> 8)
     }
+    func stageCCloneColdAsset(_ index: Int) -> Int { coldPages.buffer.ensureWritable(page: index >> 8) }
     func stageCCloneGroup(_ index: Int) -> Int { groupPages.ensureWritable(page: index >> 11) }
     func stageCReleasePages(_ completion: StageCEpochCompletion) {
         precondition(completion.ownerID == ObjectIdentifier(self))

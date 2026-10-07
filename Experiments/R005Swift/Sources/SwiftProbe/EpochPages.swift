@@ -15,7 +15,7 @@ struct FrozenEpochBuffer<T: BitwiseCopyable & Sendable>: Sendable {
 
     var pageCount: Int { (count + (1 << pageShift) - 1) >> pageShift }
     func elements(in page: Int) -> Int { min(1 << pageShift, count - (page << pageShift)) }
-    func page(_ index: Int) -> ContiguousArray<T> { root[index >> 6][index & 63] }
+    @inline(__always) func page(_ index: Int) -> ContiguousArray<T> { root[index >> 6][index & 63] }
 }
 
 final class EpochBuffer<T: BitwiseCopyable & Sendable> {
@@ -120,6 +120,14 @@ final class EpochBuffer<T: BitwiseCopyable & Sendable> {
         ensureWritable(page: page)
         root[page >> 6][page & 63][index & ((1 << pageShift) - 1)] = value
     }
+    // One nonescaping, synchronous mutation borrow. The page becomes unique
+    // before any inout access; neither storage nor a mutable owner escapes.
+    @inline(__always) func updateElement(at index: Int, _ body: (inout T) -> Void) {
+        precondition(index >= 0 && index < count)
+        let page = index >> pageShift
+        ensureWritable(page: page)
+        body(&root[page >> 6][page & 63][index & ((1 << pageShift) - 1)])
+    }
     @inline(__always) func word(page: Int, index: Int) -> T { root[page >> 6][page & 63][index] }
     @inline(__always) func setWord(page: Int, index: Int, value: T) {
         ensureWritable(page: page)
@@ -185,7 +193,7 @@ struct EpochRowsView<T: BitwiseCopyable & Sendable>: RandomAccessCollection {
     var capacity: Int { owner.count }
     func index(after i: Int) -> Int { i + 1 }
     func index(before i: Int) -> Int { i - 1 }
-    subscript(index: Int) -> T { owner.element(at: index) }
+    @inline(__always) subscript(index: Int) -> T { owner.element(at: index) }
 #if STAGE_C
     func append(_ range: Range<Int>, into bytes: inout [UInt8]) { owner.appendRows(range, into: &bytes) }
 #endif

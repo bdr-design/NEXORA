@@ -233,9 +233,54 @@ private func pagedLifecycle<W: PagedCheckWorld>(_ directory: String, make: () th
             "lastCommitPreserved": true, "scope": "single directory owner; no cross-process locking"]
 }
 
+private func pagedColdEpoch(_ directory: String) throws {
+    let count = 257
+    try FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: false)
+    let world = try HybridWorld(count: count), mirror = try HybridWorld(count: count)
+    try world.seedFixture(); try mirror.seedFixture()
+    let state = StageCState(world: world); world.stageCInstall(state)
+    let initialWAL = try StageCWAL(directory: directory, epoch: 1)
+    try state.begin(world: world, preparedSink: state.prepareSink(directory: directory, epoch: 1))
+    _ = try state.waitForCommit(world: world); try initialWAL.close()
+    let frozenDigest = Snapshot.worldDigest(world)
+    let wal = try StageCWAL(directory: directory, epoch: 2)
+    let held = state.prepareSink(directory: directory, epoch: 2, heldForKillFixture: true)
+    defer { held.releaseKillFixtureWriter() }
+    try state.begin(world: world, preparedSink: held)
+    while true {
+        let actual = try world.advance(to: 600, budget: 1024)
+        let expected = try mirror.advance(to: 600, budget: 1024)
+        try require(actual.events == expected.events && actual.units == expected.units &&
+                    actual.reached == expected.reached && actual.stop == expected.stop, "cold epoch transcript")
+        try wal.appendAdvance(target: 600, budget: 1024, units: actual.units, events: actual.events)
+        if actual.stop == .target { break }
+        try require(actual.stop != .blocked, "cold epoch blocked")
+    }
+    let hotNodeGroupBytes = count * 80 + ((count + 15) / 16) * 8
+    try require(state.barrierBytes == hotNodeGroupBytes, "cold page copied during hot-only completion")
+    try stageCHybridRescheduleAll(world, baseNow: 600, firstOperation: UInt64(count * 2 + 1))
+    try stageCHybridRescheduleAll(mirror, baseNow: 600, firstOperation: UInt64(count * 2 + 1))
+    try wal.appendRescheduleAll(baseNow: 600, firstOperation: UInt64(count * 2 + 1))
+    try require(state.barrierBytes == hotNodeGroupBytes + count * 20,
+                "cold mutation must copy and report every changed cold page")
+    try require(Snapshot.worldDigest(world) == Snapshot.worldDigest(mirror), "cold epoch live mirror")
+    held.releaseKillFixtureWriter()
+    _ = try state.waitForCommit(world: world); try wal.close()
+    let frozen = try StageCHybridSnapshotRestore.restoreSnapshot(directory + "/snapshot-2.bin")
+    let recovered = try StageCHybridSnapshotRestore.recoverLatest(directory)
+    try require(Snapshot.worldDigest(frozen) == frozenDigest, "cold mutation changed frozen snapshot")
+    try require(Snapshot.worldDigest(recovered.world) == Snapshot.worldDigest(world),
+                "cold mutation recovery lost live reschedule")
+}
+
 func stageCPagedLifecycle(_ directory: String, variant: String) throws -> [String: Any] {
     if variant == "S" { return try pagedLifecycle(directory) { try SwiftWorld(count: 257) } }
-    if variant == "H" { return try pagedLifecycle(directory) { try HybridWorld(count: 257) } }
+    if variant == "H" {
+        var result = try pagedLifecycle(directory) { try HybridWorld(count: 257) }
+        try pagedColdEpoch(directory + "/cold-epoch")
+        result["coldMutationDuringFrozenEpochExact"] = true
+        return result
+    }
     throw ProbeError.invalid("paged lifecycle variant")
 }
 #endif

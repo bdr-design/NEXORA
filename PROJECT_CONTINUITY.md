@@ -1,5 +1,14 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Bounded successor implemented after published estimate/failure11907a64:
+short getter inlining, safe nonescaping H row mutations, independent hot/cold
+first-write clones. Deterministic257 held-epoch cold mutation/recovery check
+added; H barrier copies now count physical hot/cold pages separately, old
+metrics retained. Local guard/23gate tests PASS; Apple bounded +same-host old
+d415/new H100k ABBA pending. C source pins reset0/PENDING: no old A/B/K reuse,
+no C100. Payload/layout/economy/clock/cadence unchanged; full pool memory issue
+still open. Fresh proof required on any qualifying successor source.
+
 Qualified H1M/5-save diagnostic37553171073 workflow SUCCESS but candidate
 eligibility FAILED: overhead1.4648871013>1.10, advancep99 1,340,417ns>1,100,000;
 beginp99 63,791ns and paired/idle allocation gates PASS. Artifact11454046472
