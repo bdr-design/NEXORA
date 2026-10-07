@@ -1,5 +1,14 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Corrected bounded37554761173 SUCCESS on36675c81/treea57532c1; artifact11453529085
+ZIP SHA25684f5f1fc37363078f6faf6a6d6a876a3d54b88ee0030bb305005554c60f437aa
+independently verified44cases/132epochs/32canonical comparisons/6lifecycle,
+including H cold held-epoch Debug/Release/TSan. Same-host H100k old/new ABBA
+median advance44.242ms→37.116ms (ratio0.838942), copy10.05MB→8.05MB per epoch;
+mixed mirror workload, not C. Next fresh parallel A/B/both-layout1M K source
+proof; its sole A is preselected prospectively for successor C, no favorable
+choice/reuse. Runtime42 unchanged since corrected source. C100 remains NOT_RUN.
+
 Original successor run37554438056 FAILED in Debug H257 cold expected-byte
 assertion; all five builds PASS, full bounded matrix/comparison NOT_RUN.
 Artifact11453563427 ZIP SHA256d2abf84c48ca7347348ed7f58e96cd35f3655675e526c30a2a27e86944f74aab

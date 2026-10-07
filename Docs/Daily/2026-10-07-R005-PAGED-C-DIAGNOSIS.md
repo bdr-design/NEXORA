@@ -119,3 +119,31 @@ Artifact11453563427 ZIP SHA256
 `d2abf84c48ca7347348ed7f58e96cd35f3655675e526c30a2a27e86944f74aab` تحقق
 مستقلًا وحُفظ مع FAILED-COLD-TEST.json وfailures.apple. تصحيح الاختبار على
 36675c81/treea57532c1 يجري في run37554761173؛ لا قبول من build وحدها.
+
+## نتيجة المقارنة المصححة وخطة الإثبات التالية
+
+run37554761173 **SUCCESS** على36675c8163191b58b6d39fe64654ee0327372165 /
+treea57532c1470e62063d46cb04962496e2ec02a3cd. Artifact11453529085 ZIP SHA256
+`84f5f1fc37363078f6faf6a6d6a876a3d54b88ee0030bb305005554c60f437aa` فُحص
+مستقلًا:42inputs، guard/source hashes، schema/raw44cases و132epochs وكل
+32canonical comparisons،6lifecycle مع cold held-epoch فيDebug/Release/TSan.
+Release advance/service تخصيصات صفر؛ TSan unavailable=null كما في المصدر.
+التشغيل37554438056 السابق يبقى FAILED في سجله وartifact محفوظًا.
+
+H100k على host نفسه، old/new/new/old مع مطابقة ثلاثةepochs في كل ذراع:
+median advance44,241,833.5ns مقابل37,116,332.5ns، ratio0.8389420049691204.
+نسخ payload من10,050,000B إلى8,050,000B في كلepoch كما توقع العقد. كل raw
+ملف وSHA وSource previous42inputs منd415 متطابق مع الإثبات السابق؛ الجديد
+يختلف فقط بأربعة ملفات محددة. تباين الأذرع والأزمنة محفوظ، وworkload يتضمن
+mirror/order verification؛ لا pure timing claim ولا تأهيلC من هذه النسبة.
+
+قبل إطلاق أي A جديدة على المصدر: يُختار الآن run fresh-parallel التالي
+وA الوحيدة فيه لاتخاذ قرار C لهذا المصدر. لا انتخاب بين تشغيلين أو بين
+قرار d415 القديم وA جديدة. جميع42runtime inputs ثابتة بعد36675c81؛ تغيير
+workflow/docs/evidence فقط يسمح بربطها. المسار الموازي السابق37551200872
+له5/6أجزاء وظيفية ناجحة، وTSan S ما زال يعمل؛ ليس ادعاء إثباته المجمع بعد.
+
+الخطوة التالية هي A كاملة/B60records/quota/recovery وDebug/Release/TSan×S/H
+K1–K10/WAL عند1M دون تخفيف. C source/micro pins صفر/PENDING؛ لا خمس عمليات
+مؤهلة أو100save قبل نجاح وإعادة فحص artifact كامل لهذا المصدر. الصورة
+الاحتياطية الكاملة وقبول الذاكرة/الواجهة/الجهاز ما زالت مسائل منفصلة مفتوحة.
