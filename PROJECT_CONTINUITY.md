@@ -1,5 +1,13 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Copy-observer37562437344 FAILED candidate Debug build (generic test omitted
+advance default args); legacy Debug/Release PASS, functional/ABBA NOT_RUN.
+Artifact11457591361 ZIP SHA256
+6918f04d6c6e1e32ae4cc829957ee61ee5a12a74fa91261042d19e31d37a3226 verified
+and failure preserved. Only2testcalls corrected to explicit unchanged defaults;
+no hot source/payload/workload/gate change. Corrected bounded Apple pending,
+C proof pins0/PENDING; C OPEN S/H, memory NOT_FIXED, no C100/main/device.
+
 Copy-observer bounded successor IMPLEMENTED after estimate6de30940: exactly
 five runtime files, same owners/COW/v2/WAL/clock/cadence/writer. Successful
 begin installs actual state observer; only first clone records time/bytes/K2,

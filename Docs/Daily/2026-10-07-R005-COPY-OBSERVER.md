@@ -99,3 +99,15 @@ reset0/PENDING; no previous A/B/K proof accepted for this source, C100 blocked.
 Copy timers now bracket actual root/leaf/payload clone inside ensureWritable;
 prior prehook intervals are retained as measured, not retrospectively changed.
 Full spare-image memory remains NOT_FIXED, no product/IPA/device acceptance.
+
+### Original bounded build failure and correction
+
+Run37562437344 FAILED: legacy Debug/Release built, but candidate Debug rejected
+the new generic test's omitted advance arguments. Protocol requirements do not
+provide the concrete owners' defaults. Artifact11457591361 ZIP SHA256
+6918f04d6c6e1e32ae4cc829957ee61ee5a12a74fa91261042d19e31d37a3226 verified
+against source/tree/all source hashes and guard logs; functional/ABBA NOT_RUN.
+Only two generic test calls now pass work65536/checkLimit Int.max/deadline0/
+injectnil explicitly, matching existing generic paged checks and real defaults.
+No hot source, payload, workload or threshold changed after original failure.
+Corrected limited Apple check remains pending; original stays FAILED.

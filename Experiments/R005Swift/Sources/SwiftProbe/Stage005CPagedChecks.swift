@@ -298,8 +298,10 @@ private func pagedObserverOwner<W: PagedCheckWorld>(_ directory: String, make: (
     try require(rejected && !inactive.inFlight && inactive.epoch == 0, "inactive state took active epoch")
     try cancelledWriter(rejectedSink)
     while true {
-        let actual = try world.advance(to: 600, budget: 1024)
-        let expected = try mirror.advance(to: 600, budget: 1024)
+        let actual = try world.advance(to: 600, budget: 1024, workBudget: 65536, checkLimit: Int.max,
+                                       deadlineNS: 0, injectFailureAt: nil)
+        let expected = try mirror.advance(to: 600, budget: 1024, workBudget: 65536, checkLimit: Int.max,
+                                       deadlineNS: 0, injectFailureAt: nil)
         try require(actual.events == expected.events && actual.units == expected.units &&
                     actual.reached == expected.reached && actual.stop == expected.stop, "observer owner transcript")
         try wal.appendAdvance(target: 600, budget: 1024, units: actual.units, events: actual.events)

@@ -284,6 +284,38 @@
       "passedBeforeFailure": "runtime/guards and temporary-only source patch verified; Swift compilation and all profile commands NOT_RUN",
       "failedGate": "temporary package directory one level too shallow for unchanged dependency path ../..; compiler did not start",
       "correction": "nest the package at .h-paired-study/current so ../.. resolves to the permitted repository root; actual Package/Sources unchanged"
+    },
+    {
+      "status": "failure",
+      "acceptance": false,
+      "source": "bbdf8c1e34bda2276a97a70407225ce9d0cf69cc",
+      "tree": "ec054645d2074226b643448273b052080f357079",
+      "run": 37562437344,
+      "job": 112602512353,
+      "artifact": 11457591361,
+      "zipSHA256": "6918f04d6c6e1e32ae4cc829957ee61ee5a12a74fa91261042d19e31d37a3226",
+      "failedStep": "candidate Debug compilation",
+      "cause": "Generic PagedCheckWorld advance has no default arguments; test omitted workBudget/checkLimit/deadlineNS/injectFailureAt",
+      "baselineDebugRelease": "PASS",
+      "candidateDebug": "FAILED",
+      "functionalMatrix": "NOT_RUN",
+      "sameHostABBA": "NOT_RUN",
+      "C100": "NOT_RUN",
+      "evidenceSHA256": {
+        "build-base-debug.txt": "72422db68db83c2a8062f069ff4ca1d75ac799dd854202e742d65540cedf3888",
+        "build-base-release.txt": "4682d5eaff24fc95dc4dc52e32c9423161d20dc6c39da84a071f4f0ffe8b217f",
+        "build-candidate-debug.txt": "5d5d38e9e5a21648ad3ae8f9ec220cf169acfc784a440f703d5863ef4303d729",
+        "build-flags.txt": "71f54830478d8912602713093a2a67a595c4f299b5830837e98577d56842c587",
+        "commit.txt": "41b67ec0e5a3064cac2d905094df58009c3cfddf5b1ff2e0abcc700238cba4be",
+        "environment.txt": "4ea4a9ea40880729fcb2d336c894363f501fe6412aea658e13ed3d13bcbc8136",
+        "proof-gates.txt": "dff41b4b76431265f4c2d68972fcfd23786c2f667cb5b3479aff5348db54231f",
+        "scope.txt": "5c67c0c08864cf43ee17ae772147fc81ec49034bd486ccebb5ad4cf7b5f25c84",
+        "source-guard-after.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+        "source-guard-before.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+        "source-sha256.txt": "42341acf72b0685d159f601fd4acb0bf834b3858e53d980b25de1ac903033526",
+        "tree.txt": "2d8cf6a1aec07b2e4899a0e215762e2521f560e3bf6ad01c35bae26d61fbf394"
+      },
+      "correction": "Test call only: explicitly pass the unchanged actual defaults. Preserve original FAILED and skipped matrix/ABBA; corrected limited source still needs full Apple checks."
     }
   ],
   "diagnosticThresholdMisses": [
