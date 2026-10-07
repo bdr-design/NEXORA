@@ -15,7 +15,8 @@
     "2026-10-07 first word-micro publication stopped at a create_blob SHA comparison for review-20261005.json before any ref movement. Re-read file and confirmed unchanged local Git blob9bf97a0d341b9ab0f2eb251b9c03d15d13f0ad70; retry returned that exact SHA, all blobs/modes and tree6d3ca630 matched, and f09272dc was published with a non-force lease. No rejected tree or unverified blob was published; failure remains a transport validation event, not a C result.",
     "2026-10-07 fresh-proof workflow draft referenced a nonexistent stage005_c_wal_continuation.py; pre-publication path lookup failed. Corrected to the existing stage-c-wal-continuation CLI, verified every Python caller path, and strengthened its 2/8/54-byte and complete-corruption checks. No Apple run or previous proof was reclassified.",
     "2026-10-07 parallel-proof local validation harness FAILED with KeyError: name because checkout/upload steps have no name. Corrected only the validation harness to compare named run steps; repeated shell/Python syntax and original A/B/bounded command equality checks PASS. No Apple run, runtime input, gate, or prior failure was reclassified.",
-    "2026-10-07 evidence publication payload harness FAILED with ValueError: too many values to unpack before any blob/ref mutation: git ls-files -s has three metadata fields plus a tab-separated path. Corrected the harness to split metadata and path first. Local evidence commit retained; no source, Apple outcome, or historical failure changed."
+    "2026-10-07 evidence publication payload harness FAILED with ValueError: too many values to unpack before any blob/ref mutation: git ls-files -s has three metadata fields plus a tab-separated path. Corrected the harness to split metadata and path first. Local evidence commit retained; no source, Apple outcome, or historical failure changed.",
+    "2026-10-07 independent paged-C evidence analyzer initially FAILED with KeyError: snapshotSource. The unchanged raw C schema has no such field. Corrected the analyzer to bind immutable ownership through the exact 42-input manifest and recorded compiler flags instead; real ZIP/paired/micro verification then passed. No timing, counter, hot source, or original failure changed."
   ],
   "apple": [
     {
@@ -487,6 +488,33 @@
         },
         "status": "pass"
       }
+    },
+    {
+      "commit": "2b37ac12095a533d0a5e510e5f305998a127ca4e",
+      "tree": "9b4c792af4ffeaf4b4a6f3a6521778760c8de880",
+      "run": 37553171073,
+      "job": 112573228179,
+      "workflowConclusion": "success",
+      "artifact": 11454046472,
+      "artifactSHA256": "b075bb45943e3d0ac89fa82d3db8c96c23bdaf06c32e304400f8cad4555f0224",
+      "scope": "qualified immutable epoch H 1M/5-save diagnostic; C100 NOT_RUN",
+      "failedGates": [
+        "advanceP99",
+        "overhead"
+      ],
+      "H": {
+        "saves": 5,
+        "overheadRatio": 1.464887101264954,
+        "advanceP99NS": 1340417,
+        "advanceSamples": 1435,
+        "beginP99NS": 63791,
+        "beginSamples": 5,
+        "pairedAllocationViolations": 0,
+        "idleAllocationsMax": 0,
+        "snapshotBytes": 100801772
+      },
+      "copyOnlyTheoreticalRatio": 1.187459756374774,
+      "correction": "Retain the candidate failure. No C100 on this source; inspect measured accessor/exclusivity costs and separately clone only mutable hot/cold pages. Any next source must pass bounded micro and fresh A/B/TSan/both-layout1M K before qualified C diagnostic. No device or full-memory acceptance."
     }
   ]
 }

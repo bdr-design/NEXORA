@@ -1,5 +1,16 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Qualified H1M/5-save diagnostic37553171073 workflow SUCCESS but candidate
+eligibility FAILED: overhead1.4648871013>1.10, advancep99 1,340,417ns>1,100,000;
+beginp99 63,791ns and paired/idle allocation gates PASS. Artifact11454046472
+ZIP SHA256b075bb45943e3d0ac89fa82d3db8c96c23bdaf06c32e304400f8cad4555f0224
+independently verified; raw failure retained. Removing all measured copy time
+still gives ratio1.18745, so copy alone cannot close C. Paired S ABBA exact,
+zero advance/service allocations; variable full-loop1.5171/0.9582 not C/H proof.
+Advisory stacks show accessor/exclusivity work; memory sample210.4M is one CI
+observation, not device certification. No C100. Next estimate/review a bounded
+accessor/batch-mutation and separate hot/cold clone micro; requalify any source.
+
 Primary fresh proof37544554772 SUCCESS on d415c96c/tree66842b4b. Artifact
 11453486037 independently verified, ZIP SHA2563897da2ed0201f4ab3adc8630900b261d11e967dfbb632f5e014bb2e75a1ab13:
 A180samples chooses H ratio0.3818337648; B60records+H quota320/1472reject/832MiB;
