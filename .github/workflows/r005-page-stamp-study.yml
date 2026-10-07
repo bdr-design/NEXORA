@@ -1,0 +1,131 @@
+name: R005 isolated page-stamp ownership study
+on:
+  push:
+    branches: ["diagnostic/r005-design-1m-20260930"]
+permissions:
+  contents: read
+jobs:
+  page-stamp-study:
+    if: ${{ contains(github.event.head_commit.message, '[r005-page-stamp-study]') && contains(github.event.head_commit.message, '[r005-evidence-only]') }}
+    runs-on: macos-15
+    timeout-minutes: 75
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      HEAD_MESSAGE: ${{ github.event.head_commit.message }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Record exact actual source and isolate metadata only
+        run: |
+          set -euo pipefail
+          mkdir -p stamp-results
+          git rev-parse HEAD > stamp-results/commit.txt
+          git rev-parse HEAD^{tree} > stamp-results/tree.txt
+          swift --version > stamp-results/environment.txt
+          xcodebuild -version >> stamp-results/environment.txt
+          sysctl hw.model hw.ncpu hw.memsize >> stamp-results/environment.txt
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > stamp-results/source-guard-before.txt
+          python3 -B Experiments/R005Swift/candidate_proof_inputs.py write stamp-results/runtime-inputs.json
+          python3 -B - <<'PYCODE'
+          import os
+          tags=['h-paired-study','writer-io-study','paged-proof','paged-parallel-proof','paged-c-micro','paged-c-100','paged-candidate','c-targeted','micro','b-full','c-functional','paired-profile','epoch-pages']
+          assert not any(f'[r005-{t}]' in os.environ['HEAD_MESSAGE'] for t in tags)
+          PYCODE
+          for arm in base stamp; do
+            mkdir -p ".page-stamp-study/$arm"
+            cp Experiments/R005Swift/Package.swift ".page-stamp-study/$arm/"
+            cp -R Experiments/R005Swift/Sources ".page-stamp-study/$arm/Sources"
+            python3 -B Experiments/R005Swift/Evidence/20261007/prepare-page-stamp-study.py ".page-stamp-study/$arm"
+          done
+          python3 -B - <<'PYCODE'
+          import hashlib,json,pathlib
+          actual=pathlib.Path('Experiments/R005Swift/Sources');report={}
+          for arm in ('base','stamp'):
+              hashes={};changed=[]
+              for p in sorted(actual.rglob('*')):
+                  if not p.is_file():continue
+                  name=str(p.relative_to(actual));q=pathlib.Path('.page-stamp-study')/arm/'Sources'/name
+                  before=hashlib.sha256(p.read_bytes()).hexdigest();after=hashlib.sha256(q.read_bytes()).hexdigest()
+                  hashes[name]={'actual':before,'temporary':after}
+                  if before!=after:changed.append(name)
+              assert set(changed)==({'SwiftProbe/Stage005CPagedChecks.swift'} if arm=='base' else {'SwiftProbe/Stage005CPagedChecks.swift','SwiftProbe/EpochPages.swift'})
+              report[arm]=hashes
+          pathlib.Path('stamp-results/study-source.json').write_text(json.dumps(report,indent=2)+'\n')
+          PYCODE
+          cc -dynamiclib -O2 -Wall -Wextra -Werror Experiments/R005Swift/AllocationObserver.c -IExperiments/R005Swift/Sources/ProbePlatform/include -o stamp-results/AllocationObserver.dylib
+      - name: Build base and stamps with unchanged strict checks in Debug Release TSan
+        run: |
+          set -euo pipefail
+          for arm in base stamp; do
+            for mode in debug release tsan; do
+              config="$mode";sanitizer=()
+              if test "$mode" = tsan; then config=debug;sanitizer=(--sanitize=thread);fi
+              (cd ".page-stamp-study/$arm" && swift build --scratch-path ".build-$mode" -c "$config" "${sanitizer[@]}" -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror) 2>&1 | tee "stamp-results/build-$arm-$mode.txt"
+            done
+          done
+      - name: Full small lifecycle and S H canonical checks then H100k1M ABBA
+        run: |
+          set -euo pipefail
+          trap 'rm -rf .page-stamp-study' EXIT
+          python3 -B - <<'PYCODE'
+          import hashlib,json,os,pathlib,shutil,statistics,subprocess,sys
+          sys.path.insert(0,'Experiments/R005Swift')
+          from paged_candidate import validate,comparable
+          root=pathlib.Path('stamp-results');rows=[];references={};lifecycles=[]
+          def execute(arm,mode,variant,count,label):
+              config='debug' if mode=='tsan' else mode
+              binary=(pathlib.Path('.page-stamp-study')/arm/f'.build-{mode}'/config/'nxr-swift-probe').resolve()
+              policy='functional' if mode=='tsan' else 'zero' if mode=='release' else 'observe'
+              env=os.environ.copy();env['TSAN_OPTIONS']='halt_on_error=1'
+              if policy!='functional':env['DYLD_INSERT_LIBRARIES']=str((root/'AllocationObserver.dylib').resolve())
+              store=(root/f'store-{label}').resolve()
+              result=subprocess.run([str(binary),'paged-candidate-checks',str(store),variant,str(count),policy],env=env,text=True,capture_output=True,timeout=1200)
+              f=root/f'{label}.json';f.write_text(result.stdout);(root/f'{label}.stderr.txt').write_text(result.stderr)
+              assert result.returncode==0 and not result.stderr,(label,result.stderr)
+              row=json.loads(result.stdout);validate(row,variant=variant,count=count,policy=policy,candidate=True)
+              expected=policy!='functional'
+              assert row['worldSetupAllocationAvailable'] is expected
+              for key in ('worldSetupAllocations','worldSetupAllocationBytes'):
+                  assert (type(row[key]) is int and row[key]>0) if expected else row[key] is None
+              key=(variant,count)
+              if key not in references:references[key]=comparable(row)
+              else:assert comparable(row)==references[key],label
+              groups=((count+15)//16)*8
+              physical=count*80+groups if variant=='H' else ((count*65+7)//8)*8+((count*30+7)//8)*8+groups
+              assert all(e['barrierBytes']==physical for e in row['epochs'])
+              rows.append({'arm':arm,'mode':mode,'variant':variant,'assets':count,'file':f.name,'sha256':hashlib.sha256(f.read_bytes()).hexdigest()})
+              shutil.rmtree(store)
+          for arm in ('base','stamp'):
+              for mode in ('debug','release','tsan'):
+                  config='debug' if mode=='tsan' else mode
+                  binary=(pathlib.Path('.page-stamp-study')/arm/f'.build-{mode}'/config/'nxr-swift-probe').resolve()
+                  for variant in ('S','H'):
+                      label=f'lifecycle-{arm}-{mode}-{variant}';store=(root/f'store-{label}').resolve()
+                      env=os.environ.copy();env['TSAN_OPTIONS']='halt_on_error=1'
+                      result=subprocess.run([str(binary),'paged-candidate-lifecycle',str(store),variant],env=env,text=True,capture_output=True,timeout=600)
+                      f=root/f'{label}.json';f.write_text(result.stdout);(root/f'{label}.stderr.txt').write_text(result.stderr)
+                      assert result.returncode==0 and not result.stderr,(label,result.stderr)
+                      r=json.loads(result.stdout);assert r['status']=='pass' and r['copyObserverOwnerExact'] is True
+                      if variant=='H':assert r['coldMutationDuringFrozenEpochExact'] is True
+                      lifecycles.append({'file':f.name,'sha256':hashlib.sha256(f.read_bytes()).hexdigest()});shutil.rmtree(store)
+                      for count in (257,4096):execute(arm,mode,variant,count,f'{arm}-{mode}-{variant}-{count}')
+          for count in (100000,1000000):
+              for ordinal,arm in enumerate(('base','stamp','stamp','base'),1):execute(arm,'release','H',count,f'abba-{count}-{ordinal}-{arm}')
+          report={'status':'diagnostic-verified','acceptance':False,'rows':rows,'lifecycles':lifecycles,'C100':'NOT_RUN','scope':'metadata ownership only in disposable packages; no actual source or A/C acceptance; conservative box allowance not physical footprint'}
+          (root/'PAGE-STAMP-STUDY.json').write_text(json.dumps(report,indent=2)+'\n');print('PASS limited canonical/lifecycle/ABBA metadata study')
+          PYCODE
+      - name: Always keep actual source unchanged
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > stamp-results/source-guard-after.txt
+          python3 -B Experiments/R005Swift/candidate_proof_inputs.py check stamp-results/runtime-inputs.json
+          git diff --exit-code
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r005-page-stamp-study
+          path: stamp-results/
+          if-no-files-found: error

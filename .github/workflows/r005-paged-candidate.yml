@@ -6,7 +6,7 @@ permissions:
   contents: read
 jobs:
   bounded-paged-candidate:
-    if: ${{ contains(github.event.head_commit.message, '[r005-paged-candidate]') && contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-c-targeted]') && !contains(github.event.head_commit.message, '[r005-epoch-pages]') && !contains(github.event.head_commit.message, '[r005-micro]') }}
+    if: ${{ contains(github.event.head_commit.message, '[r005-paged-candidate]') && contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-c-targeted]') && !contains(github.event.head_commit.message, '[r005-epoch-pages]') && !contains(github.event.head_commit.message, '[r005-micro]') && !contains(github.event.head_commit.message, '[r005-page-stamp-study]') }}
     runs-on: macos-15
     timeout-minutes: 60
     env:

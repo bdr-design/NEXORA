@@ -20,7 +20,7 @@ jobs:
           modes=['[r005-paged-c-micro]','[r005-paged-c-100]']
           assert sum(tag in m for tag in modes)==1,'exactly one paged C mode required'
           assert '[r005-evidence-only]' in m,'evidence-only source boundary required'
-          excluded=['[r005-h-paired-study]','[r005-micro]','[r005-c-targeted]','[r005-b-full]',
+          excluded=['[r005-page-stamp-study]','[r005-h-paired-study]','[r005-micro]','[r005-c-targeted]','[r005-b-full]',
               '[r005-c-functional]','[r005-paired-profile]','[r005-epoch-pages]',
               '[r005-paged-proof]','[r005-paged-parallel-proof]','[r005-paged-candidate]','[r005-writer-io-study]']
           assert not any(tag in m for tag in excluded),'conflicting execution marker'

@@ -1,5 +1,13 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Isolated page-stamp study PREPARED/NOT_RUN on current42 actual inputs fixed:
+let page-stamp boxes/relaxed Atomic only in disposable source, no economic/
+writer/WAL/COW change, all checks enabled. Pre-execution allocation estimate
+and conservative64B/page allowance documented; full-pool memory NOT_FIXED.
+Plan Debug/Release/TSan S/H257/4096 +H100k1M ABBA/zero checks, never C100.
+Fresh37563538884 and paired37564011879 continue on their pinned sources.
+No source/main/closure/game/device acceptance; every failure retained.
+
 Observer fresh source22e5428d/treee5fbde7e, local8675891 exact tree, running
 37563538884: A/base and six1M K parts independent, Release H alreadySUCCESS;
 remaining parts pending. This run's A solely preselected for C. Same-source
