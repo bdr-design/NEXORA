@@ -1,5 +1,64 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Projected async typed-page micro STATIC_REVIEW_BLOCKED_BEFORE_RUN after initial
+freeze: nil/foreign return identity, caller-visible save token/recovery mutation,
+O(N) terminal mirror scans, reused semaphore wakeups, and call2000 accounting
+must be corrected and independently rechecked. No commit/Apple run yet.
+Initial implementation included:
+real Dispatch writer, Mutex handoff, root/page tombstones, return-before-I/O,
+owner catch-up, failure/cancel recovery-required, token misuse, typed tails,
+Release-zero gates. NOT_COMPILED/NOT_RUN; actual24 Sources/42inputs unchanged.
+
+Projected preflight independent audit PASS: typed H1M geometry, phase-aware
+cadence, all memory arithmetic, and Stage A `NO_GO` floor were source-checked;
+actual24 Sources/42inputs remain unchanged. This is documentation evidence only.
+
+Sealed-WAL preflight: current WAL is unsealed (close no fsync; no base/parent/
+global watermark/exact-length authority; frame-boundary deletion can be a valid
+shorter prefix). At exact200k, H base+101 WAL files (100 closed+active header)=
+115203388..115216444B and two snapshots+raw chain=216005160..216018216B disk;
+save100 has only started. These are not upper bounds: the runner drops its
+2000-call in-flight check after final save begin and advances without a source
+bound until commit. CONDITIONAL_GO disk-native micro only; NO_GO integration/
+C100, no Sources/run.
+
+Sealed-WAL red-team additions: durable published manifest tip is authoritative;
+post-dirsync/pre-callback ACK is uncertain and needs request-ID/status idempotency.
+Seal also needs finalStateRoot (current worldDigest is O(N)) or an explicit
+transcript-only claim. Exact200k replay can reach204.8m completions+204m
+reschedule inserts; streaming bytes alone is not bounded compaction. S base is
+95801772B; retained two-S+chain projection=206005160..206018216B.
+Final sealed micro gate now explicitly includes immutable exact seals, whole-frame
+loss/seal-strip/splice/fork/order/I/O negatives, durable successor+manifest crash
+matrix, compaction CAS-before-GC, allocation/phys/disk-amplification/backpressure,
+exact C latency gates, and bounded retention before any100-save run.
+Independent red-team PASS for this design preflight only; it remains
+CONDITIONAL_GO isolated micro / NO_GO integration or C100, not durability proof.
+
+Projected-mirror draft RED_TEAM_BLOCKED_BEFORE_RUN: its first serial model kept
+writer root aliases and made TSan meaningless, so it is neither proof nor a
+publishable PASS. Rewrite gate: real async typed value-page tombstone/transfer
+through one coordinator, return-before-I/O overlap, bounded catch-up/cadence,
+and failure→recovery-required; no Sources/C/H1M touched or run.
+
+Bounded K integration NO_GO_WITH_CURRENT_TRANSCRIPT after verified micro:
+H1M rescheduleAll is one WAL command touching all3907 cold pages before credit,
+so smallK must reject/defer/wait and K3907=20003840B full cold page capacity.
+Full hot/cold/node/group coverage is9799pages and about207–208MB incl known
+writer/state, above200 hard; schedule also mutates wheel before late asset
+capacity failure.
+No hot edit/C run. Next isolated projected-mirror preflight only: split current
+H epoch-stable16B from dynamic49B assets+30B nodes+0.5MB groups; one79.5MB
+dynamic mirror lets gameplay mutate primary without wait/reject while writer
+returns pages for owner-thread catch-up. Conservative source arithmetic
+193386158B if a5MB packed-live saving materializes, otherwise198386158B;
+observed-writer/no-saving stress arithmetic is199592866B before extra charges.
+The exact static+primary+mirror logical floor alone is175000000B, so a permanent
+mirror cannot meet Stage A's H<=128B/asset selection rule. Research micro only/
+NO_GO for integration even if protocol passes; excludes headers/phys/restore/UI.
+PREPARED/NOT_RUN/NOT_INTEGRATED; actual24 Sources/42inputs unchanged,
+H1M/C5/C100 disabled.
+
 Bounded ownership micro run37609776465 VERIFIED SUCCESS on source9cd5fa88/
 treee5e2acba; artifact11476333298 ZIP SHA256
 2e209cfa90a6d6c8b6bde4931dd7dfd7359c5b936b1d772b45a36e788d763807.
