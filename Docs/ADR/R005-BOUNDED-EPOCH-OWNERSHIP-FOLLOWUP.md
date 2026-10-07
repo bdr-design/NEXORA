@@ -112,3 +112,12 @@ begin/advance/allocation limits and the owner's realism/smoothness remain fixed.
 No result file, main merge, Stage2–4, app/IPA or device acceptance follows from
 this proposal. Final device remains17 Pro Max100k→250k→1M with actual gameplay,
 UI/save interaction, frame/input, memory, CPU and thermal evidence.
+
+Primary language references checked2026-10-07, no implementation code copied:
+https://docs.swift.org/latest/documentation/the-swift-programming-language/declarations/
+https://docs.swift.org/latest/documentation/the-swift-programming-language/memorysafety/
+https://www.swift.org/blog/swift-5-exclusivity/
+Borrowing/consuming specify parameter ownership; a copyable value may still have
+other aliases, so adding consuming alone does not prove a page reusable. Swift's
+exclusive modification rules remain enabled in Release. Language semantics are
+not measured Swift storage performance or evidence of this proposed algorithm.

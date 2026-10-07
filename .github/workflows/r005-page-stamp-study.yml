@@ -1,4 +1,4 @@
-name: R005 isolated page-stamp ownership study
+name: R005 isolated page-bitmap ownership study
 on:
   push:
     branches: ["diagnostic/r005-design-1m-20260930"]
@@ -37,7 +37,7 @@ jobs:
             mkdir -p ".page-stamp-study/$arm"
             cp Experiments/R005Swift/Package.swift ".page-stamp-study/$arm/"
             cp -R Experiments/R005Swift/Sources ".page-stamp-study/$arm/Sources"
-            python3 -B Experiments/R005Swift/Evidence/20261007/prepare-page-stamp-study.py ".page-stamp-study/$arm"
+            python3 -B Experiments/R005Swift/Evidence/20261007/prepare-page-bitmap-study.py ".page-stamp-study/$arm"
           done
           python3 -B - <<'PYCODE'
           import hashlib,json,pathlib
@@ -115,7 +115,7 @@ jobs:
                       for count in (257,4096):execute(arm,mode,variant,count,f'{arm}-{mode}-{variant}-{count}')
           for count in (100000,1000000):
               for ordinal,arm in enumerate(('base','stamp','stamp','base'),1):execute(arm,'release','H',count,f'abba-{count}-{ordinal}-{arm}')
-          report={'status':'diagnostic-verified','acceptance':False,'rows':rows,'lifecycles':lifecycles,'C100':'NOT_RUN','scope':'metadata ownership only in disposable packages; no actual source or A/C acceptance; conservative box allowance not physical footprint'}
+          report={'status':'diagnostic-verified','acceptance':False,'rows':rows,'lifecycles':lifecycles,'C100':'NOT_RUN','metadataKind':'copy-bitmap','scope':'one bitmap word/64pages; measured O(pageCount/64) freeze reset; disposable ownership only, no actual source or A/C; conservative box allowance not footprint'}
           (root/'PAGE-STAMP-STUDY.json').write_text(json.dumps(report,indent=2)+'\n');print('PASS limited canonical/lifecycle/ABBA metadata study')
           PYCODE
       - name: Always keep actual source unchanged

@@ -1,5 +1,12 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Isolated bitmap successor PREPARED/NOT_RUN after negative per-page stamps:
+oneAtomic word/64pages (H1M156/S94boxes), measured freeze reset O(pageCount/64),
+all COW/epoch/owner/checks unchanged; estimate before temporary edits. Same
+32/96/12+H100k1M ABBA planned, actual42inputs unchanged. Original stamp/code
+proof preserved. Writer37568520463 still running on49dcf47e. C5 overhead1.38225
+FAILED, memory NOT_FIXED; no C100/main/app/IPA/device acceptance.
+
 Current allowed live49dcf47e/treeac9e37db (local0a9ba917 equal tree).
 Writer contention37568520463/job112621670063 running: six builds PASS,
 canonical/lifecycle/K3/paired1M pending. Actual42inputs remain observer source;

@@ -20,7 +20,7 @@ def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def verify(archive, sha256, source, tree, run, artifact, output):
+def verify(archive, sha256, source, tree, run, artifact, output, kind="stamp"):
     assert digest(archive) == sha256
     with tempfile.TemporaryDirectory(prefix="nxr-stamp-verify-") as temporary:
         scratch = Path(temporary)
@@ -47,7 +47,7 @@ def verify(archive, sha256, source, tree, run, artifact, output):
         for arm in ("base", "stamp"):
             package = scratch / ".page-stamp-study" / arm
             shutil.copytree(actual, package / "Sources")
-            subprocess.run([sys.executable, "-B", str(Path(__file__).with_name("prepare-page-stamp-study.py")),
+            subprocess.run([sys.executable, "-B", str(Path(__file__).with_name("prepare-page-bitmap-study.py" if kind == "bitmap" else "prepare-page-stamp-study.py")),
                             str(package)], check=True, capture_output=True, text=True)
             assert set(temporary_source[arm]) == {str(p.relative_to(actual)) for p in actual.rglob("*") if p.is_file()}
             changed = []
@@ -68,6 +68,8 @@ def verify(archive, sha256, source, tree, run, artifact, output):
         study = json.loads((extracted / "PAGE-STAMP-STUDY.json").read_text())
         assert study["status"] == "diagnostic-verified" and study["acceptance"] is False
         assert study["C100"] == "NOT_RUN"
+        if kind == "bitmap":
+            assert study["metadataKind"] == "copy-bitmap"
         expected_files = [f"{arm}-{mode}-{variant}-{count}.json"
                           for arm in ("base", "stamp") for mode in ("debug", "release", "tsan")
                           for variant in ("S", "H") for count in (257, 4096)]
@@ -117,21 +119,24 @@ def verify(archive, sha256, source, tree, run, artifact, output):
                 rows = [row for raw, row in measured if raw["assets"] == count and raw["arm"] == arm]
                 assert len(rows) == 2
                 arms[arm] = {field: statistics.median(epoch[field] for row in rows for epoch in row["epochs"])
-                             for field in ("advanceNS", "barrierNS", "writerNS", "fullLoopNS")}
+                             for field in ("beginNS", "advanceNS", "barrierNS", "writerNS", "fullLoopNS")}
                 arms[arm].update({field: statistics.median(row[field] for row in rows)
                                   for field in ("worldSetupNS", "worldSetupAllocations", "worldSetupAllocationBytes",
                                                 "liveOwnedBytes", "preparedOwnedBytes")})
                 arms[arm]["advanceSamplesNS"] = [epoch["advanceNS"] for row in rows for epoch in row["epochs"]]
+                arms[arm]["beginSamplesNS"] = [epoch["beginNS"] for row in rows for epoch in row["epochs"]]
+                arms[arm]["beginMaxNS"] = max(arms[arm]["beginSamplesNS"])
             summaries[str(count)] = {"medians": arms,
                                      "stampToBase": {field: arms["stamp"][field] / arms["base"][field]
-                                                     for field in ("advanceNS", "barrierNS", "writerNS", "fullLoopNS")},
+                                                     for field in ("beginNS", "advanceNS", "barrierNS", "writerNS", "fullLoopNS")},
                                      "additionalSetupRequestedAllocations": arms["stamp"]["worldSetupAllocations"] - arms["base"]["worldSetupAllocations"],
                                      "additionalSetupRequestedBytes": arms["stamp"]["worldSetupAllocationBytes"] - arms["base"]["worldSetupAllocationBytes"],
                                      "additionalDeclaredOwnedBytes": arms["stamp"]["preparedOwnedBytes"] - arms["base"]["preparedOwnedBytes"]}
         proof = dict(status="pass", acceptance=False, source=source, tree=tree, run=run, artifact=artifact,
                      zipSHA256=sha256, runtimeInputs=42, canonicalCases=32, epochs=96, lifecycleCases=12,
                      HSameHostABBA=summaries, C100="NOT_RUN", CPerformance={"S": "OPEN", "H": "OPEN"},
-                     decision="NOT_ADOPTED: no credible 1M simulation gain; memory/setup cost increases",
+                     decision="NOT_ADOPTED: no credible 1M simulation gain; memory/setup cost increases" if kind == "stamp" else "UNQUALIFIED_DIAGNOSTIC: inspect paired results before any actual source decision",
+                     metadataKind=kind,
                      allocationScope="requested setup counters; conservative owned box allowance is not physical footprint",
                      scope="same-fixture mixed bounded harness only; no runtime mutation, C qualification, or device proof",
                      evidenceSHA256={str(p.relative_to(extracted)): digest(p) for p in sorted(extracted.rglob("*")) if p.is_file()})
@@ -144,6 +149,7 @@ def verify(archive, sha256, source, tree, run, artifact, output):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("archive", type=Path)
+    parser.add_argument("--kind", choices=("stamp", "bitmap"), default="stamp")
     for option in ("sha256", "source", "tree"):
         parser.add_argument("--" + option, required=True)
     for option in ("run", "artifact"):
@@ -151,5 +157,5 @@ if __name__ == "__main__":
     parser.add_argument("--output", required=True, type=Path)
     arguments = parser.parse_args()
     result = verify(arguments.archive, arguments.sha256, arguments.source, arguments.tree,
-                    arguments.run, arguments.artifact, arguments.output)
+                    arguments.run, arguments.artifact, arguments.output, arguments.kind)
     print(json.dumps({key: result[key] for key in ("status", "canonicalCases", "epochs", "lifecycleCases", "HSameHostABBA", "decision")}, indent=2))

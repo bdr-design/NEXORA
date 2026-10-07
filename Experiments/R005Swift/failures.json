@@ -31,7 +31,8 @@
     "2026-10-07 before corrected stamp execution, review found paged-candidate-checks finite size list omitted1M. Disposable harness only now accepts explicit1M in both arms, while actual Sources/command limits remain unchanged. No prior stamp Swift build/result existed; no C threshold or acceptance test reduced.",
     "2026-10-07 ad-hoc stamp result display used Path indexing rather than joining, raised TypeError before summary output and made no writes. Correct independent verifier joined paths and verified all raw hashes/source transformations before any decision. No measurement or acceptance result altered.",
     "2026-10-07 evidence checkpoint script assumed a SOURCE-PREFLIGHT.md file existed, stopped on FileNotFound after writing the intended workflow/docs/continuity updates. Source guard, all23existing proof tests, exact42manifest and diff-check subsequently PASS. Preflight record placed in the existing copy-observer daily doc; no runtime or evidence metric was modified.",
-    "2026-10-07 read-only follow-up assumed ADR/FrozenWriter/SAVE-CONTRACT paths rather than enumerating existing names; missing-path reads failed without any writes or source/evidence effects. Current EpochSnapshot.swift and enumerated daily candidate docs were then read. All failure metrics preserved."
+    "2026-10-07 read-only follow-up assumed ADR/FrozenWriter/SAVE-CONTRACT paths rather than enumerating existing names; missing-path reads failed without any writes or source/evidence effects. Current EpochSnapshot.swift and enumerated daily candidate docs were then read. All failure metrics preserved.",
+    "2026-10-07 bitmap pre-execution estimate initially rounded total S pages into93words; per-buffer rounding is62asset+31node+1group=94. Corrected the proposed estimate before publication/execution; H156 unchanged. No runtime, observed metric or acceptance gate changed."
   ],
   "apple": [
     {
