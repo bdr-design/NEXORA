@@ -1,0 +1,192 @@
+name: R005 isolated sealed WAL protocol micro
+on:
+  push:
+    branches: ["diagnostic/r005-design-1m-20260930"]
+permissions:
+  contents: read
+concurrency:
+  group: r005-sealed-wal-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  routing-guard:
+    if: ${{ contains(github.event.head_commit.message, '[r005-sealed-wal-micro]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require only the sealed-WAL and evidence-only markers
+        env:
+          HEAD_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          python3 - <<'PYCODE'
+          import os,re
+          markers=re.findall(r'\[r005-[^]]+\]',os.environ['HEAD_MESSAGE'])
+          assert len(markers)==2 and set(markers)=={
+              '[r005-sealed-wal-micro]','[r005-evidence-only]'},markers
+          PYCODE
+
+  sealed-wal-micro:
+    needs: routing-guard
+    if: ${{ contains(github.event.head_commit.message, '[r005-sealed-wal-micro]') && contains(github.event.head_commit.message, '[r005-evidence-only]') }}
+    runs-on: macos-15
+    timeout-minutes: 40
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Record the exact unchanged 24-source and 42-input base
+        run: |
+          set -euo pipefail
+          mkdir -p sealed-wal-results
+          git rev-parse HEAD > sealed-wal-results/commit.txt
+          git rev-parse HEAD^{tree} > sealed-wal-results/tree.txt
+          swift --version > sealed-wal-results/environment.txt
+          xcodebuild -version >> sealed-wal-results/environment.txt
+          sysctl hw.model hw.ncpu hw.memsize >> sealed-wal-results/environment.txt
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > sealed-wal-results/source-guard-before.txt
+          python3 -B Experiments/R005Swift/candidate_proof_inputs.py write sealed-wal-results/runtime-inputs.json
+          python3 -B - <<'PYCODE'
+          import json,pathlib
+          inputs=json.loads(pathlib.Path('sealed-wal-results/runtime-inputs.json').read_text())
+          sources=[path for path in pathlib.Path('Experiments/R005Swift/Sources').rglob('*')
+                   if path.is_file()]
+          assert len(sources)==24,len(sources)
+          assert len(inputs['paths'])==42,len(inputs['paths'])
+          assert sum(name.startswith('Experiments/R005Swift/Sources/')
+                     for name in inputs['paths'])==24
+          limits={
+              'buildModes':['debug','release','tsan'],
+              'swiftLanguageMode':6,
+              'swiftDefines':['SEALED_WAL_MICRO'],
+              'warningsAsErrors':True,
+              'runtimeWallSecondsPerMode':300,
+              'runtimeCPUSecondsPerMode':120,
+              'runtimeFileBytesPerProcess':16*1024*1024,
+              'scratchAllocatedBytesMaximumPerMode':3*1024*1024*1024,
+              'artifactBytesMaximum':128*1024*1024,
+              'maximumRecoverySegmentsExecuted':25,
+              'H1M':'NOT_RUN','C5':'NOT_RUN','C100':'NOT_RUN'
+          }
+          pathlib.Path('sealed-wal-results/limits.json').write_text(
+              json.dumps(limits,indent=2)+'\n')
+          PYCODE
+          shasum -a 256 \
+            .github/workflows/r005-sealed-wal-micro.yml \
+            Checks/financial-diagnostics.py \
+            Experiments/R005Swift/Package.swift \
+            Experiments/R005Swift/candidate_proof_inputs.py \
+            Experiments/R005Swift/Evidence/20261007/SealedWALMicro.swift \
+            Experiments/R005Swift/Evidence/20261007/prepare-sealed-wal-micro.py \
+            Experiments/R005Swift/Evidence/20261007/verify-sealed-wal-micro.py \
+            > sealed-wal-results/study-input-sha256.txt
+
+      - name: Prepare one disposable package and prove its exact source delta
+        run: |
+          set -euo pipefail
+          mkdir -p .sealed-wal-study/current
+          cp Experiments/R005Swift/Package.swift .sealed-wal-study/current/
+          cp -R Experiments/R005Swift/Sources .sealed-wal-study/current/Sources
+          python3 -B Experiments/R005Swift/Evidence/20261007/prepare-sealed-wal-micro.py \
+            .sealed-wal-study/current
+          python3 -B - <<'PYCODE'
+          import hashlib,json,pathlib
+          def inventory(root):
+              return {str(path.relative_to(root)):hashlib.sha256(path.read_bytes()).hexdigest()
+                      for path in sorted(root.rglob('*')) if path.is_file()}
+          actual=pathlib.Path('Experiments/R005Swift/Sources')
+          temporary=pathlib.Path('.sealed-wal-study/current/Sources')
+          actual_files=inventory(actual);temporary_files=inventory(temporary)
+          assert len(actual_files)==24 and len(temporary_files)==25
+          assert set(temporary_files)==set(actual_files)|{'SwiftProbe/SealedWALMicro.swift'}
+          changed=[name for name in actual_files
+                   if actual_files[name]!=temporary_files[name]]
+          assert changed==['SwiftProbe/Main.swift'],changed
+          report={'actual':actual_files,'temporary':temporary_files,
+                  'changed':changed,'added':['SwiftProbe/SealedWALMicro.swift']}
+          pathlib.Path('sealed-wal-results/study-source.json').write_text(
+              json.dumps(report,indent=2)+'\n')
+          PYCODE
+
+      - name: Build and run bounded Debug Release and TSan diagnostics
+        run: |
+          set -euo pipefail
+          for mode in debug release tsan; do
+            args=(-c debug)
+            config=debug
+            if test "$mode" = release; then args=(-c release);config=release; fi
+            if test "$mode" = tsan; then args=(-c debug --sanitize=thread); fi
+            (cd .sealed-wal-study/current && \
+              swift build --scratch-path ".build-$mode" "${args[@]}" \
+                -Xswiftc -DSEALED_WAL_MICRO \
+                -Xswiftc -warnings-as-errors -Xcc -Werror) \
+              2>&1 | tee "sealed-wal-results/build-$mode.txt"
+            MODE="$mode" CONFIG="$config" python3 -B - <<'PYCODE'
+          import json,os,pathlib,resource,subprocess
+          mode=os.environ['MODE'];config=os.environ['CONFIG']
+          build=pathlib.Path(f'.sealed-wal-study/current/.build-{mode}')
+          binary=(build/config/'nxr-swift-probe').resolve()
+          assert binary.is_file()
+          env=os.environ.copy()
+          env['TSAN_OPTIONS']='halt_on_error=1:exitcode=66'
+          def constrain():
+              resource.setrlimit(resource.RLIMIT_CPU,(120,120))
+              resource.setrlimit(resource.RLIMIT_FSIZE,(16*1024*1024,16*1024*1024))
+              resource.setrlimit(resource.RLIMIT_NOFILE,(256,256))
+          completed=subprocess.run(
+              [str(binary),'sealed-wal-micro'],env=env,text=True,
+              capture_output=True,timeout=300,preexec_fn=constrain)
+          output=pathlib.Path(f'sealed-wal-results/run-{mode}.json')
+          error=pathlib.Path(f'sealed-wal-results/run-{mode}.stderr.txt')
+          output.write_text(completed.stdout);error.write_text(completed.stderr)
+          assert len(completed.stdout.encode())<2*1024*1024
+          assert len(completed.stderr.encode())<1024*1024
+          assert completed.returncode==0 and not completed.stderr,(mode,completed.returncode,completed.stderr)
+          json.loads(completed.stdout)
+          du=subprocess.run(['du','-sk',str(build)],text=True,capture_output=True,
+                            check=True)
+          allocated=int(du.stdout.split()[0])*1024
+          maximum=3*1024*1024*1024
+          assert 0<allocated<=maximum,(mode,allocated,maximum)
+          pathlib.Path(f'sealed-wal-results/scratch-{mode}.json').write_text(
+              json.dumps({'mode':mode,'allocatedBytes':allocated,
+                          'maximumBytes':maximum},indent=2)+'\n')
+          PYCODE
+            rm -rf ".sealed-wal-study/current/.build-$mode"
+          done
+
+      - name: Always prove actual runtime inputs unchanged and remove the disposable copy
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > sealed-wal-results/source-guard-after.txt
+          python3 -B Experiments/R005Swift/candidate_proof_inputs.py check sealed-wal-results/runtime-inputs.json
+          git diff --exit-code -- Experiments/R005Swift/Sources
+          rm -rf .sealed-wal-study
+
+      - name: Verify the partial no-go result and seal the raw evidence inventory
+        run: |
+          set -euo pipefail
+          echo 'Disposable sealed-WAL diagnostic only; H1M/C5/C100 NOT_RUN; C100 NOT_RUN; no runtime integration or acceptance.' \
+            > sealed-wal-results/scope.txt
+          python3 -B Experiments/R005Swift/Evidence/20261007/verify-sealed-wal-micro.py \
+            raw sealed-wal-results
+          python3 -B - <<'PYCODE'
+          import hashlib,json,pathlib
+          root=pathlib.Path('sealed-wal-results')
+          files={str(path.relative_to(root)):hashlib.sha256(path.read_bytes()).hexdigest()
+                 for path in sorted(root.rglob('*'))
+                 if path.is_file() and path.name!='RAW-MANIFEST.json'}
+          (root/'RAW-MANIFEST.json').write_text(json.dumps({'files':files},indent=2)+'\n')
+          total=sum(path.stat().st_size for path in root.rglob('*') if path.is_file())
+          assert total<=128*1024*1024,total
+          PYCODE
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r005-sealed-wal-micro
+          path: sealed-wal-results/
+          if-no-files-found: error
+          retention-days: 14

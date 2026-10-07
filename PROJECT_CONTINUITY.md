@@ -1,13 +1,34 @@
 # NEXORA — current checkpoint / 2026-10-07
 
-Projected async typed-page micro STATIC_REVIEW_BLOCKED_BEFORE_RUN after initial
-freeze: nil/foreign return identity, caller-visible save token/recovery mutation,
-O(N) terminal mirror scans, reused semaphore wakeups, and call2000 accounting
-must be corrected and independently rechecked. No commit/Apple run yet.
-Initial implementation included:
-real Dispatch writer, Mutex handoff, root/page tombstones, return-before-I/O,
-owner catch-up, failure/cancel recovery-required, token misuse, typed tails,
-Release-zero gates. NOT_COMPILED/NOT_RUN; actual24 Sources/42inputs unchanged.
+Sealed-WAL isolated draft hardened, still `DIAGNOSTIC_PARTIAL_BLOCKED` and
+`NO_GO_INTEGRATION_C100`: crash recovery comparison now checks root/value/
+durableLSN/generation outside the recovery catch; every pre-manifest failure
+invalidates the live writer; overflow paths fail closed; missing successor is
+covered. Clean removal of the newest manifest plus all descendants is recorded
+as `EXPECTED_KNOWN_GAP` because no separately durable CURRENT authority exists.
+Request ID/status query, real syscall fault injection, fixed metadata pools,
+atomic compaction CAS/publication and physical power-loss proof remain absent.
+Local evidence SHA256 `66f35a8234d197f793d4558309f1bd8f3e392432957b3e3acd9f857264f04811`;
+independent final audit says `GO_FOR_BOUNDED_COMPILE_RUN` only. Disposable
+Debug/Release/TSan workflow and fail-closed verifier are locally checked;
+NOT_COMPILED/NOT_RUN until its marked Apple commit. No Sources/C change.
+
+Independent immutable-page feasibility verdict remains NO_GO under the current
+atomic transcript. H live is105408880B; only22591120B remains under128MB, or
+18396816B after4MiB reserve. A bounded projected all-page snapshot needs at
+least79530752B, putting live+old-state at184939632B before more metadata.
+The measured C5 gap also survives deleting all measured copy time: theoretical
+ratio1.274015>1.10. Do not build another page mirror or launch C100; a viable
+design needs an owner decision to chunk `rescheduleAll` or make a sealed durable
+transcript the save contract. This is arithmetic/design evidence, not a run.
+
+Projected async typed-page draft final decision `ASYNC_DRAFT_NO_GO_BEFORE_RUN`.
+Static review corrected nil/foreign identity, tokenless gameplay, O(1) terminal
+state, and exact-call arithmetic, but a synthetic polling loop cannot prove
+begin-to-ready cadence without scheduler-dependent waiting; full Release
+allocation coverage also remains incomplete. Hard175MB Stage-A floor already
+makes integration NO_GO, so no workflow/commit/Apple run was authorized.
+NOT_COMPILED/NOT_RUN; actual24 Sources/42inputs unchanged.
 
 Projected preflight independent audit PASS: typed H1M geometry, phase-aware
 cadence, all memory arithmetic, and Stage A `NO_GO` floor were source-checked;
