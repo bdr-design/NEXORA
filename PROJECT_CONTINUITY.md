@@ -1,16 +1,17 @@
 # NEXORA — current checkpoint / 2026-10-07
 
-Bounded ownership micro IMPLEMENTED/STATIC_PASS/NOT_RUN: actual24 Sources and
-42 runtime inputs unchanged; disposable H-cold20B flat pages use atomic
-begin→publish, stable token, K1/K2 buffers, one sequential scratch/file, and
-write-before-retire/release-prefix. Static guard/preparer/YAML/Python checks
-PASS; Apple Debug/Release/TSan257/K1+4096/K2 then conditional Release100k/K2
-pending. Decision is always MICRO_PROTOCOL_PASS_NOT_INTEGRATION_ELIGIBLE:
-K1 held-page pressure=writerReading, K2=capacity, no production backpressure
-transcript/full-H proof. Corrected H1M preflight incl wrapper allowance is
-191409758B(K1)/191414966B(K2) with known writer requests, above128 target;
-allocator headers/phys unmeasured and memory NOT_FIXED. All C failures stay;
-no H1M/C5/C100/A/B/K/main/results/Stage2–4/app/IPA/device action.
+Bounded ownership micro run37609776465 VERIFIED SUCCESS on source9cd5fa88/
+treee5e2acba; artifact11476333298 ZIP SHA256
+2e209cfa90a6d6c8b6bde4931dd7dfd7359c5b936b1d772b45a36e788d763807.
+Debug/Release/TSan257/K1+4096/K2=6 PASS and Release100k/K2=1 PASS; all measured
+hot allocation samples zero, actual24 Sources/42inputs unchanged. 100k writer
+build1.612–1.624ms, sink2.944–3.261ms, service13.378–13.868us, loop9.015–
+19.382ms; held barrier makes epoch1 non-baseline. Decision remains
+MICRO_PROTOCOL_PASS_NOT_INTEGRATION_ELIGIBLE: no production backpressure or
+nested-root integration proof, safeToRunH1M=false, H1M/C5/C100 NOT_RUN,
+full-H/phys NOT_MEASURED and memory NOT_FIXED. Preflight K1/K2 remains
+191409758/191414966B incl known writer requests, above128 target. All C
+failures stay; no A/B/K/main/results/Stage2–4/app/IPA/device action.
 
 Morning checkpoint: actual42 observer inputs fixed; fresh37563538884 A/B and
 Debug/Release/TSan S/H1M K/WAL verified. H C5 FAILED1.3822529614; memory

@@ -1,6 +1,6 @@
 # R005 — bounded cold ownership micro preflight
 
-Status: PREPARED / NOT_RUN / NOT_INTEGRATED.  2026-10-07.
+Status: DIAGNOSTIC_VERIFIED / NOT_INTEGRATION_ELIGIBLE.  2026-10-07.
 
 Pre-edit source review: repository `bdr-design/NEXORA`, branch
 `diagnostic/r005-design-1m-20260930`, live HEAD
@@ -18,6 +18,33 @@ micro is one isolated H-cold buffer with the current canonical fields only:
 `entity32`, `policy32`, `origin32`, and `departure64` (20 bytes/asset), packed
 in 256-asset `UInt64` pages.  It is not another World, save format, economic
 model, or product feature.
+
+## Apple diagnostic result
+
+Run `37609776465` succeeded on source
+`9cd5fa88e0160781b7e01492905c427e677bb7d4`, tree
+`e5e2acba82408ffb3632c278646ba7a4c3c0310f`.  Artifact `11476333298` has ZIP
+SHA-256 `2e209cfa90a6d6c8b6bde4931dd7dfd7359c5b936b1d772b45a36e788d763807`.
+The independent fail-closed verifier accepted all six Debug/Release/TSan
+257/K1 and 4096/K2 cases plus the conditional Release 100k/K2 diagnostic.
+Every measured post-setup hot-path allocation sample reported zero requests
+and zero requested bytes.  Setup allocations are retained separately and are
+not misclassified as hot-path allocations.
+
+At 100k/K2, the three epochs measured writer build at 1.612–1.624ms, writer
+sink at 2.944–3.261ms, service at 13.378–13.868us, and whole runtime loop at
+9.015–19.382ms.  Epoch 1 deliberately held the writer alias for 4.977ms, so
+its 9.550ms writer call and 19.382ms loop are a pressure observation, not an
+uncontended baseline.  The declared source components were 2,235,888B before
+allocator headers; this is not a full-H or `phys_footprint` measurement.
+
+The recorded decision is
+`MICRO_PROTOCOL_PASS_NOT_INTEGRATION_ELIGIBLE`, with
+`integrationEligible=false` and `safeToRunH1M=false`.  H1M, C5, and C100 were
+not run.  The flat-directory proof does not establish the current nested
+root/leaf integration, and explicit K+1 rejection still has no unchanged
+gameplay/backpressure transcript.  Full-H memory remains `NOT_FIXED`; both C
+layouts remain open and every historical failure keeps its classification.
 
 ## Why the current owner cannot be edited directly
 
