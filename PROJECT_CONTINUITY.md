@@ -1,5 +1,13 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Primary fresh proof37544554772 SUCCESS on d415c96c/tree66842b4b. Artifact
+11453486037 independently verified, ZIP SHA2563897da2ed0201f4ab3adc8630900b261d11e967dfbb632f5e014bb2e75a1ab13:
+A180samples chooses H ratio0.3818337648; B60records+H quota320/1472reject/832MiB;
+Debug/Release/TSan×S/H1M60K kills+6chains+18torn WAL cases and12complete-corrupt
+rejections PASS, plus bounded44cases/132epochs. Qualified-C source pins now
+point to this exact artifact; next one real H five-save micro and paired S
+components, NOT C100.42runtime inputs unchanged, C OPEN S/H, failures retained.
+
 Parallel base artifact11453345274 independently verified at00:37Z, ZIP SHA256
 85c5cba318b05ce7dc4fe03a098bdf8295a91d50d2e3adcea0d938d795dfa59c: fresh
 A/B60records/B recovery3modes/44bounded cases132epochs32canonical comparisons/

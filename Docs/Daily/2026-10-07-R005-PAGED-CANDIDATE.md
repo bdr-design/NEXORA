@@ -224,3 +224,31 @@ Release S وH1M K1–K10/WAL jobs SUCCESS وقت هذا checkpoint؛ Debug وTSa
 لم يكملا، فلا SOURCE-FUNCTIONAL-PROOF كامل ولا C micro أوC100 بعد. raw ZIP
 و37551200872-BASE-PROOF.json محفوظان تحتEvidence/20261007. لا قبول physical
 memory أوiPhone أوإغلاق C على أي تخطيط من artifact الجزئي.
+
+## الإثبات الكامل المحدد مسبقًا — مؤهل لفحص خمس عمليات حفظ
+
+Serial run37544554772/job112545301174 SUCCESS عند2026-10-07T00:36:15Z؛
+source d415c96c3b05b721960b3679c02f05a2aa3024da، tree
+66842b4bcad9e9f145f956d050fcbe7cc7457aed. Artifact11453486037 ZIP SHA256
+3897da2ed0201f4ab3adc8630900b261d11e967dfbb632f5e014bb2e75a1ab13 طابق
+التنزيل المستقل. فُحصت42runtime inputs وكلsource hashes/guards/flags؛
+raw A/B/bounded كما فيالتحقق السابق، وكل15recovery JSON معSHA مستقل.
+
+A المختارة مسبقًا تختارH: S1M904.553076ns/event، H1M345.3889065ns/event،
+ratio0.3818337648326122، H owned105.408880B/asset قبلpool. Raw180samples
+3processes×10runs×6rows و2warmups/process، وضوابط allocator موجبة والصفر
+لكلadvance، وhealth/mutants/order100k/1M. هذه ملكية live capacities وليست
+شهادةذاكرةالحفظ. B60records وquotaH320/1472REJECT/832MiB وفق snapshot
+100,801,772B. رفضG1/W7 باقٍ، وليسفشلًامعادتصنيفه.
+
+Debug/Release/TSan×S/H:60K1–K10 SIGKILL points بepoch/digest المحددين،
+6chain fallbacks عبرWAL، K9append→secondrecover فيepoch2 نفسه لكلجزء،
+18torn2/8/54byte cases و12complete-corruption rejects. لاcut/power-loss
+فيجهازحقيقي ولاcross-process lock. K10 token القديم يستهدف epoch retained
+معsparebuffers وqueuebytes0، ولا يعاد وصفالنتائج القديمة.
+
+SOURCE-PROOF.json وrawZIP محفوظان. Workflow C حُدّثتpins مصدره فقط؛
+42runtime inputs ثابتة. الخطوةالتالية H1M/five-save diagnostic واحد، ثم
+paired SABBA component diagnosis علىApple نفسه. C100 pins مازالت0/PENDING؛
+لاينطلق100save مننجاحوظيفي. كلأداءC علىS/H OPEN إلىقبولحقيقي100save
+ببواباتهاالثابتة، معقيدpoolmemory/مالك/main/Stage2–4/iPhone منفصل.
