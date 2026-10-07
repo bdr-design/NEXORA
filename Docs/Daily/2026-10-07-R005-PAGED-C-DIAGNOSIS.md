@@ -106,3 +106,8 @@ local guard/selftest و23gate tests وdiff-check PASS. Swift/TSan والـborrow
 والنسخ/الأزمنة ما زالت Apple pending. pins C صارت0/PENDING لأن42runtime
 inputs تغيرت؛ دليل d415 لا يؤهل المصدر الجديد. لا micro1M أوC100 قبل إعادة
 AB/K الكاملة على المصدر المؤهل التالي.
+
+مراجعة حدود partial page بعد النشر e2b5e52f: فحص257 الجديد توقع5140B من
+cold payload، لكن كلمة UInt64 الأخيرة تنسخ padding4B أيضًا، فالحجم الفيزيائي
+5144B. الحساب صُحح إلى ceil8Bytes دون تغيير serialized payload أو التنفيذ
+أو بوابات الأداء. تشغيل37554438056 الأصلي يستمر، وأي فشل لا يُعاد تصنيفه.

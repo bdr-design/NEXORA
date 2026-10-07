@@ -1,5 +1,12 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Successor published e2b5e52f/treec2ebb092, local38fecf29 exact tree; bounded
+run37554438056 building. Partial-page numerical audit found the new257 test
+expected5140 cold payload bytes but physical word clone5144B (4B padding).
+Test expectation corrected to physical bytes; canonical file stays5140B.
+Original run continues and any result remains preserved. No threshold/source
+ownership change; corrected bounded source must still pass Apple before A/B/K.
+
 Bounded successor implemented after published estimate/failure11907a64:
 short getter inlining, safe nonescaping H row mutations, independent hot/cold
 first-write clones. Deterministic257 held-epoch cold mutation/recovery check

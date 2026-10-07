@@ -261,7 +261,10 @@ private func pagedColdEpoch(_ directory: String) throws {
     try stageCHybridRescheduleAll(world, baseNow: 600, firstOperation: UInt64(count * 2 + 1))
     try stageCHybridRescheduleAll(mirror, baseNow: 600, firstOperation: UInt64(count * 2 + 1))
     try wal.appendRescheduleAll(baseNow: 600, firstOperation: UInt64(count * 2 + 1))
-    try require(state.barrierBytes == hotNodeGroupBytes + count * 20,
+    // Full 256-row pages are word aligned; this 1-row tail copies 24 physical
+    // bytes while its canonical payload remains exactly 20 bytes.
+    let coldPhysicalBytes = ((count * 20 + 7) / 8) * 8
+    try require(state.barrierBytes == hotNodeGroupBytes + coldPhysicalBytes,
                 "cold mutation must copy and report every changed cold page")
     try require(Snapshot.worldDigest(world) == Snapshot.worldDigest(mirror), "cold epoch live mirror")
     held.releaseKillFixtureWriter()
