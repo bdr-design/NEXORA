@@ -3,8 +3,9 @@
 Bounded ownership micro run37609776465 VERIFIED SUCCESS on source9cd5fa88/
 treee5e2acba; artifact11476333298 ZIP SHA256
 2e209cfa90a6d6c8b6bde4931dd7dfd7359c5b936b1d772b45a36e788d763807.
-Debug/Release/TSan257/K1+4096/K2=6 PASS and Release100k/K2=1 PASS; all measured
-hot allocation samples zero, actual24 Sources/42inputs unchanged. 100k writer
+Debug/Release/TSan257/K1+4096/K2=6 PASS and Release100k/K2=1 PASS; Release hot
+samples are zero-allocation, Debug is observational/nonzero and TSan allocation
+values are unavailable/null; actual24 Sources/42inputs unchanged. 100k writer
 build1.612–1.624ms, sink2.944–3.261ms, service13.378–13.868us, loop9.015–
 19.382ms; held barrier makes epoch1 non-baseline. Decision remains
 MICRO_PROTOCOL_PASS_NOT_INTEGRATION_ELIGIBLE: no production backpressure or

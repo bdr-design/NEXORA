@@ -27,9 +27,11 @@ Run `37609776465` succeeded on source
 SHA-256 `2e209cfa90a6d6c8b6bde4931dd7dfd7359c5b936b1d772b45a36e788d763807`.
 The independent fail-closed verifier accepted all six Debug/Release/TSan
 257/K1 and 4096/K2 cases plus the conditional Release 100k/K2 diagnostic.
-Every measured post-setup hot-path allocation sample reported zero requests
-and zero requested bytes.  Setup allocations are retained separately and are
-not misclassified as hot-path allocations.
+Release post-setup hot-path samples reported zero requests and zero requested
+bytes, including 100k/K2.  Debug used observational allocation policy and
+retains its nonzero samples; TSan allocation samples are unavailable and
+recorded as `null`.  Setup allocations remain separate and are not
+misclassified as hot-path allocations.
 
 At 100k/K2, the three epochs measured writer build at 1.612–1.624ms, writer
 sink at 2.944–3.261ms, service at 13.378–13.868us, and whole runtime loop at
