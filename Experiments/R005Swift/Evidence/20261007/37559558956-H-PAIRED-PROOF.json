@@ -1,0 +1,659 @@
+{
+  "status": "diagnostic-verified",
+  "acceptance": false,
+  "source": "0d647599e03a4a8206b2814b36853bb66ca6128c",
+  "tree": "3feded77074fc0d50a9c39a798765534f9a7111a",
+  "run": 37559558956,
+  "job": 112593518020,
+  "artifact": 11456212088,
+  "zipSHA256": "c4cb52886644e062f001f18459324a1afba53cf13b5873ba91c0a542fe99ce37",
+  "runtimeInputs": 42,
+  "actualRuntimeUnchanged": true,
+  "summaries": [
+    {
+      "mode": "debug",
+      "assets": 4096,
+      "pairs": [
+        {
+          "allocationPolicy": "debug-observe",
+          "zeroAllocationClaim": false
+        }
+      ],
+      "postProfileOwnedBytes": [
+        949696,
+        949696
+      ],
+      "ownedBytesPerAsset": [
+        231.859375,
+        231.859375
+      ]
+    },
+    {
+      "mode": "release",
+      "assets": 4096,
+      "pairs": [
+        {
+          "pair": 1,
+          "order": [
+            "no-save",
+            "save"
+          ],
+          "matchedPhases": [
+            {
+              "mode": "all",
+              "matchedCalls": 5,
+              "events": 4096,
+              "saveAdvanceNS": 619251,
+              "controlAdvanceNS": 598208,
+              "deltaNS": 21043,
+              "diagnosticMatchedRatio": 1.0351767278271102,
+              "saveAdvanceP99NS": 223875
+            },
+            {
+              "mode": "saveActive",
+              "matchedCalls": 3,
+              "events": 2048,
+              "saveAdvanceNS": 284917,
+              "controlAdvanceNS": 263041,
+              "deltaNS": 21876,
+              "diagnosticMatchedRatio": 1.0831657422226952,
+              "saveAdvanceP99NS": 157125
+            },
+            {
+              "mode": "capturing",
+              "matchedCalls": 3,
+              "events": 2048,
+              "saveAdvanceNS": 284917,
+              "controlAdvanceNS": 263041,
+              "deltaNS": 21876,
+              "diagnosticMatchedRatio": 1.0831657422226952,
+              "saveAdvanceP99NS": 157125
+            },
+            {
+              "mode": "notInstalled",
+              "matchedCalls": 2,
+              "events": 2048,
+              "saveAdvanceNS": 334334,
+              "controlAdvanceNS": 335167,
+              "deltaNS": -833,
+              "diagnosticMatchedRatio": 0.9975146717904806,
+              "saveAdvanceP99NS": 223875
+            }
+          ],
+          "components": {
+            "advance": {
+              "save": {
+                "allocationBytes": 0,
+                "allocations": 0,
+                "ns": 619251
+              },
+              "control": {
+                "allocationBytes": 0,
+                "allocations": 0,
+                "ns": 598208
+              },
+              "deltaNS": 21043
+            },
+            "service": {
+              "save": {
+                "allocationBytes": 0,
+                "allocations": 0,
+                "barrierEmits": 0,
+                "capturingNS": 4374,
+                "drainCalls": 3,
+                "ns": 4374,
+                "writerOnlyNS": 0
+              },
+              "control": {
+                "allocationBytes": 0,
+                "allocations": 0,
+                "barrierEmits": 0,
+                "capturingNS": 0,
+                "drainCalls": 0,
+                "ns": 82,
+                "writerOnlyNS": 0
+              },
+              "deltaNS": 4292
+            },
+            "reschedule": {
+              "save": {
+                "allocationBytes": 0,
+                "allocations": 0,
+                "barrierEmits": 17,
+                "ns": 703542
+              },
+              "control": {
+                "allocationBytes": 0,
+                "allocations": 0,
+                "barrierEmits": 0,
+                "ns": 591417
+              },
+              "deltaNS": 112125
+            },
+            "walAdvance": {
+              "save": {
+                "allocationBytes": 3940,
+                "allocations": 80,
+                "ns": 75751
+              },
+              "control": {
+                "allocationBytes": 3940,
+                "allocations": 80,
+                "ns": 80750
+              },
+              "deltaNS": -4999
+            },
+            "walReschedule": {
+              "save": {
+                "allocationBytes": 684,
+                "allocations": 15,
+                "ns": 20792
+              },
+              "control": {
+                "allocationBytes": 684,
+                "allocations": 15,
+                "ns": 9208
+              },
+              "deltaNS": 11584
+            }
+          },
+          "fullLoop": {
+            "saveNS": 2543875,
+            "controlNS": 1605292,
+            "diagnosticRatio": 1.584680544100388
+          },
+          "writer": {
+            "allocationBytes": 57070,
+            "allocationObserverAvailable": true,
+            "allocations": 241,
+            "bytes": 431804,
+            "chunks": 26,
+            "dispatchToRunNS": 20084,
+            "finalizeNS": 634625,
+            "peakQueuedBytes": 0,
+            "queueWaitNS": 542,
+            "recordProcessWriteNS": 606875,
+            "runNS": 1395667
+          },
+          "barrier": {
+            "bytes": 411648,
+            "copyNS": 16580,
+            "emits": 41
+          },
+          "setup": {
+            "save": {
+              "beginSave": {
+                "allocationBytes": 18876,
+                "allocations": 1,
+                "ns": 4083
+              },
+              "snapshotSink": {
+                "allocationBytes": 633,
+                "allocations": 7,
+                "ns": 11292
+              },
+              "stateInstall": {
+                "allocationBytes": 414684,
+                "allocations": 62,
+                "ns": 80542
+              }
+            },
+            "control": {
+              "beginSave": {
+                "started": false
+              },
+              "snapshotSink": {
+                "started": false
+              },
+              "stateInstall": {
+                "allocationBytes": 414684,
+                "allocations": 62,
+                "ns": 76041
+              }
+            }
+          }
+        }
+      ],
+      "postProfileOwnedBytes": [
+        949696,
+        949696
+      ],
+      "ownedBytesPerAsset": [
+        231.859375,
+        231.859375
+      ]
+    },
+    {
+      "mode": "release",
+      "assets": 1000000,
+      "pairs": [
+        {
+          "pair": 1,
+          "order": [
+            "no-save",
+            "save"
+          ],
+          "matchedPhases": [
+            {
+              "mode": "all",
+              "matchedCalls": 984,
+              "events": 1000000,
+              "saveAdvanceNS": 266399078,
+              "controlAdvanceNS": 209427066,
+              "deltaNS": 56972012,
+              "diagnosticMatchedRatio": 1.2720374834454302,
+              "saveAdvanceP99NS": 3080750
+            },
+            {
+              "mode": "saveActive",
+              "matchedCalls": 790,
+              "events": 801550,
+              "saveAdvanceNS": 231604532,
+              "controlAdvanceNS": 176042071,
+              "deltaNS": 55562461,
+              "diagnosticMatchedRatio": 1.3156203553183603,
+              "saveAdvanceP99NS": 4943958
+            },
+            {
+              "mode": "capturing",
+              "matchedCalls": 790,
+              "events": 801550,
+              "saveAdvanceNS": 231604532,
+              "controlAdvanceNS": 176042071,
+              "deltaNS": 55562461,
+              "diagnosticMatchedRatio": 1.3156203553183603,
+              "saveAdvanceP99NS": 4943958
+            },
+            {
+              "mode": "idleInstalled",
+              "matchedCalls": 130,
+              "events": 132914,
+              "saveAdvanceNS": 21222420,
+              "controlAdvanceNS": 23500286,
+              "deltaNS": -2277866,
+              "diagnosticMatchedRatio": 0.9030707115649571,
+              "saveAdvanceP99NS": 261583
+            },
+            {
+              "mode": "notInstalled",
+              "matchedCalls": 64,
+              "events": 65536,
+              "saveAdvanceNS": 13572126,
+              "controlAdvanceNS": 9884709,
+              "deltaNS": 3687417,
+              "diagnosticMatchedRatio": 1.3730425448032917,
+              "saveAdvanceP99NS": 495417
+            }
+          ],
+          "components": {
+            "advance": {
+              "save": {
+                "allocationBytes": 0,
+                "allocations": 0,
+                "ns": 266399078
+              },
+              "control": {
+                "allocationBytes": 0,
+                "allocations": 0,
+                "ns": 209427066
+              },
+              "deltaNS": 56972012
+            },
+            "service": {
+              "save": {
+                "allocationBytes": 0,
+                "allocations": 0,
+                "barrierEmits": 0,
+                "capturingNS": 891585,
+                "drainCalls": 0,
+                "ns": 895663,
+                "writerOnlyNS": 0
+              },
+              "control": {
+                "allocationBytes": 0,
+                "allocations": 0,
+                "barrierEmits": 0,
+                "capturingNS": 0,
+                "drainCalls": 0,
+                "ns": 25761,
+                "writerOnlyNS": 0
+              },
+              "deltaNS": 869902
+            },
+            "reschedule": {
+              "save": {
+                "allocationBytes": 0,
+                "allocations": 0,
+                "barrierEmits": 0,
+                "ns": 183588458
+              },
+              "control": {
+                "allocationBytes": 0,
+                "allocations": 0,
+                "barrierEmits": 0,
+                "ns": 172942958
+              },
+              "deltaNS": 10645500
+            },
+            "walAdvance": {
+              "save": {
+                "allocationBytes": 775392,
+                "allocations": 15744,
+                "ns": 14474968
+              },
+              "control": {
+                "allocationBytes": 775392,
+                "allocations": 15744,
+                "ns": 10078268
+              },
+              "deltaNS": 4396700
+            },
+            "walReschedule": {
+              "save": {
+                "allocationBytes": 684,
+                "allocations": 15,
+                "ns": 53000
+              },
+              "control": {
+                "allocationBytes": 684,
+                "allocations": 15,
+                "ns": 47333
+              },
+              "deltaNS": 5667
+            }
+          },
+          "fullLoop": {
+            "saveNS": 495995458,
+            "controlNS": 484583084,
+            "diagnosticRatio": 1.0235509128915445
+          },
+          "writer": {
+            "allocationBytes": 1505854,
+            "allocationObserverAvailable": true,
+            "allocations": 29576,
+            "bytes": 100801772,
+            "chunks": 5893,
+            "dispatchToRunNS": 79750,
+            "finalizeNS": 2618667,
+            "peakQueuedBytes": 0,
+            "queueWaitNS": 792,
+            "recordProcessWriteNS": 240476386,
+            "runNS": 247259333
+          },
+          "barrier": {
+            "bytes": 80500000,
+            "copyNS": 7366301,
+            "emits": 5892
+          },
+          "setup": {
+            "save": {
+              "beginSave": {
+                "allocationBytes": 18876,
+                "allocations": 1,
+                "ns": 31667
+              },
+              "snapshotSink": {
+                "allocationBytes": 633,
+                "allocations": 7,
+                "ns": 39375
+              },
+              "stateInstall": {
+                "allocationBytes": 101002184,
+                "allocations": 9972,
+                "ns": 24878333
+              }
+            },
+            "control": {
+              "beginSave": {
+                "started": false
+              },
+              "snapshotSink": {
+                "started": false
+              },
+              "stateInstall": {
+                "allocationBytes": 101002184,
+                "allocations": 9972,
+                "ns": 86658500
+              }
+            }
+          }
+        },
+        {
+          "pair": 2,
+          "order": [
+            "save",
+            "no-save"
+          ],
+          "matchedPhases": [
+            {
+              "mode": "all",
+              "matchedCalls": 984,
+              "events": 1000000,
+              "saveAdvanceNS": 251608745,
+              "controlAdvanceNS": 254367435,
+              "deltaNS": -2758690,
+              "diagnosticMatchedRatio": 0.9891547044927351,
+              "saveAdvanceP99NS": 2318000
+            },
+            {
+              "mode": "saveActive",
+              "matchedCalls": 620,
+              "events": 628861,
+              "saveAdvanceNS": 174349783,
+              "controlAdvanceNS": 184993633,
+              "deltaNS": -10643850,
+              "diagnosticMatchedRatio": 0.9424636954937795,
+              "saveAdvanceP99NS": 3145417
+            },
+            {
+              "mode": "capturing",
+              "matchedCalls": 620,
+              "events": 628861,
+              "saveAdvanceNS": 174349783,
+              "controlAdvanceNS": 184993633,
+              "deltaNS": -10643850,
+              "diagnosticMatchedRatio": 0.9424636954937795,
+              "saveAdvanceP99NS": 3145417
+            },
+            {
+              "mode": "idleInstalled",
+              "matchedCalls": 300,
+              "events": 305603,
+              "saveAdvanceNS": 67499213,
+              "controlAdvanceNS": 55962590,
+              "deltaNS": 11536623,
+              "diagnosticMatchedRatio": 1.2061488397874365,
+              "saveAdvanceP99NS": 459167
+            },
+            {
+              "mode": "notInstalled",
+              "matchedCalls": 64,
+              "events": 65536,
+              "saveAdvanceNS": 9759749,
+              "controlAdvanceNS": 13411212,
+              "deltaNS": -3651463,
+              "diagnosticMatchedRatio": 0.7277305734932831,
+              "saveAdvanceP99NS": 387666
+            }
+          ],
+          "components": {
+            "advance": {
+              "save": {
+                "allocationBytes": 0,
+                "allocations": 0,
+                "ns": 251608745
+              },
+              "control": {
+                "allocationBytes": 0,
+                "allocations": 0,
+                "ns": 254367435
+              },
+              "deltaNS": -2758690
+            },
+            "service": {
+              "save": {
+                "allocationBytes": 0,
+                "allocations": 0,
+                "barrierEmits": 0,
+                "capturingNS": 996306,
+                "drainCalls": 0,
+                "ns": 1005580,
+                "writerOnlyNS": 0
+              },
+              "control": {
+                "allocationBytes": 0,
+                "allocations": 0,
+                "barrierEmits": 0,
+                "capturingNS": 0,
+                "drainCalls": 0,
+                "ns": 34745,
+                "writerOnlyNS": 0
+              },
+              "deltaNS": 970835
+            },
+            "reschedule": {
+              "save": {
+                "allocationBytes": 0,
+                "allocations": 0,
+                "barrierEmits": 0,
+                "ns": 182608875
+              },
+              "control": {
+                "allocationBytes": 0,
+                "allocations": 0,
+                "barrierEmits": 0,
+                "ns": 170254750
+              },
+              "deltaNS": 12354125
+            },
+            "walAdvance": {
+              "save": {
+                "allocationBytes": 775392,
+                "allocations": 15744,
+                "ns": 13555025
+              },
+              "control": {
+                "allocationBytes": 775392,
+                "allocations": 15744,
+                "ns": 14881908
+              },
+              "deltaNS": -1326883
+            },
+            "walReschedule": {
+              "save": {
+                "allocationBytes": 684,
+                "allocations": 15,
+                "ns": 62375
+              },
+              "control": {
+                "allocationBytes": 684,
+                "allocations": 15,
+                "ns": 81417
+              },
+              "deltaNS": -19042
+            }
+          },
+          "fullLoop": {
+            "saveNS": 465466375,
+            "controlNS": 465281458,
+            "diagnosticRatio": 1.0003974304086711
+          },
+          "writer": {
+            "allocationBytes": 1505406,
+            "allocationObserverAvailable": true,
+            "allocations": 29570,
+            "bytes": 100801772,
+            "chunks": 5893,
+            "dispatchToRunNS": 33333,
+            "finalizeNS": 3074042,
+            "peakQueuedBytes": 0,
+            "queueWaitNS": 666,
+            "recordProcessWriteNS": 182371004,
+            "runNS": 186691333
+          },
+          "barrier": {
+            "bytes": 80500000,
+            "copyNS": 6179518,
+            "emits": 5892
+          },
+          "setup": {
+            "save": {
+              "beginSave": {
+                "allocationBytes": 18876,
+                "allocations": 1,
+                "ns": 10125
+              },
+              "snapshotSink": {
+                "allocationBytes": 633,
+                "allocations": 7,
+                "ns": 24417
+              },
+              "stateInstall": {
+                "allocationBytes": 101002184,
+                "allocations": 9972,
+                "ns": 11316292
+              }
+            },
+            "control": {
+              "beginSave": {
+                "started": false
+              },
+              "snapshotSink": {
+                "started": false
+              },
+              "stateInstall": {
+                "allocationBytes": 101002184,
+                "allocations": 9972,
+                "ns": 19733708
+              }
+            }
+          }
+        }
+      ],
+      "postProfileOwnedBytes": [
+        210772320,
+        210772320,
+        210772320,
+        210772320
+      ],
+      "ownedBytesPerAsset": [
+        210.77232,
+        210.77232,
+        210.77232,
+        210.77232
+      ]
+    }
+  ],
+  "C100": "NOT_RUN",
+  "CPerformance": {
+    "S": "OPEN",
+    "H": "OPEN"
+  },
+  "scope": "existing H owner and fixed-fixture ABBA in disposable diagnostic-only harness; exact scripts/outputs/final/recovered digests and separate components; no official C timing or game/device certification",
+  "limitations": [
+    "H post-profile owned capacities are main world only, not allocator footprint or other fixture/recovery worlds/UI",
+    "Capacity sampling happens after timed phases and is disclosed separately",
+    "Full spare-image pool exceeds200B/asset even before complete-game overhead; A live-image success unchanged",
+    "Writer and simulation overlap; never add their wall times"
+  ],
+  "evidenceSHA256": {
+    "AllocationObserver.dylib": "8dd34c8971ad2cf0929d549d5d204e7d10d321f8f6e092f0bb43358b89e74577",
+    "H-PAIRED-STUDY.json": "dd6330de5ab5870e2e06b6cc85728cfa2e868827aac589a733a9d759f4130759",
+    "PAIRED-H-debug-4096.json": "4f933175553eb90e99fe2404309be9df7171d02db63edda98b591e72397bb993",
+    "PAIRED-H-release-1000000.json": "3c6dfad1bf8becf640df7294a33463d1f2a6ba4a262cb13a371845bf14054e54",
+    "PAIRED-H-release-4096.json": "c16734dbfc413592156d7609f5d7a5fe0f49eb361765442325f5f10159b03cc6",
+    "build-debug.txt": "8968265a35cf9643c51d52d3ec5599c74583dbdab7271b75eeaa393736e6d2b2",
+    "build-release.txt": "856458423d9b99cb49c0ad54dd8ed2ba143a591b1a074b03b572b2645215bbfc",
+    "commit.txt": "51347b7d129bf9f5e6737144f50ee7414274af55e9b738ba6b46508e31a60ad6",
+    "debug-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "environment.txt": "2279882ee44d1e0fe474b3f0fba1648b8427102ea0bbe469246f67b188b19deb",
+    "release-1000000.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "release-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-inputs.json": "f0c7c36513c810957189aee1b56a60ed95022f1188d446435d0bf685fabcd77f",
+    "scope.txt": "777b325ca6c548429abc3e8d29ecb2e6c6e54f9ede07a7e51df6f85adedb2b3c",
+    "source-guard-after.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "source-guard-before.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "study-source.json": "9da22c0407bc9a792dd35f7c6405019f9d3fecd9477c893779fb0534d450fdef",
+    "tree.txt": "31c8251218b8a016317854206f9582d7a2987d88200c3e106897039cb6df09f2"
+  }
+}

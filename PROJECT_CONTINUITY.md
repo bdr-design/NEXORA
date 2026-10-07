@@ -1,5 +1,26 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Fresh37555679620 ALL SUCCESS (A/B+six1M K parts+aggregate). Artifact11456810824
+ZIP SHA256a5c8f89a56b8b40c51e2da8fbe8a2f460953a6a15b89b2d07672d6aea8c0d52a
+independently verified against base hashes, all matching source71432ea4/tree
+9abe6827/42inputs/flags;60kills/6chains/18torn/12corrupt rejects PASS. Sole
+preselected A chooses H. C source pins now bind exact proof; micro pins0/PENDING.
+Next real H1M five-save diagnostic, never C100 from sampled/paired data.
+H paired37559558956 verified artifact11456212088 SHA256c4cb52886644e062f001f18459324a1afba53cf13b5873ba91c0a542fe99ce37:
+984calls/1M events exact, zero advance/service allocations, variable matched
+ratios and setup timings not C. Main-world prepared owned210772320B/1M exceeds
+200B/asset; memory failure preserved separately, A live-image success unchanged.
+Actual42inputs still fixed; no main/Stage2–4/device or production acceptance.
+
+Writer study37557593873 independently verified: artifact11455952326 ZIP
+SHA25641dc907bc5832a37a3314f965e670da0c6cf9a63c676f3e5563eff742d53971a;
+16canonical cases/48epochs exact, Release advance/service zero, TSan null.
+H100k ABBA median writer17.274→15.893ms (ratio0.92008), requested bytes
+195706→240663; overlapping samples/held writer do not prove contention or C.
+12K3 at1M are source-bound harness assertions, raw recovery not separately
+serialized. Actual runtime unchanged. Corrected H paired37559558956 SUCCESS,
+artifact pending independent download/verify; fresh S1M TSan still running.
+
 H paired37559041669 FAILED before Swift compilation: temporary package
 one level too shallow for existing ../.. dependency. Artifact11455852543 ZIP
 SHA2560db1551e6ad80fefcbd20e2448ce514917d313770c6d51e401c0e95f85f56c4e

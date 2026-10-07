@@ -59,3 +59,25 @@ workflow فقط:12حالة K3 لكلS/H×Debug/Release/TSan×base/packet عند1
 توسيع للـguard. مصفوفةcanonical المحدودة تبقى4096، والمقارنةH100k كما
 خُطط. لا تعديل للمصدر الفعلي أو بوابة أو معنى اختبار؛ التشغيل السابق
 يبقى FAILED محفوظًا. الـ1M هنا SIGKILL محدودK3، وليس حملةC100.
+
+## نتيجة الفحص المصحح
+
+run37557593873 SUCCESS على8cdd7be9/tree8ebafbb4، artifact11455952326، ZIP
+SHA256`41dc907bc5832a37a3314f965e670da0c6cf9a63c676f3e5563eff742d53971a`.
+تحقق مستقل من42inputs وguard/ستةbuilds وhashes النسختين؛ base يغير ملف
+telemetry فقط، packet يضيفEpochSnapshot فقط.16حالةcanonical/48epochs
+متطابقة، Release advance/service zero، TSan unavailable=null.
+
+12حالةK3 على1M فيالتقرير، معSIGKILL/restored-digest assertions للذراعين
+S/H×Debug/Release/TSan. ملفاتboot/recover الخام لم تُحفظ منفصلة، فتظل
+هذه assertions مرتبطة بعقدworkflow/source؛ لا تُدّعى إعادة حساب digests
+منخام مفقود. أي دمج فعلي يحتاج مصفوفةK كاملة ومصدرًا مؤهلًا من جديد.
+
+H100k base/packet/packet/base: وسيطwriteNS17,273,958.5→15,893,417ns،
+ratio0.9200796100094834. العيناتمتداخلة ولا تثبت أثرًا ثابتًا على C أو
+تنازع الكاتب؛ fixture يمسك الكاتب حتى ينتهي عمل المحاكاة. وسيطrequested
+allocation bytes195,706→240,663 (ratio1.229717)، وليست RSS/peak. الزيادة
+متوافقة مع قراءةenvironment مرة في بداية الكاتب، لكن الفصل السببي لم يُقَس.
+
+لا تعديلactualRuntime، لا اختيارقرارA مختلف، ولاC100. هذه مكسب محدود
+فيالكاتب وحده، ولا دليل أنه يصلratio الحاليإلى1.10 أو يصلح pool memory.

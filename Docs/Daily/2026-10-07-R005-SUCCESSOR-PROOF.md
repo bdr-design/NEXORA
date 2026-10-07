@@ -47,3 +47,19 @@ zero allocations؛ TSan unavailable=null، وليس صفرًا مفترضًا.
 المصدر الحالي المسموح إلى حزمتين مؤقتتين. لا تعديل لمدخلات42runtime الجاري
 إثباتها، ولا تأهيل C من هذه الدراسة. C OPEN على S/H، ولا result files أو
 دمج main أو تنفيذ Stage2–4/iPhone/IPA قبل بواباتها وقرار المالك.
+
+## اكتمال الإثبات المجمع قبل قياس خمس عمليات
+
+run37555679620 كله **SUCCESS**: الأساس والأجزاءالستةDebug/Release/TSan×
+S/H1M والـaggregate. Artifact11456810824، ZIP SHA256
+`a5c8f89a56b8b40c51e2da8fbe8a2f460953a6a15b89b2d07672d6aea8c0d52a`.
+verify-source-proof.py أعادتحققكلملفbase معhashه، وجميعmetadata source/
+tree/42inputs/flags لكلجزء،10points المطلوبةبالترتيبوالـepochs،15raw
+functional hashes، وA/B/quota.60kills/6chains/18tornWAL و12complete-corrupt
+rejections كلهاPASS؛ لا تغييردونإعادةمصدر، ولاانتخابA بديلة.
+
+C workflow source pins تربطهذاartifact فقط، والـmicro pins تبقى0/PENDING.
+الخطوةالآن H1M خمسعملياتحفظ حقيقية، ثم paired S منالمصدر نفسه. هذا قياس
+أداءتشخيصي فقط؛ مشكلةmemory الجديدة210.77232B/asset معلنةفيH paired،
+ولا يجوزاعتبارنجاحC المحتمل قبولًاللمنتجأومراعاةللقاعدةالدائمةدونإصلاحها.
+C100 مازالNOT_RUN وS/H C OPEN، وكلالإخفاقاتوالبوابات1.10 ثابتة.

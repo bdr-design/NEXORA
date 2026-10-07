@@ -1,0 +1,612 @@
+{
+  "status": "diagnostic-verified",
+  "acceptance": false,
+  "source": "8cdd7be96fda9839737a1d4691e3e30afe83f8e6",
+  "tree": "8ebafbb4284548ba22d2ced3f07eced77b788415",
+  "run": 37557593873,
+  "job": 112587300543,
+  "artifact": 11455952326,
+  "zipSHA256": "41dc907bc5832a37a3314f965e670da0c6cf9a63c676f3e5563eff742d53971a",
+  "runtimeInputs": 42,
+  "actualRuntimeUnchanged": true,
+  "canonicalCases": 16,
+  "epochs": 48,
+  "ReleaseAdvanceServiceAllocations": 0,
+  "TSanCounters": "unavailable=null",
+  "K3HarnessAssertions": [
+    {
+      "arm": "base",
+      "mode": "debug",
+      "variant": "S",
+      "population": 1000000,
+      "point": "c.k3.mid_record",
+      "signal": "SIGKILL",
+      "exactDigest": true
+    },
+    {
+      "arm": "packet",
+      "mode": "debug",
+      "variant": "S",
+      "population": 1000000,
+      "point": "c.k3.mid_record",
+      "signal": "SIGKILL",
+      "exactDigest": true
+    },
+    {
+      "arm": "base",
+      "mode": "debug",
+      "variant": "H",
+      "population": 1000000,
+      "point": "c.k3.mid_record",
+      "signal": "SIGKILL",
+      "exactDigest": true
+    },
+    {
+      "arm": "packet",
+      "mode": "debug",
+      "variant": "H",
+      "population": 1000000,
+      "point": "c.k3.mid_record",
+      "signal": "SIGKILL",
+      "exactDigest": true
+    },
+    {
+      "arm": "base",
+      "mode": "release",
+      "variant": "S",
+      "population": 1000000,
+      "point": "c.k3.mid_record",
+      "signal": "SIGKILL",
+      "exactDigest": true
+    },
+    {
+      "arm": "packet",
+      "mode": "release",
+      "variant": "S",
+      "population": 1000000,
+      "point": "c.k3.mid_record",
+      "signal": "SIGKILL",
+      "exactDigest": true
+    },
+    {
+      "arm": "base",
+      "mode": "release",
+      "variant": "H",
+      "population": 1000000,
+      "point": "c.k3.mid_record",
+      "signal": "SIGKILL",
+      "exactDigest": true
+    },
+    {
+      "arm": "packet",
+      "mode": "release",
+      "variant": "H",
+      "population": 1000000,
+      "point": "c.k3.mid_record",
+      "signal": "SIGKILL",
+      "exactDigest": true
+    },
+    {
+      "arm": "base",
+      "mode": "tsan",
+      "variant": "S",
+      "population": 1000000,
+      "point": "c.k3.mid_record",
+      "signal": "SIGKILL",
+      "exactDigest": true
+    },
+    {
+      "arm": "packet",
+      "mode": "tsan",
+      "variant": "S",
+      "population": 1000000,
+      "point": "c.k3.mid_record",
+      "signal": "SIGKILL",
+      "exactDigest": true
+    },
+    {
+      "arm": "base",
+      "mode": "tsan",
+      "variant": "H",
+      "population": 1000000,
+      "point": "c.k3.mid_record",
+      "signal": "SIGKILL",
+      "exactDigest": true
+    },
+    {
+      "arm": "packet",
+      "mode": "tsan",
+      "variant": "H",
+      "population": 1000000,
+      "point": "c.k3.mid_record",
+      "signal": "SIGKILL",
+      "exactDigest": true
+    }
+  ],
+  "medianWriterNS": {
+    "base": 17273958.5,
+    "packet": 15893417.0
+  },
+  "packetToBaseRatio": 0.9200796100094834,
+  "medianWriterRequestedAllocationBytes": {
+    "base": 195706.0,
+    "packet": 240663.0
+  },
+  "packetToBaseRequestedAllocationRatio": 1.2297170245163664,
+  "C100": "NOT_RUN",
+  "scope": "temporary source only; 4096 canonical S/H matrix and H100k writer ABBA; 1M limited K3 harness assertions verified in report/source, raw kill/recovery JSON not separately serialized; held-writer fixture does not measure simultaneous writer/simulation contention",
+  "limitations": [
+    "8% median writer reduction with overlapping samples is not a C eligibility result",
+    "packet writer requested allocation bytes increase by one-time environment read; not a resident memory measurement",
+    "no actual runtime changed; any later integration requires source-bound requalification"
+  ],
+  "rawReport": {
+    "status": "diagnostic-verified",
+    "acceptance": false,
+    "rows": [
+      {
+        "arm": "base",
+        "mode": "debug",
+        "variant": "S",
+        "assets": 4096,
+        "file": "bounded-base-debug-S.json",
+        "sha256": "199dccf2adf2389d0e801d73cfd91e545ea7bad6af17210146df997016a53459",
+        "writerNS": [
+          1695000,
+          1819083,
+          2254250
+        ],
+        "writerAllocationBytes": [
+          60363,
+          59915,
+          59915
+        ]
+      },
+      {
+        "arm": "packet",
+        "mode": "debug",
+        "variant": "S",
+        "assets": 4096,
+        "file": "bounded-packet-debug-S.json",
+        "sha256": "e53a97a5097d94edc9082f4a9b3027197997273fe21a6c9bf1f5283aab763da5",
+        "writerNS": [
+          1824833,
+          1857167,
+          2134667
+        ],
+        "writerAllocationBytes": [
+          104673,
+          103793,
+          103793
+        ]
+      },
+      {
+        "arm": "base",
+        "mode": "debug",
+        "variant": "H",
+        "assets": 4096,
+        "file": "bounded-base-debug-H.json",
+        "sha256": "13e0043f0ff728a034b11f0f2b9d15f17155b5c226d275485d19c4896bf88da0",
+        "writerNS": [
+          4465583,
+          2285750,
+          2428625
+        ],
+        "writerAllocationBytes": [
+          60363,
+          59915,
+          59915
+        ]
+      },
+      {
+        "arm": "packet",
+        "mode": "debug",
+        "variant": "H",
+        "assets": 4096,
+        "file": "bounded-packet-debug-H.json",
+        "sha256": "32702298c7f9dd7b687115a35c1e2bf9819b845faa82695eaf79049b0e72d2ce",
+        "writerNS": [
+          1931667,
+          2262959,
+          2036792
+        ],
+        "writerAllocationBytes": [
+          104241,
+          103793,
+          103793
+        ]
+      },
+      {
+        "arm": "base",
+        "mode": "release",
+        "variant": "S",
+        "assets": 4096,
+        "file": "bounded-base-release-S.json",
+        "sha256": "660c063d84761868d2df0a4021c2162d1407b3b6796c1258450084a785b8b34f",
+        "writerNS": [
+          6263417,
+          2704250,
+          2185917
+        ],
+        "writerAllocationBytes": [
+          57522,
+          57010,
+          57010
+        ]
+      },
+      {
+        "arm": "packet",
+        "mode": "release",
+        "variant": "S",
+        "assets": 4096,
+        "file": "bounded-packet-release-S.json",
+        "sha256": "0737cc8143aa5e4e4759cf9e3788a8c9111d786414d820058f0b08fc759c1426",
+        "writerNS": [
+          2433334,
+          1810750,
+          1542708
+        ],
+        "writerAllocationBytes": [
+          103471,
+          102591,
+          102591
+        ]
+      },
+      {
+        "arm": "base",
+        "mode": "release",
+        "variant": "H",
+        "assets": 4096,
+        "file": "bounded-base-release-H.json",
+        "sha256": "2b911fa5120bda5a2ccd74d6dbc2cf21609f226608302b6d02984d3c4ceebfc3",
+        "writerNS": [
+          1829125,
+          1986541,
+          1850000
+        ],
+        "writerAllocationBytes": [
+          57522,
+          57010,
+          57010
+        ]
+      },
+      {
+        "arm": "packet",
+        "mode": "release",
+        "variant": "H",
+        "assets": 4096,
+        "file": "bounded-packet-release-H.json",
+        "sha256": "85be6fb768ab5ccbc9b66e43800c1b63e3088425900f0e543fdc21a4e58b1669",
+        "writerNS": [
+          1709625,
+          1725292,
+          1357583
+        ],
+        "writerAllocationBytes": [
+          103039,
+          102591,
+          102591
+        ]
+      },
+      {
+        "arm": "base",
+        "mode": "tsan",
+        "variant": "S",
+        "assets": 4096,
+        "file": "bounded-base-tsan-S.json",
+        "sha256": "11d7cdfc80c7dfaa2f01b0100ea011a9e5fbaaf003218680576ed34a71a71d55",
+        "writerNS": [
+          9607625,
+          3235708,
+          3494666
+        ],
+        "writerAllocationBytes": [
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "arm": "packet",
+        "mode": "tsan",
+        "variant": "S",
+        "assets": 4096,
+        "file": "bounded-packet-tsan-S.json",
+        "sha256": "25871a7ca7a6cd8ecd9264fca4218acccf14450254022123524ef0297faa992b",
+        "writerNS": [
+          6522125,
+          3014291,
+          2597584
+        ],
+        "writerAllocationBytes": [
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "arm": "base",
+        "mode": "tsan",
+        "variant": "H",
+        "assets": 4096,
+        "file": "bounded-base-tsan-H.json",
+        "sha256": "40314993a25d23573efe255699bb8501dd18080419d800075aaa7ccb01923f44",
+        "writerNS": [
+          4003000,
+          3088000,
+          5777209
+        ],
+        "writerAllocationBytes": [
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "arm": "packet",
+        "mode": "tsan",
+        "variant": "H",
+        "assets": 4096,
+        "file": "bounded-packet-tsan-H.json",
+        "sha256": "aaf5eddf9a35593101ed523e74391ca3e91df73747c06fee9b6a057d28ed197c",
+        "writerNS": [
+          3053584,
+          3274333,
+          3440875
+        ],
+        "writerAllocationBytes": [
+          null,
+          null,
+          null
+        ]
+      },
+      {
+        "arm": "base",
+        "mode": "release",
+        "variant": "H",
+        "assets": 100000,
+        "file": "abba-1-base.json",
+        "sha256": "eca65e0d25be7c879176d277f998d41629b40405b97998a0046f6424ee73b7d4",
+        "writerNS": [
+          21538417,
+          17633208,
+          16773875
+        ],
+        "writerAllocationBytes": [
+          196218,
+          195706,
+          195706
+        ]
+      },
+      {
+        "arm": "packet",
+        "mode": "release",
+        "variant": "H",
+        "assets": 100000,
+        "file": "abba-2-packet.json",
+        "sha256": "0d3bb384cdaa11376d317d9af9ef490b6264d4ab78c4afff7195f3e47a87714e",
+        "writerNS": [
+          16119875,
+          22170500,
+          15094417
+        ],
+        "writerAllocationBytes": [
+          241111,
+          240663,
+          240663
+        ]
+      },
+      {
+        "arm": "packet",
+        "mode": "release",
+        "variant": "H",
+        "assets": 100000,
+        "file": "abba-3-packet.json",
+        "sha256": "8862a52a3877de577341105a540e14c3fcefd9ebe295116521acf1906f7b22c0",
+        "writerNS": [
+          15666959,
+          13447708,
+          19109000
+        ],
+        "writerAllocationBytes": [
+          241111,
+          240663,
+          240663
+        ]
+      },
+      {
+        "arm": "base",
+        "mode": "release",
+        "variant": "H",
+        "assets": 100000,
+        "file": "abba-4-base.json",
+        "sha256": "9f62850c336a66a50b076496d371b8e18963c82bc75d69f1d6249b1260eca681",
+        "writerNS": [
+          18093583,
+          16914709,
+          16344125
+        ],
+        "writerAllocationBytes": [
+          196218,
+          195706,
+          195706
+        ]
+      }
+    ],
+    "K3": [
+      {
+        "arm": "base",
+        "mode": "debug",
+        "variant": "S",
+        "population": 1000000,
+        "point": "c.k3.mid_record",
+        "signal": "SIGKILL",
+        "exactDigest": true
+      },
+      {
+        "arm": "packet",
+        "mode": "debug",
+        "variant": "S",
+        "population": 1000000,
+        "point": "c.k3.mid_record",
+        "signal": "SIGKILL",
+        "exactDigest": true
+      },
+      {
+        "arm": "base",
+        "mode": "debug",
+        "variant": "H",
+        "population": 1000000,
+        "point": "c.k3.mid_record",
+        "signal": "SIGKILL",
+        "exactDigest": true
+      },
+      {
+        "arm": "packet",
+        "mode": "debug",
+        "variant": "H",
+        "population": 1000000,
+        "point": "c.k3.mid_record",
+        "signal": "SIGKILL",
+        "exactDigest": true
+      },
+      {
+        "arm": "base",
+        "mode": "release",
+        "variant": "S",
+        "population": 1000000,
+        "point": "c.k3.mid_record",
+        "signal": "SIGKILL",
+        "exactDigest": true
+      },
+      {
+        "arm": "packet",
+        "mode": "release",
+        "variant": "S",
+        "population": 1000000,
+        "point": "c.k3.mid_record",
+        "signal": "SIGKILL",
+        "exactDigest": true
+      },
+      {
+        "arm": "base",
+        "mode": "release",
+        "variant": "H",
+        "population": 1000000,
+        "point": "c.k3.mid_record",
+        "signal": "SIGKILL",
+        "exactDigest": true
+      },
+      {
+        "arm": "packet",
+        "mode": "release",
+        "variant": "H",
+        "population": 1000000,
+        "point": "c.k3.mid_record",
+        "signal": "SIGKILL",
+        "exactDigest": true
+      },
+      {
+        "arm": "base",
+        "mode": "tsan",
+        "variant": "S",
+        "population": 1000000,
+        "point": "c.k3.mid_record",
+        "signal": "SIGKILL",
+        "exactDigest": true
+      },
+      {
+        "arm": "packet",
+        "mode": "tsan",
+        "variant": "S",
+        "population": 1000000,
+        "point": "c.k3.mid_record",
+        "signal": "SIGKILL",
+        "exactDigest": true
+      },
+      {
+        "arm": "base",
+        "mode": "tsan",
+        "variant": "H",
+        "population": 1000000,
+        "point": "c.k3.mid_record",
+        "signal": "SIGKILL",
+        "exactDigest": true
+      },
+      {
+        "arm": "packet",
+        "mode": "tsan",
+        "variant": "H",
+        "population": 1000000,
+        "point": "c.k3.mid_record",
+        "signal": "SIGKILL",
+        "exactDigest": true
+      }
+    ],
+    "H100kOrder": [
+      "base",
+      "packet",
+      "packet",
+      "base"
+    ],
+    "medianWriterNS": {
+      "base": 17273958.5,
+      "packet": 15893417.0
+    },
+    "diagnosticPacketToBaseRatio": 0.9200796100094834,
+    "C100": "NOT_RUN",
+    "scope": "temporary writer copies only; exact canonical snapshots/WAL and limited K3 at1M; main runtime unchanged; no full K/A/B/C qualification"
+  },
+  "evidenceSHA256": {
+    "AllocationObserver.dylib": "4875dfe034462dee97d3bde602780ad75e10c486a0dec1b9cf31f3b1524a56bf",
+    "WRITER-IO-STUDY.json": "810f87c453045b3cdc5684b107edcecbc13d58ccd375e490e1f8e3a35d15d6f7",
+    "abba-1-base.json": "eca65e0d25be7c879176d277f998d41629b40405b97998a0046f6424ee73b7d4",
+    "abba-1-base.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "abba-2-packet.json": "0d3bb384cdaa11376d317d9af9ef490b6264d4ab78c4afff7195f3e47a87714e",
+    "abba-2-packet.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "abba-3-packet.json": "8862a52a3877de577341105a540e14c3fcefd9ebe295116521acf1906f7b22c0",
+    "abba-3-packet.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "abba-4-base.json": "9f62850c336a66a50b076496d371b8e18963c82bc75d69f1d6249b1260eca681",
+    "abba-4-base.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-base-debug-H.json": "13e0043f0ff728a034b11f0f2b9d15f17155b5c226d275485d19c4896bf88da0",
+    "bounded-base-debug-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-base-debug-S.json": "199dccf2adf2389d0e801d73cfd91e545ea7bad6af17210146df997016a53459",
+    "bounded-base-debug-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-base-release-H.json": "2b911fa5120bda5a2ccd74d6dbc2cf21609f226608302b6d02984d3c4ceebfc3",
+    "bounded-base-release-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-base-release-S.json": "660c063d84761868d2df0a4021c2162d1407b3b6796c1258450084a785b8b34f",
+    "bounded-base-release-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-base-tsan-H.json": "40314993a25d23573efe255699bb8501dd18080419d800075aaa7ccb01923f44",
+    "bounded-base-tsan-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-base-tsan-S.json": "11d7cdfc80c7dfaa2f01b0100ea011a9e5fbaaf003218680576ed34a71a71d55",
+    "bounded-base-tsan-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-packet-debug-H.json": "32702298c7f9dd7b687115a35c1e2bf9819b845faa82695eaf79049b0e72d2ce",
+    "bounded-packet-debug-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-packet-debug-S.json": "e53a97a5097d94edc9082f4a9b3027197997273fe21a6c9bf1f5283aab763da5",
+    "bounded-packet-debug-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-packet-release-H.json": "85be6fb768ab5ccbc9b66e43800c1b63e3088425900f0e543fdc21a4e58b1669",
+    "bounded-packet-release-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-packet-release-S.json": "0737cc8143aa5e4e4759cf9e3788a8c9111d786414d820058f0b08fc759c1426",
+    "bounded-packet-release-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-packet-tsan-H.json": "aaf5eddf9a35593101ed523e74391ca3e91df73747c06fee9b6a057d28ed197c",
+    "bounded-packet-tsan-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-packet-tsan-S.json": "25871a7ca7a6cd8ecd9264fca4218acccf14450254022123524ef0297faa992b",
+    "bounded-packet-tsan-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build-base-debug.txt": "a4df89d5a64fdce05fd40ab79408cc4f54e9cea63fcea9c4011cefb10a528866",
+    "build-base-release.txt": "9063b09a1b363ce4f0e6edb7eea726fc3545da710d0efa4ef0d7c0ec2495141f",
+    "build-base-tsan.txt": "c9a80366c5cd2c9bf15315e54419c437d695add3f75402983262a74a57d245ad",
+    "build-packet-debug.txt": "532eef34ae18d96c8a2e7f39eabfd1c96c0160a267583bb3f7031cb5c4fedbea",
+    "build-packet-release.txt": "daff8a81993e766bd4bf64d9507b534cc5f0bce120b5c432926c93a4e198b1a8",
+    "build-packet-tsan.txt": "f8cae925261506f9769e0ae5151841a8a143183df97e575651847d94bc8e16b8",
+    "commit.txt": "5183778c11e475039aff656c72016a10de33b722e3fc6ca171150308b861d7b0",
+    "environment.txt": "2279882ee44d1e0fe474b3f0fba1648b8427102ea0bbe469246f67b188b19deb",
+    "runtime-inputs.json": "f0c7c36513c810957189aee1b56a60ed95022f1188d446435d0bf685fabcd77f",
+    "scope.txt": "da1fd3634a5be06fb3ed0e289f5291e064a88192ae93967ec2bff1884e10319e",
+    "source-guard-after.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "source-guard-before.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "study-patch-sha256.txt": "eff2a271c123ae5c110a869a1e87af6cdf960a80afee49c7570b8dafaff5f8bc",
+    "study-source-base.txt": "7df95db263a8ee649164cd1b9bc8e7b684b6c6c647f4ada3753b3eb94584c28e",
+    "study-source-packet.txt": "b808d6b7ff231b8ef12d897cf955c3e8b46d162f07524b01ea29aa572b78cbda",
+    "tree.txt": "b2b230f3312b52aa2152e27c893ef99ad4f36abbb9d1e102b3a77b0db975a2a2"
+  }
+}

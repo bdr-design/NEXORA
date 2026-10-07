@@ -44,3 +44,37 @@ run37559041669 FAILED، artifact11455852543، ZIP SHA256
 مجلد أب خارجrepo. التصحيح وضعها في.h-paired-study/current على عمق اثنين
 كما فيstudy الكاتب الناجح. Package/Sources الفعلية لم تتغير، ولم توجد
 نتيجةH paired أوDebug/Release compilation؛ المحاولة تبقىFAILED.
+
+## نتيجة H المصححة والمحدودات
+
+run37559558956 SUCCESS على0d647599/tree3feded77، artifact11456212088، ZIP
+SHA256`c4cb52886644e062f001f18459324a1afba53cf13b5873ba91c0a542fe99ce37`.
+تحقق مستقل منالمصدر/42inputs وguard/Debug/Release، والنسخة المؤقتة تعدل
+Main/paired فقط، وجميع ملفات مالك H والكاتب وWAL inputs مطابقة. Debug/Release4096
+متطابقان وظيفيًا؛ Release H1M ABBA له 984calls/1M events والتطابق الكامل
+للـtranscript/output/final/recovered digests. advance/service صفرcalls/bytes.
+
+| قياس H1M منالمصدر نفسه | الزوج1 | الزوج2 |
+|---|---:|---:|
+| save-active advance delta | +55.562461ms | -10.643850ms |
+| copy مقاس | 7.366301ms | 6.179518ms |
+| payload copy | 80.5MB | 80.5MB |
+| writer run | 247.259333ms | 186.691333ms |
+| service delta | 0.869902ms | 0.970835ms |
+| full-loop ratio التشخيصي | 1.023550913 | 1.000397430 |
+
+التفاوت قبل الحفظ أيضًا ظاهر في الأذرع. setup copy في ذراع control للزوج 1
+استغرق86.659ms مقابل24.878ms لذراع save، فيفسر إخفاءfull-loop لبعض advance
+delta. لا يُستنتج أنC نجحت منratio هذهالحلقة؛ لا سببية ثابتة من زوجين
+متفاوتين. الكاتب يتداخل معadvance؛ لا تُجمع الأزمنة. WAL/reschedule/setup
+معلنة خامًا، وليس إخراجها من مؤقتadvance إلغاءً لكلفتها.
+
+الكلفة المؤكدة بعد كل ذراع1M: **210772320B =210.77232B/asset**، للمالك
+وspare pool فقط. تتجاوزhard200B قبل بقية التطبيق؛ نجاحA لـlive105.40888B
+لم يتغير ولا يُعادتصنيفه. القراءة بعد المقاييس موقّتة منفصلة، وليستRSS
+أوpeak عملية التشخيص التي تحمل fixture/recovery إضافيين. ثبتت مشكلة pool
+المكتوب تقديرها سابقًا؛ لا تُغلق ذاكرة المنتج أو السلاسة من نجاح وظيفي.
+
+هذه النتيجة مصنفةdiagnosticThresholdMisses للذاكرة، مع بقاء workflow SUCCESS
+لتنفيذ الفحص فقط. actualRuntime لم يتغير. C5 التالي يستخدم إثبات71432ea4
+الكامل وA المختارة مسبقًا؛ لا قرار A بديل، لا C100 من هذا التشخيص.

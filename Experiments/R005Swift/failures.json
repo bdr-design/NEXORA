@@ -597,6 +597,19 @@
       },
       "copyOnlyTheoreticalRatio": 1.187459756374774,
       "correction": "Retain the candidate failure. No C100 on this source; inspect measured accessor/exclusivity costs and separately clone only mutable hot/cold pages. Any next source must pass bounded micro and fresh A/B/TSan/both-layout1M K before qualified C diagnostic. No device or full-memory acceptance."
+    },
+    {
+      "run": 37559558956,
+      "source": "0d647599e03a4a8206b2814b36853bb66ca6128c",
+      "artifact": 11456212088,
+      "artifactSHA256": "c4cb52886644e062f001f18459324a1afba53cf13b5873ba91c0a542fe99ce37",
+      "scope": "H1M post-profile main-world owned capacities including full spare image; diagnostic memory feasibility only, not a Stage A or C timing reclassification",
+      "status": "failure",
+      "observedOwnedBytes": 210772320,
+      "observedOwnedBytesPerAsset": 210.77232,
+      "hardResidentHotBudgetBytesPerAsset": 200,
+      "limitation": "owned capacities are not physical footprint; two H payload images alone201000000B already exceed200B/asset before other state",
+      "correction": "NOT_FIXED: replace full spare-image ownership before production acceptance; keep A live-image success, C OPEN and all thresholds unchanged"
     }
   ]
 }
