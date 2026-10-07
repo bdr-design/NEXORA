@@ -1,5 +1,8 @@
 #if EPOCH_PAGES
 import Foundation
+#if STAGE_C
+import ProbePlatform
+#endif
 
 // Experimental storage within the existing S/H owners. A live owner is never
 // Sendable. Only immutable value roots cross to the snapshot writer.
@@ -29,6 +32,14 @@ final class EpochBuffer<T: BitwiseCopyable & Sendable> {
     private(set) var epoch: UInt32 = 0
     private(set) var active = false
     private(set) var prepared = false
+#if STAGE_C
+    // Simulation-thread only; frozen value roots never retain this observer.
+    private var copyObserver: StageCState? = nil
+    func observeCopies(_ observer: StageCState) {
+        precondition(!active)
+        copyObserver = observer
+    }
+#endif
     let count: Int
     let pageShift: Int
     let pageCount: Int
@@ -88,10 +99,14 @@ final class EpochBuffer<T: BitwiseCopyable & Sendable> {
     }
     @inline(__always) func needsCopy(page: Int) -> Bool { active && pageEpoch[page] != epoch }
 
-    // No detached mutable array is returned. Internal setters call this even if
-    // a caller omitted the explicit pre-write telemetry hook.
+    // Every mutation enters here before borrowing mutable storage. Telemetry
+    // runs only on first copy, without a second per-mutation pre-write check.
     @inline(__always) @discardableResult func ensureWritable(page: Int) -> Int {
         guard active && pageEpoch[page] != epoch else { return 0 }
+#if STAGE_C
+        let observer = copyObserver
+        let copyStart: UInt64 = observer == nil ? 0 : nx_now()
+#endif
         let leaf = page >> 6, slot = page & 63
         if rootEpoch != epoch {
             for i in root.indices { spareRoot[i] = root[i] }
@@ -106,7 +121,11 @@ final class EpochBuffer<T: BitwiseCopyable & Sendable> {
         sparePages[page].replaceSubrange(0..<root[leaf][slot].count, with: root[leaf][slot])
         swap(&root[leaf][slot], &sparePages[page])
         pageEpoch[page] = epoch
-        return root[leaf][slot].count * MemoryLayout<T>.stride
+        let bytes = root[leaf][slot].count * MemoryLayout<T>.stride
+#if STAGE_C
+        if let observer { observer.recordEpochCopy(bytes: bytes, elapsedNS: nx_now() - copyStart) }
+#endif
+        return bytes
     }
 
     @inline(__always) func element(at index: Int) -> T {
@@ -143,6 +162,9 @@ final class EpochBuffer<T: BitwiseCopyable & Sendable> {
             for i in spareLeaves[leaf].indices { spareLeaves[leaf][i] = [] }
         }
         active = false
+#if STAGE_C
+        copyObserver = nil
+#endif
     }
 
     var ownedBytes: Int {

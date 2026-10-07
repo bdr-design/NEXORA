@@ -171,7 +171,7 @@ final class HybridTimingWheel {
     @inline(__always) private func insertNode(_ id: UInt32, into b: Int, cascading: Bool = false) {
         let i = Int(id)
         let tail = tails[b]
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
         stageCState?.willWriteNode(self, index: i)
 #endif
         writeNodeNext(i, none)
@@ -181,7 +181,7 @@ final class HybridTimingWheel {
             sorted[b] = true
             setOccupied(b, true)
         } else if mutation == .reverseCascade && cascading {
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
             stageCState?.willWriteNode(self, index: i)
 #endif
             writeNodeNext(i, heads[b])
@@ -189,7 +189,7 @@ final class HybridTimingWheel {
             sorted[b] = true
         } else {
             if nodes[Int(tail)].operation > nodes[i].operation { sorted[b] = false }
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
             stageCState?.willWriteNode(self, index: Int(tail))
 #endif
             writeNodeNext(Int(tail), id)
@@ -204,7 +204,7 @@ final class HybridTimingWheel {
         let id = free
         let i = Int(id)
         free = nodes[i].next
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
         stageCState?.willWriteNode(self, index: i)
 #endif
         writeNode(i, EventNode(due: event.due, operation: event.operation, asset: event.asset,
@@ -235,7 +235,7 @@ final class HybridTimingWheel {
         case 1:
             if pair == none {
                 if outTail != none {
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
                     stageCState?.willWriteNode(self, index: Int(outTail))
 #endif
                     writeNodeNext(Int(outTail), none)
@@ -289,7 +289,7 @@ final class HybridTimingWheel {
                 rightCount -= 1
             }
             if outTail == none { outHead = picked } else {
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
                 stageCState?.willWriteNode(self, index: Int(outTail))
 #endif
                 writeNodeNext(Int(outTail), picked)
@@ -327,7 +327,7 @@ final class HybridTimingWheel {
             if !sorted[leaf] { startSort(); return .work }
             if mutation == .swapTie && !fired && nodes[Int(id)].next != none {
                 let b = nodes[Int(id)].next
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
                 stageCState?.willWriteNode(self, index: Int(id))
                 stageCState?.willWriteNode(self, index: Int(b))
 #endif
@@ -374,7 +374,7 @@ final class HybridTimingWheel {
     func consume(_ id: UInt32) throws -> Event {
         guard leaf >= 0, heads[leaf] == id, nodes[Int(id)].live == 1 else { throw ProbeError.invariant("consume non-head") }
         let value = nodes[Int(id)].asEvent
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
         stageCState?.willWriteNode(self, index: Int(id))
 #endif
         heads[leaf] = nodes[Int(id)].next
@@ -401,6 +401,7 @@ final class HybridTimingWheel {
 #if STAGE_C
 #if EPOCH_PAGES
     func stageCPreparePages() { nodePages.preparePool() }
+    func stageCObserveCopies(_ state: StageCState) { nodePages.observeCopies(state) }
     func stageCCanFreezePages(_ epoch: UInt32) -> Bool { nodePages.canFreeze(epoch: epoch) }
     func stageCFreezePages(_ epoch: UInt32) -> FrozenEpochBuffer<EventNode> { nodePages.freeze(epoch: epoch) }
     @inline(__always) func stageCNeedsNodeCopy(_ index: Int) -> Bool { nodePages.needsCopy(page: index >> 9) }
@@ -528,9 +529,6 @@ final class HybridWorld {
     }
     @inline(__always) private func writeEntity(_ index: Int, _ value: UInt32) {
 #if EPOCH_PAGES
-#if STAGE_C
-        stageCState?.willWriteColdAsset(self, index: index)
-#endif
         coldPages.set(base: 0, width: 4, index: index, value: value)
 #else
         entity[index] = value
@@ -538,9 +536,6 @@ final class HybridWorld {
     }
     @inline(__always) private func writePolicy(_ index: Int, _ value: UInt32) {
 #if EPOCH_PAGES
-#if STAGE_C
-        stageCState?.willWriteColdAsset(self, index: index)
-#endif
         coldPages.set(base: 4, width: 4, index: index, value: value)
 #else
         policy[index] = value
@@ -548,9 +543,6 @@ final class HybridWorld {
     }
     @inline(__always) private func writeOrigin(_ index: Int, _ value: UInt32) {
 #if EPOCH_PAGES
-#if STAGE_C
-        stageCState?.willWriteColdAsset(self, index: index)
-#endif
         coldPages.set(base: 8, width: 4, index: index, value: value)
 #else
         origin[index] = value
@@ -558,9 +550,6 @@ final class HybridWorld {
     }
     @inline(__always) private func writeDeparture(_ index: Int, _ value: UInt64) {
 #if EPOCH_PAGES
-#if STAGE_C
-        stageCState?.willWriteColdAsset(self, index: index)
-#endif
         coldPages.set(base: 12, width: 8, index: index, value: value)
 #else
         departure[index] = value
@@ -620,7 +609,7 @@ final class HybridWorld {
     func schedule(asset i: Int, due: UInt64, operation: UInt64, amount: Int64, kind: UInt8 = 0) throws {
         guard i >= 0 && i < count, hot[i].active == 0, due >= now, amount > 0, kind <= 2,
               operation > hot[i].accruedOperation else { throw ProbeError.invalid("asset schedule") }
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
         stageCState?.willWriteAsset(self, index: i)
 #endif
         _ = try wheel.schedule(Event(due: due, operation: operation, asset: UInt32(i),
@@ -637,7 +626,7 @@ final class HybridWorld {
 
     func invalidateGeneration(_ i: Int) throws {
         guard i >= 0 && i < count, hot[i].generation < UInt32.max else { throw ProbeError.invalid("generation") }
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
         stageCState?.willWriteAsset(self, index: i)
 #endif
         writeHotGeneration(i, hot[i].generation + 1)
@@ -712,7 +701,7 @@ final class HybridWorld {
                 if c.partialValue < 0 {
                     return SliceResult(events: emitted, units: work, reached: now, stop: .blocked)
                 }
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
                 stageCState?.willWriteAsset(self, index: i)
                 stageCState?.willWriteGroup(self, index: g)
 #endif
@@ -740,6 +729,10 @@ final class HybridWorld {
 #if STAGE_C
 #if EPOCH_PAGES
     func stageCPreparePages() { hotPages.preparePool(); coldPages.buffer.preparePool(); groupPages.preparePool(); wheel.stageCPreparePages() }
+    func stageCObserveCopies(_ state: StageCState) {
+        hotPages.observeCopies(state); coldPages.buffer.observeCopies(state)
+        groupPages.observeCopies(state); wheel.stageCObserveCopies(state)
+    }
     func stageCCanFreezePages(_ epoch: UInt32) -> Bool {
         hotPages.canFreeze(epoch: epoch) && coldPages.buffer.canFreeze(epoch: epoch) &&
         groupPages.canFreeze(epoch: epoch) && wheel.stageCCanFreezePages(epoch)

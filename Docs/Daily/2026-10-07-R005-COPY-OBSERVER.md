@@ -78,3 +78,24 @@ bound B and Debug/Release/TSan×S/H1M K1–K10, then one real five-save diagnost
 Prospectively select that fresh A only; never choose a favorable earlier run.
 No C100 from a failed micro or mere sampled/paired result, no main merge or
 closure result files, Stage2–4/app/IPA/device remain NOTIMPLEMENTED.
+
+## Implementation checkpoint — Apple pending
+
+After estimate was published live6de30940/treee4b24c11, exactly five runtime
+files changed: EpochPages, Core, Hybrid, Stage005CSave, Stage005CPagedChecks.
+Buffer observer installed by successful begin, cleared after completion;
+first-copy callback preserves K2 before the actual setter mutation. Legacy
+STAGE_C hooks unchanged after conditional compilation. New S/H held257 test
+uses a second installed inactive state, rejects its begin during active save,
+and checks actual owner metrics, frozen snapshot and exact WAL recovery.
+
+Local guard/selftest,23existing gate tests, YAML/embedded shell/Python syntax
+and exact changed-input set PASS. No Swift/Xcode locally: compilation, zero-
+allocation and Debug/Release/TSan functional proof remain pending on Apple.
+Bounded workflow compares allowed corrected36675c81 against the new source
+in H100k ABBA, with identical8050000 physical hot/node/group copy bytes. Its
+old/new manifest check requires exactly these five files. Source/micro pins
+reset0/PENDING; no previous A/B/K proof accepted for this source, C100 blocked.
+Copy timers now bracket actual root/leaf/payload clone inside ensureWritable;
+prior prehook intervals are retained as measured, not retrospectively changed.
+Full spare-image memory remains NOT_FIXED, no product/IPA/device acceptance.

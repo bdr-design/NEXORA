@@ -1,5 +1,14 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Copy-observer bounded successor IMPLEMENTED after estimate6de30940: exactly
+five runtime files, same owners/COW/v2/WAL/clock/cadence/writer. Successful
+begin installs actual state observer; only first clone records time/bytes/K2,
+redundant EPOCH prehooks removed. S/H257 held multistate misuse test added.
+Local guard/23existing gates/YAML/shell/Python/exact5input check PASS; Swift
+Debug/Release/TSan and old36675/new H100k ABBA pending Apple. Fresh A/B/K and
+real C5 required if credible; C proof pins0/PENDING, no C100/main/results.
+All failed C metrics kept, H full-pool memory210.77B/asset NOT_FIXED.
+
 Qualified successor37560851575 H1M/5 FAILED eligibility (collection SUCCESS):
 overhead1.4083114549, advancep991176625ns, beginp99211167ns; zero allocations/
 pairing/queue passed. Artifact11457385059 ZIP SHA256

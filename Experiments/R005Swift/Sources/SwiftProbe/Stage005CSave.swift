@@ -474,6 +474,7 @@ final class StageCState {
         barrierNS = 0
         lastResult = nil
 #if EPOCH_PAGES
+        world.stageCObserveCopies(self)
         let frozen = world.stageCFreezePages(epoch)
         nx_kill_point("c.k1.after_begin")
         preparedSink.publish(frozen)
@@ -496,6 +497,7 @@ final class StageCState {
         epoch=preparedSink.epoch;sink=preparedSink;capturing=true;serviceCursor=0
         barrierEmits=0;barrierBytes=0;barrierNS=0;lastResult=nil
 #if EPOCH_PAGES
+        world.stageCObserveCopies(self)
         let frozen = world.stageCFreezePages(epoch)
         nx_kill_point("c.k1.after_begin")
         preparedSink.publish(frozen)
@@ -505,15 +507,16 @@ final class StageCState {
 #endif
     }
 
-    @inline(__always) func willWriteAsset(_ world: SwiftWorld, index: Int) {
 #if EPOCH_PAGES
-        guard capturing && world.stageCNeedsAssetCopy(index) else { return }
-        let start = nx_now(), bytes = world.stageCCloneAsset(index)
-        if bytes > 0 {
-            barrierNS += nx_now() - start; barrierBytes += bytes; barrierEmits += 1
-            if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
-        }
+    // Called by the first-copy branch on the simulation owner only. The frozen
+    // writer has neither this state nor a mutable page/observer reference.
+    @inline(__always) func recordEpochCopy(bytes: Int, elapsedNS: UInt64) {
+        precondition(capturing && inFlight && bytes > 0)
+        barrierNS += elapsedNS; barrierBytes += bytes; barrierEmits += 1
+        if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
+    }
 #else
+    @inline(__always) func willWriteAsset(_ world: SwiftWorld, index: Int) {
         guard capturing else { return }
         let chunk = index >> 8
         if assetSaved[chunk] != epoch, let sink {
@@ -526,18 +529,9 @@ final class StageCState {
             barrierEmits += 1
             if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
         }
-#endif
     }
 
     @inline(__always) func willWriteNode(_ wheel: TimingWheel, index: Int) {
-#if EPOCH_PAGES
-        guard capturing && wheel.stageCNeedsNodeCopy(index) else { return }
-        let start = nx_now(), bytes = wheel.stageCClonePage(index)
-        if bytes > 0 {
-            barrierNS += nx_now() - start; barrierBytes += bytes; barrierEmits += 1
-            if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
-        }
-#else
         guard capturing else { return }
         let chunk = index >> 9
         if nodeSaved[chunk] != epoch, let sink {
@@ -550,18 +544,9 @@ final class StageCState {
             barrierEmits += 1
             if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
         }
-#endif
     }
 
     @inline(__always) func willWriteGroup(_ world: SwiftWorld, index: Int) {
-#if EPOCH_PAGES
-        guard capturing && world.stageCNeedsGroupCopy(index) else { return }
-        let start = nx_now(), bytes = world.stageCCloneGroup(index)
-        if bytes > 0 {
-            barrierNS += nx_now() - start; barrierBytes += bytes; barrierEmits += 1
-            if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
-        }
-#else
         guard capturing else { return }
         let chunk = index >> 11
         if groupSaved[chunk] != epoch, let sink {
@@ -574,17 +559,8 @@ final class StageCState {
             barrierEmits += 1
             if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
         }
-#endif
     }
     @inline(__always) func willWriteAsset(_ world: HybridWorld, index: Int) {
-#if EPOCH_PAGES
-        guard capturing && world.stageCNeedsAssetCopy(index) else { return }
-        let start = nx_now(), bytes = world.stageCCloneAsset(index)
-        if bytes > 0 {
-            barrierNS += nx_now() - start; barrierBytes += bytes; barrierEmits += 1
-            if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
-        }
-#else
         guard capturing else { return }
         let chunk=index>>8
         if assetSaved[chunk] != epoch, let sink {
@@ -593,27 +569,8 @@ final class StageCState {
             assetSaved[chunk]=epoch;barrierEmits += 1
             if barrierEmits==1 { nx_kill_point("c.k2.after_first_barrier") }
         }
-#endif
     }
-#if EPOCH_PAGES
-    @inline(__always) func willWriteColdAsset(_ world: HybridWorld, index: Int) {
-        guard capturing && world.stageCNeedsColdAssetCopy(index) else { return }
-        let start = nx_now(), bytes = world.stageCCloneColdAsset(index)
-        if bytes > 0 {
-            barrierNS += nx_now() - start; barrierBytes += bytes; barrierEmits += 1
-            if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
-        }
-    }
-#endif
     @inline(__always) func willWriteNode(_ wheel: HybridTimingWheel, index: Int) {
-#if EPOCH_PAGES
-        guard capturing && wheel.stageCNeedsNodeCopy(index) else { return }
-        let start = nx_now(), bytes = wheel.stageCClonePage(index)
-        if bytes > 0 {
-            barrierNS += nx_now() - start; barrierBytes += bytes; barrierEmits += 1
-            if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
-        }
-#else
         guard capturing else { return }
         let chunk=index>>9
         if nodeSaved[chunk] != epoch, let sink {
@@ -622,17 +579,8 @@ final class StageCState {
             nodeSaved[chunk]=epoch;barrierEmits += 1
             if barrierEmits==1 { nx_kill_point("c.k2.after_first_barrier") }
         }
-#endif
     }
     @inline(__always) func willWriteGroup(_ world: HybridWorld, index: Int) {
-#if EPOCH_PAGES
-        guard capturing && world.stageCNeedsGroupCopy(index) else { return }
-        let start = nx_now(), bytes = world.stageCCloneGroup(index)
-        if bytes > 0 {
-            barrierNS += nx_now() - start; barrierBytes += bytes; barrierEmits += 1
-            if barrierEmits == 1 { nx_kill_point("c.k2.after_first_barrier") }
-        }
-#else
         guard capturing else { return }
         let chunk=index>>11
         if groupSaved[chunk] != epoch, let sink {
@@ -641,8 +589,9 @@ final class StageCState {
             groupSaved[chunk]=epoch;barrierEmits += 1
             if barrierEmits==1 { nx_kill_point("c.k2.after_first_barrier") }
         }
-#endif
     }
+
+#endif
 
     private func emitCanonicalIfUnsaved(_ world: SwiftWorld, canonical: Int) {
         guard let sink else { return }

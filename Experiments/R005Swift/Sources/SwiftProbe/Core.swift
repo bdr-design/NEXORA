@@ -167,7 +167,7 @@ final class TimingWheel {
     }
     @inline(__always) private func insertNode(_ id: UInt32, into b: Int, cascading: Bool = false) {
         let i = Int(id), tail = tails[b]
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
         stageCState?.willWriteNode(self, index: i)
 #endif
         writeNext(i, none)
@@ -175,13 +175,13 @@ final class TimingWheel {
             heads[b] = id; tails[b] = id; sorted[b] = true; setOccupied(b, true)
         } else if mutation == .reverseCascade && cascading {
             // Real mutation: a head-insertion cascade incorrectly retains its sorted certificate.
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
             stageCState?.willWriteNode(self, index: i)
 #endif
             writeNext(i, heads[b]); heads[b] = id; sorted[b] = true
         } else {
             if operation[Int(tail)] > operation[i] { sorted[b] = false }
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
             stageCState?.willWriteNode(self, index: Int(tail))
 #endif
             writeNext(Int(tail), id); tails[b] = id
@@ -192,7 +192,7 @@ final class TimingWheel {
         guard event.due >= cursor, event.operation > 0, free != none else { throw ProbeError.invalid("schedule") }
         guard sortPhase == 0 && leaf == -1 && cascade == -1 else { throw ProbeError.invalid("schedule during wheel continuation") }
         let id = free, i = Int(id); free = next[i]
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
         stageCState?.willWriteNode(self, index: i)
 #endif
         writeDue(i, event.due); writeOperation(i, event.operation); writeAsset(i, event.asset)
@@ -217,7 +217,7 @@ final class TimingWheel {
         case 1:
             if pair == none {
                 if outTail != none {
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
                     stageCState?.willWriteNode(self, index: Int(outTail))
 #endif
                     writeNext(Int(outTail), none)
@@ -240,7 +240,7 @@ final class TimingWheel {
             if chooseLeft { picked = left; left = next[Int(left)]; leftCount -= 1 }
             else { picked = right; right = next[Int(right)]; rightCount -= 1 }
             if outTail == none { outHead = picked } else {
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
                 stageCState?.willWriteNode(self, index: Int(outTail))
 #endif
                 writeNext(Int(outTail), picked)
@@ -266,7 +266,7 @@ final class TimingWheel {
             if !sorted[leaf] { startSort(); return .work }
             if mutation == .swapTie && !fired && next[Int(id)] != none {
                 let b = next[Int(id)]
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
                 stageCState?.willWriteNode(self, index: Int(id))
                 stageCState?.willWriteNode(self, index: Int(b))
 #endif
@@ -302,7 +302,7 @@ final class TimingWheel {
     func consume(_ id: UInt32) throws -> Event {
         guard leaf >= 0, heads[leaf] == id, live[Int(id)] == 1 else { throw ProbeError.invariant("consume non-head") }
         let value = event(id)
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
         stageCState?.willWriteNode(self, index: Int(id))
 #endif
         heads[leaf] = next[Int(id)]
@@ -314,6 +314,7 @@ final class TimingWheel {
 #if STAGE_C
 #if EPOCH_PAGES
     func stageCPreparePages() { nodePages.buffer.preparePool() }
+    func stageCObserveCopies(_ state: StageCState) { nodePages.buffer.observeCopies(state) }
     func stageCCanFreezePages(_ epoch: UInt32) -> Bool { nodePages.buffer.canFreeze(epoch: epoch) }
     func stageCFreezePages(_ epoch: UInt32) -> FrozenEpochBuffer<UInt64> { nodePages.buffer.freeze(epoch: epoch) }
     @inline(__always) func stageCNeedsNodeCopy(_ index: Int) -> Bool { nodePages.buffer.needsCopy(page: index >> 9) }
@@ -578,7 +579,7 @@ final class SwiftWorld {
     func schedule(asset i: Int, due: UInt64, operation: UInt64, amount: Int64, kind: UInt8 = 0) throws {
         guard i >= 0 && i < count, active[i] == 0, due >= now, amount > 0, kind <= 2,
               operation > accruedOperations[i] else { throw ProbeError.invalid("asset schedule") }
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
         stageCState?.willWriteAsset(self, index: i)
 #endif
         _ = try wheel.schedule(Event(due: due, operation: operation, asset: UInt32(i), generation: generations[i], kind: kind))
@@ -586,7 +587,7 @@ final class SwiftWorld {
     }
     func invalidateGeneration(_ i: Int) throws {
         guard i >= 0 && i < count, generations[i] < UInt32.max else { throw ProbeError.invalid("generation") }
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
         stageCState?.willWriteAsset(self, index: i)
 #endif
         writeGenerations(i, generations[i] + 1)
@@ -660,7 +661,7 @@ final class SwiftWorld {
                 guard !newRevenue.overflow, !newDue.overflow, !newGroup.overflow, !newCash.overflow else { throw ProbeError.invalid("balance overflow") }
                 if newCash.partialValue < 0 { return SliceResult(events: emitted, units: work, reached: now, stop: .blocked) }
                 // All recoverable checks precede the first write. Failed event stays queued.
-#if STAGE_C
+#if STAGE_C && !EPOCH_PAGES
                 stageCState?.willWriteAsset(self, index: i)
                 stageCState?.willWriteGroup(self, index: g)
 #endif
@@ -678,6 +679,9 @@ final class SwiftWorld {
 #if STAGE_C
 #if EPOCH_PAGES
     func stageCPreparePages() { assetPages.buffer.preparePool(); groupPages.preparePool(); wheel.stageCPreparePages() }
+    func stageCObserveCopies(_ state: StageCState) {
+        assetPages.buffer.observeCopies(state); groupPages.observeCopies(state); wheel.stageCObserveCopies(state)
+    }
     func stageCCanFreezePages(_ epoch: UInt32) -> Bool {
         assetPages.buffer.canFreeze(epoch: epoch) && groupPages.canFreeze(epoch: epoch) && wheel.stageCCanFreezePages(epoch)
     }

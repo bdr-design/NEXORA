@@ -276,12 +276,61 @@ private func pagedColdEpoch(_ directory: String) throws {
                 "cold mutation recovery lost live reschedule")
 }
 
+// A second inactive state may be installed, but only the state that begins
+// owns copy observations. Rejected begin must not replace that observer.
+private func pagedObserverOwner<W: PagedCheckWorld>(_ directory: String, make: () throws -> W) throws {
+    try FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: false)
+    let world = try make(), mirror = try make()
+    try world.seedFixture(); try mirror.seedFixture()
+    let owner = world.checkState(), inactive = world.checkState()
+    world.checkInstall(inactive)
+    let initialWAL = try StageCWAL(directory: directory, epoch: 1)
+    try world.checkBegin(owner, owner.prepareSink(directory: directory, epoch: 1))
+    _ = try world.checkCommit(owner); try initialWAL.close()
+    let frozenDigest = world.checkDigest()
+    let wal = try StageCWAL(directory: directory, epoch: 2)
+    let held = owner.prepareSink(directory: directory, epoch: 2, heldForKillFixture: true)
+    defer { held.releaseKillFixtureWriter() }
+    try world.checkBegin(owner, held)
+    let rejectedSink = inactive.prepareSink(directory: directory, epoch: 3)
+    var rejected = false
+    do { try world.checkBegin(inactive, rejectedSink) } catch { rejected = true }
+    try require(rejected && !inactive.inFlight && inactive.epoch == 0, "inactive state took active epoch")
+    try cancelledWriter(rejectedSink)
+    while true {
+        let actual = try world.advance(to: 600, budget: 1024)
+        let expected = try mirror.advance(to: 600, budget: 1024)
+        try require(actual.events == expected.events && actual.units == expected.units &&
+                    actual.reached == expected.reached && actual.stop == expected.stop, "observer owner transcript")
+        try wal.appendAdvance(target: 600, budget: 1024, units: actual.units, events: actual.events)
+        if actual.stop == .target { break }
+        try require(actual.stop != .blocked, "observer owner blocked")
+    }
+    try require(world.checkDigest() == mirror.checkDigest() && owner.barrierEmits > 0 && owner.barrierBytes > 0 &&
+                inactive.barrierEmits == 0 && inactive.barrierBytes == 0, "copy observer reported to wrong state")
+    let copied = owner.barrierBytes
+    held.releaseKillFixtureWriter(); _ = try world.checkCommit(owner); try wal.close()
+    try require(try W.checkSnapshot(directory + "/snapshot-2.bin").checkDigest() == frozenDigest,
+                "observer ownership changed frozen state")
+    try require(try W.checkRecover(directory).checkDigest() == world.checkDigest(), "observer ownership WAL recovery")
+    try world.checkReschedule(now: 600, operation: UInt64(world.count * 2 + 1))
+    try require(owner.barrierBytes == copied && inactive.barrierBytes == 0 && !owner.capturing,
+                "completed copy observer remained active")
+}
+
 func stageCPagedLifecycle(_ directory: String, variant: String) throws -> [String: Any] {
-    if variant == "S" { return try pagedLifecycle(directory) { try SwiftWorld(count: 257) } }
+    if variant == "S" {
+        var result = try pagedLifecycle(directory) { try SwiftWorld(count: 257) }
+        try pagedObserverOwner(directory + "/observer-owner") { try SwiftWorld(count: 257) }
+        result["copyObserverOwnerExact"] = true
+        return result
+    }
     if variant == "H" {
         var result = try pagedLifecycle(directory) { try HybridWorld(count: 257) }
         try pagedColdEpoch(directory + "/cold-epoch")
         result["coldMutationDuringFrozenEpochExact"] = true
+        try pagedObserverOwner(directory + "/observer-owner") { try HybridWorld(count: 257) }
+        result["copyObserverOwnerExact"] = true
         return result
     }
     throw ProbeError.invalid("paged lifecycle variant")

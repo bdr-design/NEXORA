@@ -68,7 +68,7 @@ jobs:
       - name: Read only the permitted previous paged source for paired diagnosis
         uses: actions/checkout@v4
         with:
-          ref: d415c96c3b05b721960b3679c02f05a2aa3024da
+          ref: 36675c8163191b58b6d39fe64654ee0327372165
           path: .previous-paged-source
           persist-credentials: false
           fetch-depth: 1
@@ -76,18 +76,18 @@ jobs:
         run: |
           set -euo pipefail
           trap 'rm -rf .previous-paged-source' EXIT
-          test "$(git -C .previous-paged-source rev-parse HEAD)" = d415c96c3b05b721960b3679c02f05a2aa3024da
+          test "$(git -C .previous-paged-source rev-parse HEAD)" = 36675c8163191b58b6d39fe64654ee0327372165
           python3 -B .previous-paged-source/Experiments/R005Swift/candidate_proof_inputs.py write paged-results/previous-runtime-inputs.json
           python3 -B Experiments/R005Swift/candidate_proof_inputs.py write paged-results/runtime-inputs.json
           python3 -B - <<'PYCODE'
           import hashlib,json,pathlib
-          assert hashlib.sha256(pathlib.Path('paged-results/previous-runtime-inputs.json').read_bytes()).hexdigest()=='71ad34a9bc0a69b41c48a414900ae9fa9e46cdbd257e114d86d6b7dd317edd52'
+          assert hashlib.sha256(pathlib.Path('paged-results/previous-runtime-inputs.json').read_bytes()).hexdigest()=='f0c7c36513c810957189aee1b56a60ed95022f1188d446435d0bf685fabcd77f'
           old=json.loads(pathlib.Path('paged-results/previous-runtime-inputs.json').read_text())
           new=json.loads(pathlib.Path('paged-results/runtime-inputs.json').read_text())
           assert old['sourceFlags']==new['sourceFlags'] and set(old['paths'])==set(new['paths'])
           changed={p for p in old['paths'] if old['paths'][p]!=new['paths'][p]}
           expected={'Experiments/R005Swift/Sources/SwiftProbe/'+f for f in
-              ('EpochPages.swift','Hybrid.swift','Stage005CSave.swift','Stage005CPagedChecks.swift')}
+              ('EpochPages.swift','Core.swift','Hybrid.swift','Stage005CSave.swift','Stage005CPagedChecks.swift')}
           assert changed==expected,(changed,expected)
           PYCODE
           (cd .previous-paged-source/Experiments/R005Swift && swift build --scratch-path .build-previous -c release -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror) 2>&1 | tee paged-results/build-previous-paged-release.txt
@@ -108,7 +108,7 @@ jobs:
               row=json.loads(result.stdout);validate(row,variant='H',count=100000,policy='zero',candidate=True)
               if reference is None:reference=comparable(row)
               else:assert comparable(row)==reference
-              expected_bytes=10050000 if arm=='old' else 8050000
+              expected_bytes=8050000
               assert all(epoch['barrierBytes']==expected_bytes for epoch in row['epochs'])
               rows.append({'arm':arm,'file':f.name,'sha256':hashlib.sha256(f.read_bytes()).hexdigest(),
                   'advanceNS':[e['advanceNS'] for e in row['epochs']],
