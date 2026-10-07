@@ -1,5 +1,15 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Fresh37563538884 base independently verified artifact11458012733 SHA256
+5d5d14d897ad326d65ee9e3b1ac1ed9d7eb64078e2fd79d276144f92b5a74c38:
+A180samples solely selectsH ratio0.3827900323, B60/quota320/1472reject/832MiB,
+44bounded/132epochs/32canonical/6lifecycle PASS. All Debug/Release1M parts
+SUCCESS, TSan S/H stillpending. H paired37564011879 verified artifact11458571204
+SHA2564bfa4958d28738a04d16804f65b5e28eb6f269c783c5a31dc82ea3d6490b3f13.
+Stamp37564899240 FAILED beforeSwift (empty Bash array); raw SHA19c9410e
+verified/failurekept, shellonlyfix prepared, actual42inputsunchanged.
+No C100/sourceproofpins/device/main; full-pool memory NOT_FIXED.
+
 Isolated page-stamp study PREPARED/NOT_RUN on current42 actual inputs fixed:
 let page-stamp boxes/relaxed Atomic only in disposable source, no economic/
 writer/WAL/COW change, all checks enabled. Pre-execution allocation estimate

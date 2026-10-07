@@ -1,0 +1,265 @@
+{
+  "schemaVersion": 1,
+  "status": "pass",
+  "acceptance": false,
+  "scope": "independently verified A/B/bounded base; full 1M K/WAL matrix still pending; C100 NOT_RUN",
+  "source": "22e5428d8dd601e368d4d150aed3a2f788ce60c1",
+  "tree": "e5fbde7ef6bdef48b24af7256f16050a82758478",
+  "run": 37563538884,
+  "artifact": 11458012733,
+  "zipSHA256": "5d5d14d897ad326d65ee9e3b1ac1ed9d7eb64078e2fd79d276144f92b5a74c38",
+  "runtimeInputs": 42,
+  "A": [
+    {
+      "variant": "S",
+      "assets": 100000,
+      "bytesPerAsset": {
+        "owned": 98.26336,
+        "footprint": 0.0
+      },
+      "nsPerEvent": {
+        "median": 535.85085,
+        "min": 416.37133,
+        "max": 838.28253,
+        "runs": 30
+      }
+    },
+    {
+      "variant": "S",
+      "assets": 1000000,
+      "bytesPerAsset": {
+        "owned": 97.485536,
+        "footprint": 49.98768
+      },
+      "nsPerEvent": {
+        "median": 798.2313415,
+        "min": 495.825822,
+        "max": 1306.788472,
+        "runs": 30
+      }
+    },
+    {
+      "variant": "S",
+      "assets": 2000000,
+      "bytesPerAsset": {
+        "owned": 97.442288,
+        "footprint": 70.42259200000001
+      },
+      "nsPerEvent": {
+        "median": 1183.2354452499999,
+        "min": 746.590376,
+        "max": 1619.1598735,
+        "runs": 30
+      }
+    },
+    {
+      "variant": "H",
+      "assets": 100000,
+      "bytesPerAsset": {
+        "owned": 106.19328,
+        "footprint": 0.0
+      },
+      "nsPerEvent": {
+        "median": 169.91215,
+        "min": 151.90659,
+        "max": 428.5783,
+        "runs": 30
+      }
+    },
+    {
+      "variant": "H",
+      "assets": 1000000,
+      "bytesPerAsset": {
+        "owned": 105.40888,
+        "footprint": 63.684672000000006
+      },
+      "nsPerEvent": {
+        "median": 305.555001,
+        "min": 246.616557,
+        "max": 401.769897,
+        "runs": 30
+      }
+    },
+    {
+      "variant": "H",
+      "assets": 2000000,
+      "bytesPerAsset": {
+        "owned": 105.365392,
+        "footprint": 79.962208
+      },
+      "nsPerEvent": {
+        "median": 365.1571335,
+        "min": 286.1603795,
+        "max": 480.479633,
+        "runs": 30
+      }
+    }
+  ],
+  "sourceDecisionA": {
+    "chosen": "H",
+    "ratioHtoS1M": 0.3827900323054404,
+    "rule": "H only if H median ns/event <= 0.75*S at 1M, H owned <=128 B/asset, and all health gates pass"
+  },
+  "ADecisionForC": "prospectively preselected sole A in fresh37563538884 on successor22e5428d",
+  "BRecords": 60,
+  "BRecoveryModes": [
+    "debug",
+    "release",
+    "tsan"
+  ],
+  "BQuota": {
+    "status": "pass",
+    "quotaMiB": {
+      "G16_W7": 320,
+      "G1_W7": 1472,
+      "G1_W3": 832
+    },
+    "snapshotBytesInput": 100801772,
+    "selectedLayout": "H",
+    "snapshotScope": "fresh 1M fixture on this source; not a C performance result",
+    "G16_W7Accepted": true,
+    "G1_W7Rejected": true,
+    "G1_W3Accepted": true
+  },
+  "boundedCases": 44,
+  "boundedEpochs": 132,
+  "canonicalComparisons": 32,
+  "lifecycleCases": 6,
+  "evidenceSHA256": {
+    "AllocationObserver.dylib": "bc4eabdffff9ab48d54996f5fc25bae6ea03d30051adf5cf3ebbde038bc53ef4",
+    "B-QUOTA.json": "824eb14ec819e5c3b9bde4bf63a4d8d9fc1fb76bea87707a57ba584bc6de0c75",
+    "B-RECOVERY-debug.json": "455e1987983c788c03f02ff50abdfe16acd648dc9cb95cd955e61d9301388ce5",
+    "B-RECOVERY-release.json": "455e1987983c788c03f02ff50abdfe16acd648dc9cb95cd955e61d9301388ce5",
+    "B-RECOVERY-tsan.json": "455e1987983c788c03f02ff50abdfe16acd648dc9cb95cd955e61d9301388ce5",
+    "SNAPSHOT-1M-CHOSEN.json": "525ac05350be3011af68d6699abdf371e9c8ee8d95c918624e5417c57460efdf",
+    "STAGE005-A.json": "921aadd596b48a8e4ba11f88c4f2236b61ce7080898621a896660419fc24c994",
+    "STAGE005-B.json": "52fe08136f48e969ab457b356c7917f1a90345d64845ca42d0e0b1e1849e9c6c",
+    "a-run.txt": "f1ebd0a432114078246a1a2badf081d99b35547916240cdf274af11791cb4efd",
+    "b-recovery-debug.txt": "5cc3ca31e60f8b67d2ce2d27221560fb3a5f70463b3c38adc71bf95a85d9bd30",
+    "b-recovery-release.txt": "5cc3ca31e60f8b67d2ce2d27221560fb3a5f70463b3c38adc71bf95a85d9bd30",
+    "b-recovery-tsan.txt": "5cc3ca31e60f8b67d2ce2d27221560fb3a5f70463b3c38adc71bf95a85d9bd30",
+    "b-run.txt": "86062046e14e48dd38f1007fd09d461543b2bf5a15b2ef35f31ad29c8488955d",
+    "bounded-matrix/PAGED-CANDIDATE.json": "07da664097a921bb54b20d39befd2a7b745bdce084a98040558d3fb4ca837085",
+    "bounded-matrix/baseline-release-H-1.json": "581b107ae5c1c1520320e912535584d93d165dde1e56d66a755f3a0ed68a1481",
+    "bounded-matrix/baseline-release-H-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/baseline-release-H-100000.json": "c862e2b59fcf91565328614c7ab7c059fe325b9f4210099a87077740fc2bff3f",
+    "bounded-matrix/baseline-release-H-100000.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/baseline-release-H-257.json": "5290ab344aed53d9ddbedf54b366390e0a284b6d5be69e0e0a68cc2ba3c3533a",
+    "bounded-matrix/baseline-release-H-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/baseline-release-H-3.json": "a59c049ccd2d3ef27d0bdee3666712e48f2d15c6be07ae91df08f07f2b091fac",
+    "bounded-matrix/baseline-release-H-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/baseline-release-H-4096.json": "81333ed4e7195372997a419a6605ddc8c42c13acbee9304c317b00c4c8a1df8e",
+    "bounded-matrix/baseline-release-H-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/baseline-release-H-513.json": "c84c108cb430de20f0a619fd1241ce57c03d807d351d07616dffcf098571169e",
+    "bounded-matrix/baseline-release-H-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/baseline-release-S-1.json": "ea051b2189be0e3089a91a8ccfd7b7a1a89edf2dc04ef431351185f090ebb3bf",
+    "bounded-matrix/baseline-release-S-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/baseline-release-S-100000.json": "a2debfceb5129b283f65d01b069f693abce5ab47d7c97926b3d25f811b613215",
+    "bounded-matrix/baseline-release-S-100000.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/baseline-release-S-257.json": "aaa6f68609ee7356f075df8678f119ddf232af5b0571cb311c76b9bf3a8b8526",
+    "bounded-matrix/baseline-release-S-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/baseline-release-S-3.json": "b74844157d5b91b25ffc3a8e24cf0d352827b95b6dfc14dd246c24b17f674c7d",
+    "bounded-matrix/baseline-release-S-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/baseline-release-S-4096.json": "0ffdf27d43e9f1a9b2b1038f540ff0fa4584b8a60ec840cf6f63562989cd58ce",
+    "bounded-matrix/baseline-release-S-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/baseline-release-S-513.json": "7bf769956ebec644b6e847c663657b85b4146c64eceaa7846fec85da970a542d",
+    "bounded-matrix/baseline-release-S-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-debug-H-1.json": "c2faf4b04d307873162ef486b2abc354446d3d346c911079abac9ff31e140a64",
+    "bounded-matrix/candidate-debug-H-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-debug-H-257.json": "2624bdc27676e9a89d15b58ccc306c4aacfe0bfcfa427ca914cc5523518a5479",
+    "bounded-matrix/candidate-debug-H-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-debug-H-3.json": "ee3b5bf79256acb7b7a81723ea4d9b3fe9e74d62177b76a2c787bbdcba66646e",
+    "bounded-matrix/candidate-debug-H-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-debug-H-4096.json": "32c3173de4a9aa9a41022d7ab23e5a2c3d1e59fa158d6857e9fa766f33ffc2eb",
+    "bounded-matrix/candidate-debug-H-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-debug-H-513.json": "88c70059402f61664fbc4e93a867bc9fab109d03a3072b97d9bebb64db5d01fd",
+    "bounded-matrix/candidate-debug-H-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-debug-S-1.json": "78e142267b038ed237588253c85f64e5065633f8d96ceaae4fa440b11df10698",
+    "bounded-matrix/candidate-debug-S-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-debug-S-257.json": "2b104969eb92bb71639c60ba47a4d7eab94367e3e72689a25229a3362d91dc58",
+    "bounded-matrix/candidate-debug-S-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-debug-S-3.json": "8f32c1909979af968016b717d1f54d594bfc25d297950eb0079d634c26b7ac80",
+    "bounded-matrix/candidate-debug-S-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-debug-S-4096.json": "cbf2555efc80a96eb38cf5dc986d3863d80220e7063e06514fba8a7afdc6ca81",
+    "bounded-matrix/candidate-debug-S-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-debug-S-513.json": "9ff4fc87d03f6879b01673b0abe4ca8e7e45aac1adeefde69df3559f934ef310",
+    "bounded-matrix/candidate-debug-S-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-release-H-1.json": "332b7f3e697a71da4109786ec6774d9d4500bc46058e06e94de459350976c2ce",
+    "bounded-matrix/candidate-release-H-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-release-H-100000.json": "3e89f8663f91193f92dfd27e62596a4c288b3f3ddef5b3471952722d0051416c",
+    "bounded-matrix/candidate-release-H-100000.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-release-H-257.json": "e0b8eb2d6be38696e4c2eed4631b2b94aee4ab9d5628bdf013e7da3b7f5142e0",
+    "bounded-matrix/candidate-release-H-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-release-H-3.json": "294f7e876935cd347aa8f4f80eec9ab94c727bb801e740b0a1d291a9395d392e",
+    "bounded-matrix/candidate-release-H-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-release-H-4096.json": "46684ae9a0d9e63c55150d0f35e8df0b43aa504dbc53b1fbde095fa30c7453f9",
+    "bounded-matrix/candidate-release-H-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-release-H-513.json": "8fa243466266168e36f91d610832da6194704726680469e1136e7ff5bde279b4",
+    "bounded-matrix/candidate-release-H-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-release-S-1.json": "052b6ec7373d2c54d6c042c234febcde40108bdd0eeb235c010e5b517268bfc1",
+    "bounded-matrix/candidate-release-S-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-release-S-100000.json": "5df984028ea1a91a47eef1cd6c2560c0b38e5af748d854102d0972b4dd87497c",
+    "bounded-matrix/candidate-release-S-100000.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-release-S-257.json": "d3fad70551c8c9187e87938fb9ee71d9c3d5551f5f668d72a4e6424c5068a498",
+    "bounded-matrix/candidate-release-S-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-release-S-3.json": "a6d76e7f7aca91b6b51a8be5de805ddde3948b1e792628bde5e8002f4bfc1240",
+    "bounded-matrix/candidate-release-S-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-release-S-4096.json": "ad0b4d46a30c2c9edfb4d7507a3020210f3cfc04452aaf6309b92f740decf640",
+    "bounded-matrix/candidate-release-S-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-release-S-513.json": "d159a38dfbf8ba8ec6071925a6e5f7d973e35e8d864a126226cbbe6fdf5f36ec",
+    "bounded-matrix/candidate-release-S-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-tsan-H-1.json": "0f623903aa10227f99c7e1feda4e2d4cb82891e6417d58a5698f77abea2dafdf",
+    "bounded-matrix/candidate-tsan-H-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-tsan-H-257.json": "e1c2d8fd52eda020be88bc9e7343eeaacb31dd806e6a8b0576cd5000c3314221",
+    "bounded-matrix/candidate-tsan-H-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-tsan-H-3.json": "6ae42481d0e5b0fa6bd169b4fc3cf133821a56bc039ab79bcd7c0fb267509409",
+    "bounded-matrix/candidate-tsan-H-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-tsan-H-4096.json": "f54e8c39ab712fcf0fa1611ffd2329ee2e73e6e3d0324bfc2e790fa97e0e6780",
+    "bounded-matrix/candidate-tsan-H-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-tsan-H-513.json": "0626ba2b9705010f8c66e29719e320c45c25589c779ee0c4449d1151840dc94b",
+    "bounded-matrix/candidate-tsan-H-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-tsan-S-1.json": "230b65661be5947821655f84ecb8a88e38c4b388325ad00b0841b7ec21ebdd11",
+    "bounded-matrix/candidate-tsan-S-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-tsan-S-257.json": "76f2ca5cc07a7d62a3916349ab07885a32e05681b9fde5a83e5e83ddd2f1566d",
+    "bounded-matrix/candidate-tsan-S-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-tsan-S-3.json": "c65d56c793fa202980c3dbff83099cb42fd36f9e63e102b8430d581cd68c4e87",
+    "bounded-matrix/candidate-tsan-S-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-tsan-S-4096.json": "33a220af93b8dd4fb0edfc8b837517a1126c8912fdc34a74ea69c56ff1e7c761",
+    "bounded-matrix/candidate-tsan-S-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix/candidate-tsan-S-513.json": "5334b7b2e739465a98b7852d4e75d4299afb3cd6ab6c75c001ce8446c736b5f1",
+    "bounded-matrix/candidate-tsan-S-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-matrix-run.txt": "96952463f0cf59cb84a9d3a3ecc059af06282dec0d23331e1ae4f47e8a275f25",
+    "build-a-release.txt": "9ae31ba6975f707be691762e47eed5816a759b89c28de5abc3eacbfe09ab3dce",
+    "build-base-release.txt": "f04a7c2d07ac1cb00f1d83914fb04d7c0e853bd2eb172d83e6dcd57d4414d621",
+    "build-flags.txt": "2c79928d0d231f120a03133214c481dbe757d01607de49ec57e93615a00f9a2b",
+    "build-full-debug.txt": "21420ebedeb7d423d893012eddfdbeea5027699f4d6855802582a960dd689eb7",
+    "build-full-release.txt": "fe7d51ff4e3eee652fa5ad0a720718a108f7920bc77b576caf9487a737dcb84b",
+    "build-full-tsan.txt": "5e6f986aaa307bef5a874b4f7fa5027fd8308137bdfa3a25227d2b3d35b74304",
+    "commit.txt": "5a8785679d3eaa4a18726b8bde29f81a791051145420c407cff7b158f1445974",
+    "environment.txt": "4ea4a9ea40880729fcb2d336c894363f501fe6412aea658e13ed3d13bcbc8136",
+    "lifecycle-debug-H.json": "d6e3789a73bb65b93874e693258619a841b736d948872c038d17af2f5423cab4",
+    "lifecycle-debug-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-debug-S.json": "37384092d495e43af2a0dd02d2ae409c036c7b5be83c13faeae2423698e0e9ec",
+    "lifecycle-debug-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-release-H.json": "d6e3789a73bb65b93874e693258619a841b736d948872c038d17af2f5423cab4",
+    "lifecycle-release-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-release-S.json": "37384092d495e43af2a0dd02d2ae409c036c7b5be83c13faeae2423698e0e9ec",
+    "lifecycle-release-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-tsan-H.json": "d6e3789a73bb65b93874e693258619a841b736d948872c038d17af2f5423cab4",
+    "lifecycle-tsan-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-tsan-S.json": "37384092d495e43af2a0dd02d2ae409c036c7b5be83c13faeae2423698e0e9ec",
+    "lifecycle-tsan-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "proof-gates.txt": "a4c950007e73d011f2547a25adca8ecd17835494d7232371677f975a07609346",
+    "runtime-inputs.json": "bafe9a3e90ee1d59f2d4f9c837aafa2940fe4834fdefcb88e87f395c19896dd9",
+    "scope.txt": "b8acc6796f232e35eb63775c53e866c535238c340589db39982ac15df414e8dc",
+    "source-guard-after.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "source-guard-before.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "source-sha256.txt": "e20fcc591f5f4e4fe72345dd2882ae46d979cfcef8805d5757b39df3371afbba",
+    "tree.txt": "85ff003c5d8539f64008585ad07c53ea4df0c2916c813caf39623fdf92628954"
+  },
+  "physicalMemoryAndDeviceSmoothness": "NOT_PROVED",
+  "CPerformance": {
+    "S": "OPEN",
+    "H": "OPEN"
+  }
+}

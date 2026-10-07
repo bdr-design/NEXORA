@@ -10,6 +10,8 @@ s=s.replace('    let worldSetupNS = nx_now() - initStart, liveOwned = world.owne
 needle='            "preparedOwnedBytes": world.ownedBytes, "allocationPolicy": allocationPolicy,'
 assert needle in s
 s=s.replace(needle,needle+'\n            "worldSetupAllocations": pagedObservation(setupAllocation.calls, available: available),\n            "worldSetupAllocationBytes": pagedObservation(setupAllocation.bytes, available: available),\n            "worldSetupAllocationAvailable": available,')
+assert s.count('4096, 100_000].contains(count)') == 1
+s=s.replace('4096, 100_000].contains(count)', '4096, 100_000, 1_000_000].contains(count)')
 p.write_text(s)
 if package.name=='stamp':
  p=source/'EpochPages.swift';s=p.read_text()

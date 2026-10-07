@@ -26,7 +26,9 @@
     "2026-10-07 corrected generic test initially supplied deadline0 rather than the actual UInt64.max default. Review of concrete advance and existing generic calls caught it while37562742555 was building. Deadline0 returns .time before work; new test lacked a loop bound. Test corrected to actual default and explicit finite call cap. Targeted cancellation of this one invalid superseded run requested through source-bound CI; preserve eventual CANCELLED/FAILED conclusion and partial raw artifacts, never classify it as valid timing. Hot source and existing functional/deadline gates unchanged.",
     "2026-10-07 cancelled-run analysis initially expected an empty lifecycle-debug-S JSON, but artifact correctly had no such file because cancellation occurred before that invocation. FileNotFound stopped analysis before evidence edits; absence verified and NOT_RUN preserved. Automatic review rejected rm -rf of generated __pycache__; no deletion occurred, safer Python cleanup removed only *.pyc and an empty cache directory. No source/artifact deleted.",
     "2026-10-07 a progress-display mapper assumed queued GitHub job steps was an array; API correctly returned null for a queued part. Display TypeError corrected with an empty fallback. This did not alter workflow execution, source, tests or proof; all queued/in-progress results remain pending.",
-    "2026-10-07 isolated page-stamp-study preparation initially wrote the H80N copy assertion for both S/H; local audit corrected it before any publication/execution to packed S ceil8(65N)+ceil8(30N)+8ceil(N/16) and H80N+8ceil(N/16). No raw measurement, actual runtime or gate changed."
+    "2026-10-07 isolated page-stamp-study preparation initially wrote the H80N copy assertion for both S/H; local audit corrected it before any publication/execution to packed S ceil8(65N)+ceil8(30N)+8ceil(N/16) and H80N+8ceil(N/16). No raw measurement, actual runtime or gate changed.",
+    "2026-10-07 ad-hoc H result display guessed release-1000000.json, which is not the artifact name; FileNotFound had no writes or metric effect. Result is read through verified H-PAIRED-STUDY summaries rather than a guessed filename.",
+    "2026-10-07 before corrected stamp execution, review found paged-candidate-checks finite size list omitted1M. Disposable harness only now accepts explicit1M in both arms, while actual Sources/command limits remain unchanged. No prior stamp Swift build/result existed; no C threshold or acceptance test reduced."
   ],
   "apple": [
     {
@@ -355,6 +357,34 @@
         "tree.txt": "12258c9b5e1fffcbce35b1a6d0df3908322cb4758575451743c165dc1ca89c59"
       },
       "correction": "Actual deadline UInt64.max and finite loop cap publishedb543b495; original CANCELLED stays separate, no performance result."
+    },
+    {
+      "status": "failure",
+      "acceptance": false,
+      "source": "4f264ff041da878019bcc0aba24a6e0a8129a113",
+      "tree": "e2a0832d46a67b055b1719164c34e6402392e4e8",
+      "run": 37564899240,
+      "job": 112610259110,
+      "artifact": 11458437798,
+      "zipSHA256": "19c9410e26e9ca5184a042c1ea238c1521552cf26e7a67a0242e55e6e93814b9",
+      "cause": "macOS Bash nounset rejects empty sanitizer array expansion before Swift invocation",
+      "SwiftBuilds": "NOT_RUN",
+      "canonicalMatrix": "NOT_RUN",
+      "ABBA": "NOT_RUN",
+      "actualRuntimeUnchanged": true,
+      "C100": "NOT_RUN",
+      "evidenceSHA256": {
+        "AllocationObserver.dylib": "b0377e37e603b6406cd74f23c103eabde1846f4495cd7ffa97f625256656aae4",
+        "build-base-debug.txt": "8b261f36932053460649d4c03c249dbba50b4e0fa5807d3a0840a5cc5051a014",
+        "commit.txt": "89b45da5d9036a24503ea1d0b7c3d7980c8f164b3048ec9ffacf44aa8b9c60a5",
+        "environment.txt": "2279882ee44d1e0fe474b3f0fba1648b8427102ea0bbe469246f67b188b19deb",
+        "runtime-inputs.json": "bafe9a3e90ee1d59f2d4f9c837aafa2940fe4834fdefcb88e87f395c19896dd9",
+        "source-guard-after.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+        "source-guard-before.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+        "study-source.json": "1b87780b1a72efb5899d312cfc90475baf6c829d080aace8d67673dcaf9591c2",
+        "tree.txt": "4d49191f19459d337cbae3f624b84a94fdab705161b1fdc91c5d994a86381057"
+      },
+      "correction": "Shell-only explicit Swift command branches, all build flags/strict checks unchanged. Original remainsFAILED and has no measured result."
     }
   ],
   "diagnosticThresholdMisses": [

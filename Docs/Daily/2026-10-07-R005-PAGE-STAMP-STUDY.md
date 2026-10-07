@@ -45,3 +45,17 @@ ordinary payload writes; existing release/acquire writer-completion fences and
 immutable value ownership remain the synchronization proof. Performance effect
 of avoiding metadata access checks is a hypothesis to be measured, not a promise.
 No proposal implementation code was copied; calls follow the existing repo API.
+
+Original37564899240 FAILED before invoking Swift: macOS Bash with nounset
+rejects expansion of the empty sanitizer array. Artifact11458437798 ZIP
+SHA25619c9410e26e9ca5184a042c1ea238c1521552cf26e7a67a0242e55e6e93814b9
+verified source/42inputs/temporary diff/guards/error. No build/matrix/ABBA
+result exists. Explicit shell branches now preserve all same strict flags,
+without an empty array. Original failure retained; actual runtime unchanged.
+
+Before corrected execution, local review found the existing bounded diagnostic
+command accepts up to100k. Only the disposable harness adds explicit1M to its
+finite test-size list in BOTH arms; actual public command/owner limits and all
+acceptance gates unchanged. This enables the owner's required1M study rather
+than substituting a small smoke. Source differences remain setup harness only
+in base, setup harness+EpochPages in stamp. No new simulation model.

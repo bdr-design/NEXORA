@@ -95,3 +95,22 @@ are O(1) at begin, callback only on first copied page; no extra per-event
 allocation expected after bounded Release zero proof. Whole spare-image pool
 is still over200B/asset; new measurements cannot change that budget or count
 capacity as physical footprint. No C100, production or device acceptance.
+
+### Observer H1M result37564011879 — independent verification
+
+Artifact11458571204 ZIP SHA256
+4bfa4958d28738a04d16804f65b5e28eb6f269c783c5a31dc82ea3d6490b3f13, source
+093772db/tree9c2fa651 with all42runtime inputs matching full22e5428d. Debug/
+Release4096 exact, Release1M984calls/events/transcript/output/recovery exact,
+zero advance/service allocations. Paired save-active deltas are−16.003179ms
+and+29.511351ms (ratios0.9128994/1.2079284); mixed signs and all-arm timing
+variation do not establish causality. Copy80.5MB/6.819201 and6.232921ms; writer
+178.507458/183.825500ms,5893chunks/100801772B/queue0. Full-loop ratios0.794812/
+0.967953 cannot qualify C: setup alone varies64.827ms control versus13.147ms
+save in pair1. Advance p99 observations are not official C samples.
+
+Both arms main-world owned210772320B/1M, still over200B; reported capacities
+exclude physical footprint/other worlds/UI, no memory acceptance. Current
+full37563538884 sole A choosesH ratio0.3827900323; its B60records/quota and
+bounded source checks verified. Both TSan1M parts still pending, so C pins
+remain0/PENDING; no five-save/100-save run or closure on observer source yet.

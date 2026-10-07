@@ -60,9 +60,11 @@ jobs:
           set -euo pipefail
           for arm in base stamp; do
             for mode in debug release tsan; do
-              config="$mode";sanitizer=()
-              if test "$mode" = tsan; then config=debug;sanitizer=(--sanitize=thread);fi
-              (cd ".page-stamp-study/$arm" && swift build --scratch-path ".build-$mode" -c "$config" "${sanitizer[@]}" -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror) 2>&1 | tee "stamp-results/build-$arm-$mode.txt"
+              if test "$mode" = tsan; then
+                (cd ".page-stamp-study/$arm" && swift build --scratch-path .build-tsan -c debug --sanitize=thread -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror) 2>&1 | tee "stamp-results/build-$arm-$mode.txt"
+              else
+                (cd ".page-stamp-study/$arm" && swift build --scratch-path ".build-$mode" -c "$mode" -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror) 2>&1 | tee "stamp-results/build-$arm-$mode.txt"
+              fi
             done
           done
       - name: Full small lifecycle and S H canonical checks then H100k1M ABBA

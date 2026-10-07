@@ -1,0 +1,27 @@
+{
+  "status": "failure",
+  "acceptance": false,
+  "source": "4f264ff041da878019bcc0aba24a6e0a8129a113",
+  "tree": "e2a0832d46a67b055b1719164c34e6402392e4e8",
+  "run": 37564899240,
+  "job": 112610259110,
+  "artifact": 11458437798,
+  "zipSHA256": "19c9410e26e9ca5184a042c1ea238c1521552cf26e7a67a0242e55e6e93814b9",
+  "cause": "macOS Bash nounset rejects empty sanitizer array expansion before Swift invocation",
+  "SwiftBuilds": "NOT_RUN",
+  "canonicalMatrix": "NOT_RUN",
+  "ABBA": "NOT_RUN",
+  "actualRuntimeUnchanged": true,
+  "C100": "NOT_RUN",
+  "evidenceSHA256": {
+    "AllocationObserver.dylib": "b0377e37e603b6406cd74f23c103eabde1846f4495cd7ffa97f625256656aae4",
+    "build-base-debug.txt": "8b261f36932053460649d4c03c249dbba50b4e0fa5807d3a0840a5cc5051a014",
+    "commit.txt": "89b45da5d9036a24503ea1d0b7c3d7980c8f164b3048ec9ffacf44aa8b9c60a5",
+    "environment.txt": "2279882ee44d1e0fe474b3f0fba1648b8427102ea0bbe469246f67b188b19deb",
+    "runtime-inputs.json": "bafe9a3e90ee1d59f2d4f9c837aafa2940fe4834fdefcb88e87f395c19896dd9",
+    "source-guard-after.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "source-guard-before.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "study-source.json": "1b87780b1a72efb5899d312cfc90475baf6c829d080aace8d67673dcaf9591c2",
+    "tree.txt": "4d49191f19459d337cbae3f624b84a94fdab705161b1fdc91c5d994a86381057"
+  }
+}
