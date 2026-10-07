@@ -195,3 +195,32 @@ https://github.com/actions/upload-artifact/blob/main/docs/MIGRATION.md
 37544554772. pins في qualified-C تشير لهذا المصدر؛ لا تفتح حملة C100 من
 فحص المسار الموازي. كل42runtime inputs متطابقة، والمصدر الساخن والصيغة
 والـcadence لم تتغير. أي فشل وظيفي جديد يحفظ ويُراجع قبل تأهيل C.
+
+## نتيجة قاعدة المسار الموازي — تحقق مستقل، ليس تأهيل C
+
+مراجعة انتقال السياق عند2026-10-07T00:34Z: AGENTS.md وPROJECT_CONTINUITY.md
+قُرئا كاملًا، live8603ca2580b4a6925c5eaed3c42274686ac75314/tree
+c76bdb127985f6d16b570104564a5d9ff4e70817 مطابق لشجرة local6cde9f6c؛
+main38ce39cf9322f47e4def5f6eddb425c5a66ea7f9 ثابت. المصدر المسموح فقط.
+
+run37551200872/base job112566869260 SUCCESS. Artifact11453345274، ZIP
+SHA25685c5cba318b05ce7dc4fe03a098bdf8295a91d50d2e3adcea0d938d795dfa59c
+طابق التنزيل المستقل. فُحصت commit/tree، كل42runtime inputs/flags، SHA كل
+ملف مصدر، guards قبل/بعد، raw A180samples وإعادة حساب medians/قرار A، كل
+B60records والديسك/quota، B recovery بكل3modes، raw bounded44cases/132epochs
+و32canonical equalities، وكل6lifecycle بما فيها cancelledReuseRejected.
+
+| تخطيط A عند1M | median ns/event | owned B/asset قبل pool |
+|---|---:|---:|
+| S | 646.224005 | 97.485536 |
+| H | 338.369115 | 105.408880 |
+
+هذه إعادة قابلية تكرار لمسار CI فقط؛ قرارها H بنسبة0.5236096344022378 لا
+يستبدل قرار A المختار مسبقًا من serial37544554772. الحصص على snapshot H
+الحقيقي100,801,772B هي320MiB PASS /1472MiB REJECT /832MiB PASS. لا تُفرض
+1408MiB الخاصة بصورة S السابقة على H، ولا يُعاد تصنيف رفض G1/W7 كقبول.
+
+Release S وH1M K1–K10/WAL jobs SUCCESS وقت هذا checkpoint؛ Debug وTSan
+لم يكملا، فلا SOURCE-FUNCTIONAL-PROOF كامل ولا C micro أوC100 بعد. raw ZIP
+و37551200872-BASE-PROOF.json محفوظان تحتEvidence/20261007. لا قبول physical
+memory أوiPhone أوإغلاق C على أي تخطيط من artifact الجزئي.

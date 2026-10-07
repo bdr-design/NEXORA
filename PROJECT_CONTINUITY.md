@@ -1,5 +1,20 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Parallel base artifact11453345274 independently verified at00:37Z, ZIP SHA256
+85c5cba318b05ce7dc4fe03a098bdf8295a91d50d2e3adcea0d938d795dfa59c: fresh
+A/B60records/B recovery3modes/44bounded cases132epochs32canonical comparisons/
+6lifecycle PASS. Parallel A chooses H, ratio0.5236096344, as reproducibility
+only; serial37544554772 A remains preselected for C. Release S/H1M K completed
+SUCCESS; Debug/TSan still running, so full functional qualification/C pending.
+Allowed live8603ca25/treec76bdb12 and main38ce39cf rechecked after full AGENTS/
+continuity read. No denied/reference code, gate change or main merge.
+
+Parallel verifier published live8603ca2580b4a6925c5eaed3c42274686ac75314 /
+treec76bdb127985f6d16b570104564a5d9ff4e70817, local6cde9f6c exact tree.
+Run37551200872 validates the new workflow; all unrelated/C jobs SKIPPED.
+Serial37544554772 remains running on d415c96c and its A is preselected for C.
+Both use identical42runtime inputs; no C100, main unchanged, failures preserved.
+
 Parallel wiring validation selected once on identical42runtime inputs;
 serial37544554772 on d415c96c remains the preselected A decision for C. Parallel
 A is a workflow/reproducibility check, never a favorable-choice replacement.
