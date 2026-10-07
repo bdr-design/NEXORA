@@ -1,5 +1,14 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+At2026-10-07T01:29Z, allowed live75b87557/tree82ead4e1 and main38ce39cf
+rechecked after complete AGENTS/continuity read. Isolated writer study launched
+as37557127125; actual42inputs remain fixed. Fresh base37555679620 SUCCESS:
+artifact11454882063 ZIP SHA256d4747d376b8ac25dbf8e1293fac2bcf8ab933bf02b5ef9a5afc57aa7d16fcaa2
+independently verified A180samples selects H ratio0.4648327815, B60records/quota
+320/1472reject/832MiB and recovery3modes,44bounded/132epochs/32comparisons/
+6lifecycle including cold held-epoch PASS. Full1M K/WAL pending Debug S/TSan;
+C prerequisite pins remain blocked. No C100, result files, main/device acceptance.
+
 Successor fresh proof published71432ea4/tree9abe6827, local13ce92e8 exact tree;
 run37555679620 fresh A step SUCCESS, base B/functional builds running. Its A
 alone is preselected for successor C. Previous parallel wiring37551200872 now
