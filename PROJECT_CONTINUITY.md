@@ -1,5 +1,22 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Morning checkpoint: actual42 observer inputs fixed; fresh37563538884 A/B and
+Debug/Release/TSan S/H1M K/WAL verified. H C5 FAILED1.3822529614; memory
+210772320B/1M NOT_FIXED; C OPEN S/H. Writer37568520463 and bitmap37570450804
+raw ZIPs independently verified, both NOT_ADOPTED for no credible1M simulation
+win; old per-page stamps also rejected. No CI pending on those studies.
+Review: Docs/Daily/2026-10-07-R005-MORNING-REVIEW.md. Next bounded ownership
+micro needs explicit alias/credit/reservation proof before hot edits. No C100,
+main/results/Stage2–4/app/IPA/device acceptance; all failures retained.
+
+Writer37568520463 verified artifact11460367509 ZIP SHA256
+07a5707b9545060f5ceb8f45858df6e0e7117405c08515922901410e44a4df80:
+16canonical/48epochs/12lifecycle/12limitedK3 raw PASS, Releasezero/TSan null.
+H1M writer209.685→169.696ms, but matched all-call advance delta+19.838→+49.538ms
+and writer requested+45311B; NOT_ADOPTED, causality limited by varying controls.
+Actual42inputs unchanged. Bitmap37570450804 running on546d185f/tree72595926;
+C5 overhead1.38225 FAILED, memory NOT_FIXED, C OPEN S/H, no100/main/app/device.
+
 Isolated bitmap successor PREPARED/NOT_RUN after negative per-page stamps:
 oneAtomic word/64pages (H1M156/S94boxes), measured freeze reset O(pageCount/64),
 all COW/epoch/owner/checks unchanged; estimate before temporary edits. Same

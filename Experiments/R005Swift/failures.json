@@ -32,7 +32,8 @@
     "2026-10-07 ad-hoc stamp result display used Path indexing rather than joining, raised TypeError before summary output and made no writes. Correct independent verifier joined paths and verified all raw hashes/source transformations before any decision. No measurement or acceptance result altered.",
     "2026-10-07 evidence checkpoint script assumed a SOURCE-PREFLIGHT.md file existed, stopped on FileNotFound after writing the intended workflow/docs/continuity updates. Source guard, all23existing proof tests, exact42manifest and diff-check subsequently PASS. Preflight record placed in the existing copy-observer daily doc; no runtime or evidence metric was modified.",
     "2026-10-07 read-only follow-up assumed ADR/FrozenWriter/SAVE-CONTRACT paths rather than enumerating existing names; missing-path reads failed without any writes or source/evidence effects. Current EpochSnapshot.swift and enumerated daily candidate docs were then read. All failure metrics preserved.",
-    "2026-10-07 bitmap pre-execution estimate initially rounded total S pages into93words; per-buffer rounding is62asset+31node+1group=94. Corrected the proposed estimate before publication/execution; H156 unchanged. No runtime, observed metric or acceptance gate changed."
+    "2026-10-07 bitmap pre-execution estimate initially rounded total S pages into93words; per-buffer rounding is62asset+31node+1group=94. Corrected the proposed estimate before publication/execution; H156 unchanged. No runtime, observed metric or acceptance gate changed.",
+    "2026-10-07 final publication display attempted JSON.parse on a concurrent main-ref response lacking structured content, stopped before remote publication. Local reviewed evidence/doc commit had completed. Exact main-ref retry reverified38ce39cf; allowed branch546d185f unchanged. No source, metric, CI result or remote ref changed by the display error."
   ],
   "apple": [
     {
@@ -772,6 +773,38 @@
       },
       "copyOnlyTheoreticalRatio": 1.2740145514595145,
       "correction": "Failure retained; no C100. Current source stays fixed. Isolated writer-packet contention at1M is a separate hypothesis, not a timing retry or C acceptance; full-spare memory NOT_FIXED."
+    }
+  ],
+  "candidateRejections": [
+    {
+      "run": 37568520463,
+      "source": "49dcf47e9176963451d03abe12cd80e106cd35f1",
+      "artifact": 11460367509,
+      "zipSHA256": "07a5707b9545060f5ceb8f45858df6e0e7117405c08515922901410e44a4df80",
+      "functionalStatus": "diagnostic-verified",
+      "decision": "NOT_ADOPTED",
+      "scope": "isolated current-source writer packet H1M concurrent ABBA, not C timing or a reclassification of any failure",
+      "baseMedianMatchedAllAdvanceDeltaNS": 19837636.5,
+      "packetMedianMatchedAllAdvanceDeltaNS": 49538308.5,
+      "baseMedianWriterNS": 209684771,
+      "packetMedianWriterNS": 169696333.5,
+      "additionalRequestedWriterBytes": 45311,
+      "reason": "Writer improvement alone did not establish a credible paired simulation gain; controls/active intervals vary, memory increases. Actual source unchanged."
+    },
+    {
+      "run": 37570450804,
+      "source": "546d185fc5affb054710c4c2194aa9f0b668523e",
+      "artifact": 11460244153,
+      "zipSHA256": "bbbe14a58364dc2b8cf1c1392e5703038fabff906c3794f700d093598da81c90",
+      "functionalStatus": "pass",
+      "decision": "NOT_ADOPTED",
+      "scope": "isolated bitmap metadata mixed H1M ABBA; not C or a failure reclassification",
+      "H1MAdvanceRatio": 1.0870926654660211,
+      "H1MFullLoopRatio": 1.0392845485535023,
+      "additionalSetupRequestedAllocations": 158,
+      "additionalSetupRequestedBytes": -34140,
+      "additionalConservativeOwnedBytes": -28720,
+      "reason": "No credible1M simulation gain; limited overlapping samples and100k gains cannot replace1M. Full-image memory remains over budget; actual source unchanged."
     }
   ]
 }

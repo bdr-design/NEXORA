@@ -1,0 +1,327 @@
+{
+  "status": "diagnostic-verified",
+  "acceptance": false,
+  "source": "49dcf47e9176963451d03abe12cd80e106cd35f1",
+  "tree": "ac9e37db05e808b7088f87af7fdfdeea97bb7853",
+  "run": 37568520463,
+  "artifact": 11460367509,
+  "zipSHA256": "07a5707b9545060f5ceb8f45858df6e0e7117405c08515922901410e44a4df80",
+  "runtimeInputs": 42,
+  "canonicalCases": 16,
+  "epochs": 48,
+  "lifecycleCases": 12,
+  "limitedK3Cases": 12,
+  "K3Scope": "source-bound SIGKILL harness assertion plus raw bootstrap/recovery equality; not full K1-K10",
+  "heldH100kMedianWriterNS": {
+    "base": 33922478.5,
+    "packet": 27721854.5
+  },
+  "HConcurrentABBA": {
+    "4096": {
+      "base": {
+        "advanceSaveNS": [
+          710209,
+          876709
+        ],
+        "advanceControlNS": [
+          1169749,
+          710333
+        ],
+        "matchedAllAdvanceDeltaNS": [
+          -459540,
+          166376
+        ],
+        "fullLoopDeltaNS": [
+          410000,
+          999583
+        ],
+        "writerRunNS": [
+          2366292,
+          2276834
+        ],
+        "writerRequestedBytes": [
+          57338,
+          57338
+        ],
+        "saveActiveMatchedRatios": [
+          1.1040404150697545,
+          1.628665083135392
+        ],
+        "medians": {
+          "advanceSaveNS": 793459.0,
+          "advanceControlNS": 940041.0,
+          "matchedAllAdvanceDeltaNS": -146582.0,
+          "fullLoopDeltaNS": 704791.5,
+          "writerRunNS": 2321563.0,
+          "writerRequestedBytes": 57338.0,
+          "saveActiveMatchedRatios": 1.3663527491025733
+        }
+      },
+      "packet": {
+        "advanceSaveNS": [
+          1006166,
+          823667
+        ],
+        "advanceControlNS": [
+          645624,
+          681417
+        ],
+        "matchedAllAdvanceDeltaNS": [
+          360542,
+          142250
+        ],
+        "fullLoopDeltaNS": [
+          3232167,
+          2381667
+        ],
+        "writerRunNS": [
+          2967792,
+          2887666
+        ],
+        "writerRequestedBytes": [
+          102377,
+          102377
+        ],
+        "saveActiveMatchedRatios": [
+          1.1676547984033216,
+          1.6318665264142123
+        ],
+        "medians": {
+          "advanceSaveNS": 914916.5,
+          "advanceControlNS": 663520.5,
+          "matchedAllAdvanceDeltaNS": 251396.0,
+          "fullLoopDeltaNS": 2806917.0,
+          "writerRunNS": 2927729.0,
+          "writerRequestedBytes": 102377.0,
+          "saveActiveMatchedRatios": 1.399760662408767
+        }
+      }
+    },
+    "1000000": {
+      "base": {
+        "advanceSaveNS": [
+          380743582,
+          324666934,
+          248082291,
+          279288996
+        ],
+        "advanceControlNS": [
+          367284487,
+          261245500,
+          221866113,
+          309309740
+        ],
+        "matchedAllAdvanceDeltaNS": [
+          13459095,
+          63421434,
+          26216178,
+          -30020744
+        ],
+        "fullLoopDeltaNS": [
+          -202887833,
+          90913417,
+          27854958,
+          -70002667
+        ],
+        "writerRunNS": [
+          281338791,
+          249846250,
+          160874209,
+          169523292
+        ],
+        "writerRequestedBytes": [
+          1506138,
+          1505690,
+          1506138,
+          1505690
+        ],
+        "saveActiveMatchedRatios": [
+          1.1265586432522303,
+          1.3164121869686474,
+          1.1519606399778748,
+          0.9320519928663554
+        ],
+        "medians": {
+          "advanceSaveNS": 301977965.0,
+          "advanceControlNS": 285277620.0,
+          "matchedAllAdvanceDeltaNS": 19837636.5,
+          "fullLoopDeltaNS": -21073854.5,
+          "writerRunNS": 209684771.0,
+          "writerRequestedBytes": 1505914.0,
+          "saveActiveMatchedRatios": 1.1392596416150527
+        }
+      },
+      "packet": {
+        "advanceSaveNS": [
+          296772769,
+          344872117,
+          260834118,
+          246135327
+        ],
+        "advanceControlNS": [
+          276408588,
+          252729358,
+          206954782,
+          200938046
+        ],
+        "matchedAllAdvanceDeltaNS": [
+          20364181,
+          92142759,
+          53879336,
+          45197281
+        ],
+        "fullLoopDeltaNS": [
+          -93965959,
+          109208875,
+          30141458,
+          46108500
+        ],
+        "writerRunNS": [
+          168695834,
+          170696833,
+          208699750,
+          119339542
+        ],
+        "writerRequestedBytes": [
+          1551449,
+          1551001,
+          1551449,
+          1551001
+        ],
+        "saveActiveMatchedRatios": [
+          1.3829046183286644,
+          1.6103405720000965,
+          1.3659976166365888,
+          1.41663580538597
+        ],
+        "medians": {
+          "advanceSaveNS": 278803443.5,
+          "advanceControlNS": 229842070.0,
+          "matchedAllAdvanceDeltaNS": 49538308.5,
+          "fullLoopDeltaNS": 38124979.0,
+          "writerRunNS": 169696333.5,
+          "writerRequestedBytes": 1551225.0,
+          "saveActiveMatchedRatios": 1.3997702118573172
+        }
+      }
+    }
+  },
+  "C100": "NOT_RUN",
+  "CPerformance": {
+    "S": "OPEN",
+    "H": "OPEN"
+  },
+  "memory": "NOT_FIXED: H1M main-world owned210772320B excludes allocator/other worlds/UI/physical footprint",
+  "limitations": [
+    "Nested/outer ABBA samples are bounded; paired ratios never replace C.",
+    "All-call paired deltas avoid choosing a favorable asynchronous save-active interval.",
+    "Writer and simulation wall times overlap; do not add them."
+  ],
+  "evidenceSHA256": {
+    "AllocationObserver.dylib": "4875dfe034462dee97d3bde602780ad75e10c486a0dec1b9cf31f3b1524a56bf",
+    "K3-base-debug-H.json": "3f31f56d951ca4e06af2314f214c46e47c2357cc2d10b6044fc549d33881f1da",
+    "K3-base-debug-S.json": "2230e83d8068ff5dfd58f77670dcc59db2fe982db1388e662d52a35bd974cb40",
+    "K3-base-release-H.json": "b118881774a72acd2e135851d923699509e97cace7376de59b103dfd03721e2d",
+    "K3-base-release-S.json": "d614537d60416f21cd1944f960dbfb8737df8b87efb8ae221807fff662b5b9d2",
+    "K3-base-tsan-H.json": "69aee69543afd66d499056b6924e27a0e626047076217b906317f5828391075f",
+    "K3-base-tsan-S.json": "4a86ef7cd71125bc6988a92a3184bd854e77d896474bc4147ec6068aa87f2553",
+    "K3-packet-debug-H.json": "81b43fe68ea6758abf32027c8829ba99ee21e7b870036a393b7c5ed2e658bb1a",
+    "K3-packet-debug-S.json": "26e5ec6a88f1ce136d3a7103cdf25d5159cfa8bb0428c0634bf7dae85836b6b8",
+    "K3-packet-release-H.json": "759d5ce07c3eef752a2d88a7b52a683bc3b73e06568019c67fd9df0299918f41",
+    "K3-packet-release-S.json": "582633145c654d62bd19bb8d367685feacfec9c55fe0c25e28716d7470a2c115",
+    "K3-packet-tsan-H.json": "fa6a4773578f58f12b36df643b6b355c9c7397df628727e9bc30e8dcf0a7c88e",
+    "K3-packet-tsan-S.json": "35dd078523349359a2849167596ebbe13912389a0576c02d6d48489eac530741",
+    "PAIRED-H-1000000-1-base.json": "cb1ef353809b91578486b7f365b0ea4f70392c1645271e3da218f0ef196ec5d7",
+    "PAIRED-H-1000000-1-base.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "PAIRED-H-1000000-2-packet.json": "8a4d8d11f70f3db8e6db59f83ab449e7679b7e9ae8ccd3390f3433fb3e3930e3",
+    "PAIRED-H-1000000-2-packet.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "PAIRED-H-1000000-3-packet.json": "272b5803ed640ab0dd39dccebcb5fa5843fecce90d30a80af9b7ef5b5723ccac",
+    "PAIRED-H-1000000-3-packet.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "PAIRED-H-1000000-4-base.json": "36d29cd2b3f10fe150594d23c8a57d3a36a87c0a1e6e8714e3c7d87e48b7f7ab",
+    "PAIRED-H-1000000-4-base.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "PAIRED-H-4096-1-base.json": "85e0f0c6cf6cfb7aba6041689e80a8e52d1ae870cffe1190fe0000b0764ac24d",
+    "PAIRED-H-4096-1-base.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "PAIRED-H-4096-2-packet.json": "5cc43e6ea0acf8cdf0d401d8eaa509e6d28a0624d8a0d862e2f5e3af3de1e2f0",
+    "PAIRED-H-4096-2-packet.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "PAIRED-H-4096-3-packet.json": "773e0a5c202d10d16036802c8b6a12dac361d354d7128b2217a697b906a77e10",
+    "PAIRED-H-4096-3-packet.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "PAIRED-H-4096-4-base.json": "aee531d723f68f5acc9e3b7178adcbd86e972876f940a6484c680bedd3a73bc9",
+    "PAIRED-H-4096-4-base.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "WRITER-IO-STUDY.json": "08534cb3c0b63dda4dd8accb0da7b6bc213dbab247223e061b5788eb9c809e49",
+    "abba-1-base.json": "2c96673dbd6b6ad4328064c589b2f552f3e772b55d66a1302f216ded46367bb1",
+    "abba-1-base.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "abba-2-packet.json": "d189080be3014cde7963f28bd4e15e125f300cf3e133b2f9b9c8a2ef679c047b",
+    "abba-2-packet.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "abba-3-packet.json": "ad137dd9454d3447952789e61cac6278861af4705d6f256326a9ef362c112f74",
+    "abba-3-packet.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "abba-4-base.json": "16d620162603e66e0f5858abfde159c3e87b3567f3040da0aeefc70e6118edcd",
+    "abba-4-base.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-base-debug-H.json": "eff07f046fe3453d6bd479e1cdd5cee549d718ed41444cacd2768ed2dcab2a3c",
+    "bounded-base-debug-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-base-debug-S.json": "67a9030ea955ffb78cd628875aa6f088e745673830a9202f98adc5417b6c9329",
+    "bounded-base-debug-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-base-release-H.json": "fcd22141b24fdce82893d820f334ddbdda83de81355385f5c4539911c0d92390",
+    "bounded-base-release-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-base-release-S.json": "0491760e43bab627941beb5dffa2786baa75ed43c3d4e69fef2f7ace18768ace",
+    "bounded-base-release-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-base-tsan-H.json": "7c7f6b96ca22806273c0fa057d304dae178fed7be0f884b1109000f283733a90",
+    "bounded-base-tsan-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-base-tsan-S.json": "15eff32a54985dc2750489d948ed33e21fae2bfd1d30838d43996d1e3b6f1a53",
+    "bounded-base-tsan-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-packet-debug-H.json": "47e8b05271d49f4806e08377031dd19d4a0cc8d4d825e3c8d572379f4bb4882f",
+    "bounded-packet-debug-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-packet-debug-S.json": "17c1f349cbd5440f5a7203e2b782c0b5dad8670d9f88a59225aeb43e0964e118",
+    "bounded-packet-debug-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-packet-release-H.json": "5ac35ee39b19d32a90f057598984ad2bf71c7339bee76c8ab36c97a24710fead",
+    "bounded-packet-release-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-packet-release-S.json": "6d8daa5cc641390985d19f18d3d15ce8d8ce9c64671af91316601924639730ae",
+    "bounded-packet-release-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-packet-tsan-H.json": "a9509581ac9c7e202f91397b5c79bc833e63e56327a53203fd68017bb38304a5",
+    "bounded-packet-tsan-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bounded-packet-tsan-S.json": "f7467206773f023ba0433d51ec41cd424b6555007e15c482f20f5ba8b4d26f2b",
+    "bounded-packet-tsan-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build-base-debug.txt": "30148a25a5c400e5816a2d5c55065ab1caacc519d2e68377c8742ac431e3a33a",
+    "build-base-release.txt": "d2337deed4a0a23178445151c1ce0ea0dc14531896c923307779fd6cafce6e50",
+    "build-base-tsan.txt": "8d276e7ca48624f220107dce829553b5dc0072620c5a50c32d3f7166bce3dc8e",
+    "build-packet-debug.txt": "d9579e2aea641b61225fe4fd6a898699ce07586ecd966ea3316de7362904a4c3",
+    "build-packet-release.txt": "349cedc792d538ab8383838867ef2c59ca8ac8a2938035fdc52dd361421632e3",
+    "build-packet-tsan.txt": "caf080fe2eef40628aef6a1893e909c57ebf67b142b1f67510a14a36ddc11170",
+    "commit.txt": "79126e838399054e29437744dd5a1a72c8bb9e7b188d71163aafbf1487e5ddb1",
+    "environment.txt": "2279882ee44d1e0fe474b3f0fba1648b8427102ea0bbe469246f67b188b19deb",
+    "lifecycle-base-debug-H.json": "d6e3789a73bb65b93874e693258619a841b736d948872c038d17af2f5423cab4",
+    "lifecycle-base-debug-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-base-debug-S.json": "37384092d495e43af2a0dd02d2ae409c036c7b5be83c13faeae2423698e0e9ec",
+    "lifecycle-base-debug-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-base-release-H.json": "d6e3789a73bb65b93874e693258619a841b736d948872c038d17af2f5423cab4",
+    "lifecycle-base-release-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-base-release-S.json": "37384092d495e43af2a0dd02d2ae409c036c7b5be83c13faeae2423698e0e9ec",
+    "lifecycle-base-release-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-base-tsan-H.json": "d6e3789a73bb65b93874e693258619a841b736d948872c038d17af2f5423cab4",
+    "lifecycle-base-tsan-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-base-tsan-S.json": "37384092d495e43af2a0dd02d2ae409c036c7b5be83c13faeae2423698e0e9ec",
+    "lifecycle-base-tsan-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-packet-debug-H.json": "d6e3789a73bb65b93874e693258619a841b736d948872c038d17af2f5423cab4",
+    "lifecycle-packet-debug-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-packet-debug-S.json": "37384092d495e43af2a0dd02d2ae409c036c7b5be83c13faeae2423698e0e9ec",
+    "lifecycle-packet-debug-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-packet-release-H.json": "d6e3789a73bb65b93874e693258619a841b736d948872c038d17af2f5423cab4",
+    "lifecycle-packet-release-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-packet-release-S.json": "37384092d495e43af2a0dd02d2ae409c036c7b5be83c13faeae2423698e0e9ec",
+    "lifecycle-packet-release-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-packet-tsan-H.json": "d6e3789a73bb65b93874e693258619a841b736d948872c038d17af2f5423cab4",
+    "lifecycle-packet-tsan-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-packet-tsan-S.json": "37384092d495e43af2a0dd02d2ae409c036c7b5be83c13faeae2423698e0e9ec",
+    "lifecycle-packet-tsan-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "paired-patch-sha256.txt": "2f84a2db047b5a7bcd6a14d8071d2835cdd2f4d44b269e4977c09b2cb4bb19a4",
+    "runtime-inputs.json": "bafe9a3e90ee1d59f2d4f9c837aafa2940fe4834fdefcb88e87f395c19896dd9",
+    "scope.txt": "da1fd3634a5be06fb3ed0e289f5291e064a88192ae93967ec2bff1884e10319e",
+    "source-guard-after.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "source-guard-before.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "study-patch-sha256.txt": "eff2a271c123ae5c110a869a1e87af6cdf960a80afee49c7570b8dafaff5f8bc",
+    "study-source-base.txt": "513bd6c35e43b05746f595b063943d3e7fee16ebbfd2cd3b11603be28acfb1b1",
+    "study-source-packet.txt": "16cd1325f8b50fec6ec732d21e45524f17cca4eb4cd9290c94c4b6222ea7316d",
+    "study-source.json": "5abc3c6d71b15da00ad5008c415b80f8d14244e21edc91a58026b1d4d18d27e7",
+    "tree.txt": "b70a887d950a534bc426f6e6612f085f6f201949ef02f52dd1be761d5fad52b0"
+  },
+  "decision": "NOT_ADOPTED: faster writer alone did not give a credible paired1M simulation gain; extra requested writer memory"
+}
