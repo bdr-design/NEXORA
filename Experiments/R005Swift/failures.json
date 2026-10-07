@@ -20,7 +20,8 @@
     "2026-10-07 post-publication partial-page arithmetic audit rejected the new H257 cold test expectation: physical word clone is 5144B, not the 5140B canonical payload (4B padding). Corrected only the test expected physical byte total; snapshot payload/ownership/gates unchanged. Original Apple run37554438056 on e2b5e52f remains running and its actual result will be retained.",
     "2026-10-07 bounded artifact verifier initially FAILED with KeyError: status when treating selftest as a status envelope. Its schema contains boundaries and mutations. Corrected the analysis harness to verify boundaries.status=pass and all eight detected mutations per mode explicitly; complete independent artifact verification then PASS. No Apple/source/gate result changed.",
     "2026-10-07 failed writer-study artifact verification initially stopped with FileNotFoundError: the preceding rg lookup used the wrong source files and prevented extraction. Repeated exact ZIP extraction and actual CLI guard lookup across Sources; crash-bootstrap supports1M only. Corrected only the workflow invocation to1M, without modifying runtime guard or thresholds. No source or original failure was reclassified.",
-    "2026-10-07 H paired-study commentary initially inferred an S/H restoration API mismatch before reading the build log. Actual37559041669 log proves a temporary package path failure before compilation. Attribution corrected in commentary, proof and continuity; run stays FAILED, no S/H runtime/source or prior result changed."
+    "2026-10-07 H paired-study commentary initially inferred an S/H restoration API mismatch before reading the build log. Actual37559041669 log proves a temporary package path failure before compilation. Attribution corrected in commentary, proof and continuity; run stays FAILED, no S/H runtime/source or prior result changed.",
+    "2026-10-07 initial ad-hoc successor-micro analysis requested obsolete top-level barrierBytesPerSave, raising KeyError before raw ZIP copy. Corrected to nested barrierCopy, independently verified original raw SHA and eligibility; no metric, failure or gate changed."
   ],
   "apple": [
     {
@@ -610,6 +611,34 @@
       "hardResidentHotBudgetBytesPerAsset": 200,
       "limitation": "owned capacities are not physical footprint; two H payload images alone201000000B already exceed200B/asset before other state",
       "correction": "NOT_FIXED: replace full spare-image ownership before production acceptance; keep A live-image success, C OPEN and all thresholds unchanged"
+    },
+    {
+      "commit": "362d05b2a04b695046f994ae517899460e4c81d6",
+      "tree": "605a39670e8631880f41005c7675267b30d7703a",
+      "run": 37560851575,
+      "job": 112597548090,
+      "workflowConclusion": "success",
+      "artifact": 11457385059,
+      "artifactSHA256": "b61949f461b2c6db507e9cbb3e92ff7d2dc08bdd7c410ae5cfa4c53df3ef7c85",
+      "scope": "qualified successor immutable epoch H1M/5-save diagnostic; C100 NOT_RUN",
+      "failedGates": [
+        "beginP99",
+        "advanceP99",
+        "overhead"
+      ],
+      "H": {
+        "saves": 5,
+        "overheadRatio": 1.4083114548742215,
+        "advanceP99NS": 1176625,
+        "advanceSamples": 1469,
+        "beginP99NS": 211167,
+        "beginSamples": 5,
+        "pairedAllocationViolations": 0,
+        "idleAllocationsMax": 0,
+        "snapshotBytes": 100801772
+      },
+      "copyOnlyTheoreticalRatio": 1.2981895582835494,
+      "correction": "Failure retained; no C100. An observer-at-copy bounded candidate is estimated before edits, must pass fresh source qualification if promising. Full spare-image memory remains over budget; no production/device/game acceptance."
     }
   ]
 }

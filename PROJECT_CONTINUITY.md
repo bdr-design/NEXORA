@@ -1,5 +1,16 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Qualified successor37560851575 H1M/5 FAILED eligibility (collection SUCCESS):
+overhead1.4083114549, advancep991176625ns, beginp99211167ns; zero allocations/
+pairing/queue passed. Artifact11457385059 ZIP SHA256
+b61949f461b2c6db507e9cbb3e92ff7d2dc08bdd7c410ae5cfa4c53df3ef7c85 independently verified
+and raw failure preserved. Removing all measured copy still ratio1.298189558>1.10.
+Pre-edit copy-observer estimate published: shift recording inside existing
+first-copy branch, eliminate duplicate mutation hooks, preserve all COW guards.
+Implementation/Apple micro NOT_RUN; full spare-image memory failure NOT_FIXED.
+At02:26UTC allowed362d05b2/tree605a3967, main38ce39cf/full AGENTS verified;
+no C100/main/Stage2–4/device/closure, all historical failures retained.
+
 Fresh37555679620 ALL SUCCESS (A/B+six1M K parts+aggregate). Artifact11456810824
 ZIP SHA256a5c8f89a56b8b40c51e2da8fbe8a2f460953a6a15b89b2d07672d6aea8c0d52a
 independently verified against base hashes, all matching source71432ea4/tree
