@@ -1,0 +1,47 @@
+# R005 — دراسة كاتب مستقلة، ليست تعديلًا للمصدر المؤهل
+
+المصدر الحي المسموح71432ea4/tree9abe6827، main38ce39cf ثابت. إعادة الإثبات
+37555679620 تعمل على المصدر المحسن؛ A الخاصة بها اختيرت مسبقًا. AGENTS
+والاستمرارية مقروءتان، ولا مصادر تنفيذ من المرجع أو الفروع المحظورة.
+
+قبل أي تطبيق: الدراسة تنسخ Package/Sources الحالية فقط إلى مجلدي build
+مؤقتين في job مستقل. لا تُغيّر أيًا من42runtime inputs الفعلية، ولا تستبدل
+نتيجة A/B/K/C الجارية. patch الدراسة لهSHA مستقل وsource hashes لكل ذراع.
+إثباته محدود4096 و100k؛ لا100save ولا qualification على1M.
+
+## التقدير قبل القياس
+
+الكاتب الحالي يكتب غالبية records بمكالمة write لكل نصف payload، ثم write
+للـSHA32B. المقترح يجمع checksum في scratch الحالية بعد parse/hash، ثم
+يكتب record كاملًا. عند5893chunks في1M، العدد الاسمي عند full writes دون
+EINTR/short-write من17,678 إلى5893 body/checksum writes؛ prefix/footer/fsync
+والـcommit/directory sync تبقى كما هي. هذه أعداد مستنتجة من المسار، وليست
+syscall telemetry فعلية أو وعدًا بنسبة سرعة. helper write الأصلي يبقى
+مسؤولًا عن EINTR/short write ولا يهرب pointer أو يأخذ mutable world.
+
+المحاكاة لا يتغير كودها أو تخصيصاتها؛ الأثر المحتمل الوحيد تنازع الكاتب.
+scratch32KiB الحالية تسع أكبر record مع32B checksum؛ لا صورة عالم إضافية
+ولا pacing. append للـdigest يفترض uniqueness بعد عودة parseRecord؛ إذا
+ولّد COW للـscratch فسيظهر في writer allocation bytes، ولا يُفترض صفرًا.
+تُقاس كلفة الكاتب والتخصيصات والنتائج قبل اختيار دمج. لا تعطيل hash/parser
+أو تحسين clock/cadence/idle للحصول على ratio.
+
+K3 fixture يبقى split عند **نفس prefix payload** القديم، ثم hook نفسها؛
+تختار بيئة kill الكسر مرة واحدة خارج loop. الوضع العادي record متصل مع
+checksum. لا تغيير لتعريف recovery أو footer/canonical digest أوعدد bytes؛
+حساب bytesWritten يتضمن checksum مرة واحدة. كل fixtures/mac modes تسجل
+K3 SIGKILL فعلية عند4096 وتحقق نفس digest من snapshot1.
+
+## دليل الدراسة وحدوده
+
+Debug/Release/TSan × S/H × base/packet عند4096: canonical files وWAL recovery
+ومقارنة digests/transcripts عبر3epochs لكل حالة، وK3 لكل جزء. Release يقيس
+advance/service zero allocations مع positive controls؛ TSan counters غير
+المتاحة null. بعده H100k base/packet/packet/base على المضيف نفسه، مع writer
+time/allocated bytes لكلepoch. raw ملفات وSHA محفوظة. المقارنة تتضمن
+mirror validation مثل bounded workload، ولا تعتبر C أوiPhone smoothness.
+
+حالة هذه الوثيقة: **PREPARED / NOT_RUN**. حتى نجاحها لا يجيز دمج patch أو
+تشغيل C100: إذا فشل المرشح الجاري C يُراجع السبب أولًا، وأي تطبيق في runtime
+يلزمه bounded checks ثم A/B/TSan/K1–K10 S/H1M ومصدر مؤهل جديد. الصورة
+الاحتياطية الكاملة والميزانية الإنتاجية والجهاز ما زالت مفتوحة.

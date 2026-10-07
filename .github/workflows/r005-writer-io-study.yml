@@ -1,0 +1,135 @@
+name: R005 isolated immutable writer packet micro
+on:
+  push:
+    branches: ["diagnostic/r005-design-1m-20260930"]
+permissions:
+  contents: read
+jobs:
+  writer-packet-study:
+    if: ${{ contains(github.event.head_commit.message, '[r005-writer-io-study]') && contains(github.event.head_commit.message, '[r005-evidence-only]') }}
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      HEAD_MESSAGE: ${{ github.event.head_commit.message }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Record unchanged runtime and enforce one study marker
+        run: |
+          set -euo pipefail
+          mkdir -p writer-io-results
+          git rev-parse HEAD > writer-io-results/commit.txt
+          git rev-parse HEAD^{tree} > writer-io-results/tree.txt
+          swift --version > writer-io-results/environment.txt
+          xcodebuild -version >> writer-io-results/environment.txt
+          sysctl hw.model hw.ncpu hw.memsize >> writer-io-results/environment.txt
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > writer-io-results/source-guard-before.txt
+          python3 -B Experiments/R005Swift/candidate_proof_inputs.py write writer-io-results/runtime-inputs.json
+          python3 -B - <<'PYCODE'
+          import os
+          m=os.environ['HEAD_MESSAGE']
+          excluded=['[r005-paged-proof]','[r005-paged-parallel-proof]','[r005-paged-c-micro]',
+              '[r005-paged-c-100]','[r005-paged-candidate]','[r005-c-targeted]',
+              '[r005-micro]','[r005-b-full]','[r005-c-functional]','[r005-paired-profile]','[r005-epoch-pages]']
+          assert not any(tag in m for tag in excluded),'conflicting execution marker'
+          PYCODE
+      - name: Prepare two disposable copies of the permitted current model
+        run: |
+          set -euo pipefail
+          for arm in base packet; do
+            mkdir -p ".writer-io-study/$arm"
+            cp Experiments/R005Swift/Package.swift ".writer-io-study/$arm/"
+            cp -R Experiments/R005Swift/Sources ".writer-io-study/$arm/Sources"
+            python3 -B Experiments/R005Swift/Evidence/20261007/prepare-writer-io-study.py ".writer-io-study/$arm" "$arm"
+            find ".writer-io-study/$arm/Sources" -type f -exec shasum -a 256 {} \; > "writer-io-results/study-source-$arm.txt"
+          done
+          shasum -a 256 Experiments/R005Swift/Evidence/20261007/prepare-writer-io-study.py > writer-io-results/study-patch-sha256.txt
+          cc -dynamiclib -O2 -Wall -Wextra -Werror Experiments/R005Swift/AllocationObserver.c -IExperiments/R005Swift/Sources/ProbePlatform/include -o writer-io-results/AllocationObserver.dylib
+      - name: Build both study arms Debug Release TSan without changing main Sources
+        run: |
+          set -euo pipefail
+          for arm in base packet; do
+            for mode in debug release tsan; do
+              args=(-c debug)
+              if test "$mode" = release; then args=(-c release); fi
+              if test "$mode" = tsan; then args=(-c debug --sanitize=thread); fi
+              (cd ".writer-io-study/$arm" && swift build --scratch-path ".build-$mode" "${args[@]}" -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror) 2>&1 | tee "writer-io-results/build-$arm-$mode.txt"
+            done
+          done
+      - name: Bounded canonical allocation and K3 SIGKILL proof then H100k ABBA
+        run: |
+          set -euo pipefail
+          trap 'rm -rf .writer-io-study' EXIT
+          python3 -B - <<'PYCODE'
+          import hashlib,json,os,pathlib,shutil,statistics,sys
+          sys.path.insert(0,'Experiments/R005Swift')
+          from paged_candidate import validate,comparable
+          from stage005_c_crash import run,kill_at
+          import subprocess
+          p=pathlib.Path('writer-io-results');observer=(p/'AllocationObserver.dylib').resolve()
+          rows=[];references={};kills=[]
+          def binary(arm,mode):
+              config='debug' if mode=='tsan' else mode
+              return pathlib.Path(f'.writer-io-study/{arm}/.build-{mode}/{config}/nxr-swift-probe').resolve()
+          def checks(arm,mode,variant,count,label):
+              env=os.environ.copy();env['TSAN_OPTIONS']='halt_on_error=1'
+              policy='functional' if mode=='tsan' else 'zero' if mode=='release' else 'observe'
+              if mode!='tsan':env['DYLD_INSERT_LIBRARIES']=str(observer)
+              store=(p/f'store-{label}').resolve()
+              cp=subprocess.run([str(binary(arm,mode)),'paged-candidate-checks',str(store),variant,str(count),policy],env=env,text=True,capture_output=True,timeout=900)
+              f=p/f'{label}.json';f.write_text(cp.stdout);(p/f'{label}.stderr.txt').write_text(cp.stderr)
+              assert cp.returncode==0 and not cp.stderr,(label,cp.stderr)
+              row=json.loads(cp.stdout);validate(row,variant=variant,count=count,policy=policy,candidate=True)
+              key=(variant,count)
+              if key not in references:references[key]=comparable(row)
+              else:assert comparable(row)==references[key],label
+              for epoch in row['epochs']:
+                  assert epoch['writerAllocatorAvailable'] is (mode!='tsan')
+                  if mode=='tsan':assert epoch['writerAllocations'] is epoch['writerAllocationBytes'] is None
+              rows.append({'arm':arm,'mode':mode,'variant':variant,'assets':count,'file':f.name,
+                  'sha256':hashlib.sha256(f.read_bytes()).hexdigest(),
+                  'writerNS':[e['writerNS'] for e in row['epochs']],
+                  'writerAllocationBytes':[e['writerAllocationBytes'] for e in row['epochs']]})
+              shutil.rmtree(store)
+          for mode in ('debug','release','tsan'):
+              for variant in ('S','H'):
+                  for arm in ('base','packet'):
+                      checks(arm,mode,variant,4096,f'bounded-{arm}-{mode}-{variant}')
+                      b=binary(arm,mode);store=(p/f'kill-{arm}-{mode}-{variant}').resolve()
+                      prefix='stage-c-h' if variant=='H' else 'stage-c'
+                      os.environ['TSAN_OPTIONS']='halt_on_error=1'
+                      boot=run(b,prefix+'-crash-bootstrap',store,4096)
+                      kill_at(b,store,'c.k3.mid_record',command=prefix+'-crash-action')
+                      restored=run(b,prefix+'-recover',store)
+                      assert restored['epoch']==1 and restored['digest']==boot['digest']
+                      kills.append({'arm':arm,'mode':mode,'variant':variant,'population':4096,
+                          'point':'c.k3.mid_record','signal':'SIGKILL','exactDigest':True})
+                      shutil.rmtree(store)
+          for ordinal,arm in enumerate(('base','packet','packet','base'),1):
+              checks(arm,'release','H',100000,f'abba-{ordinal}-{arm}')
+          timed=[r for r in rows if r['assets']==100000]
+          med={arm:statistics.median(n for r in timed if r['arm']==arm for n in r['writerNS']) for arm in ('base','packet')}
+          report={'status':'diagnostic-verified','acceptance':False,'rows':rows,'K3':kills,
+              'H100kOrder':['base','packet','packet','base'],'medianWriterNS':med,
+              'diagnosticPacketToBaseRatio':med['packet']/med['base'],'C100':'NOT_RUN',
+              'scope':'temporary writer copies only; exact canonical snapshots/WAL and bounded K3; main runtime unchanged; no full K/A/B/C qualification'}
+          (p/'WRITER-IO-STUDY.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
+          PYCODE
+      - name: Always verify actual runtime did not change
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > writer-io-results/source-guard-after.txt
+          python3 -B Experiments/R005Swift/candidate_proof_inputs.py check writer-io-results/runtime-inputs.json
+          git diff --exit-code
+          rm -rf .writer-io-study
+          echo 'Isolated writer micro; no actual runtime source changed and C100 NOT_RUN. All historical failures preserved.' > writer-io-results/scope.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r005-writer-io-study
+          path: writer-io-results/
+          if-no-files-found: error

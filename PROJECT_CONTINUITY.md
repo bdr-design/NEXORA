@@ -1,5 +1,14 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Successor fresh proof published71432ea4/tree9abe6827, local13ce92e8 exact tree;
+run37555679620 fresh A step SUCCESS, base B/functional builds running. Its A
+alone is preselected for successor C. Previous parallel wiring37551200872 now
+all six parts+aggregate SUCCESS; artifact11455045772 ZIP SHA256d88f736e1618bc041076e7081435b376535be7d799d1f75f8dfaaa5fbc5842de
+independently verified against original42inputs/15functional hashes. No reuse
+for four-file successor. Separate writer-packet study PREPARED/NOT_RUN in
+disposable packages only; actual42runtime inputs stay fixed. Estimate and
+scopes in2026-10-07-R005-WRITER-IO-STUDY.md; no C100/main/device acceptance.
+
 Corrected bounded37554761173 SUCCESS on36675c81/treea57532c1; artifact11453529085
 ZIP SHA25684f5f1fc37363078f6faf6a6d6a876a3d54b88ee0030bb305005554c60f437aa
 independently verified44cases/132epochs/32canonical comparisons/6lifecycle,
