@@ -31,7 +31,7 @@ jobs:
           python3 -B - <<'PYCODE'
           import os
           m=os.environ['HEAD_MESSAGE']
-          excluded=['[r005-paged-proof]','[r005-paged-parallel-proof]','[r005-paged-c-micro]',
+          excluded=['[r005-h-paired-study]','[r005-paged-proof]','[r005-paged-parallel-proof]','[r005-paged-c-micro]',
               '[r005-paged-c-100]','[r005-paged-candidate]','[r005-c-targeted]',
               '[r005-micro]','[r005-b-full]','[r005-c-functional]','[r005-paired-profile]','[r005-epoch-pages]']
           assert not any(tag in m for tag in excluded),'conflicting execution marker'

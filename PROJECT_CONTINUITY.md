@@ -1,5 +1,13 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+H-specific paired diagnosis PREPARED in a disposable copy of current owner,
+not actual runtime: Debug/Release4096 then Release1M ABBA one fixture, separate
+advance/service/WAL/writer/full-loop and post-profile owned-capacity sample.
+Only temporary Main/paired harness differ;42actual inputs match fresh71432ea4.
+H1M TSan full K part SUCCESS; S1M TSan remains running in37555679620. Corrected
+writer study37557593873 running its limited K3/canonical cases. No C100, source
+proof pins0/PENDING, old failures and memory/smoothness limits retained.
+
 Isolated writer study37557127125 FAILED: six builds and base Debug S4096
 canonical epochs passed, but K3 bootstrap rejects4096 existing population.
 Artifact11455177130 ZIP SHA256de778aa7e392ee4f23890e0fbea221e26d4dc3b41a159f76c48b7c43e12e375e

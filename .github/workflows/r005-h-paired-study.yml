@@ -1,0 +1,125 @@
+name: R005 current H paired component study
+on:
+  push:
+    branches: ["diagnostic/r005-design-1m-20260930"]
+permissions:
+  contents: read
+jobs:
+  paired-h-study:
+    if: ${{ contains(github.event.head_commit.message, '[r005-h-paired-study]') && contains(github.event.head_commit.message, '[r005-evidence-only]') }}
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      HEAD_MESSAGE: ${{ github.event.head_commit.message }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Record actual unchanged runtime and isolate one diagnostic
+        run: |
+          set -euo pipefail
+          mkdir -p h-paired-results
+          git rev-parse HEAD > h-paired-results/commit.txt
+          git rev-parse HEAD^{tree} > h-paired-results/tree.txt
+          swift --version > h-paired-results/environment.txt
+          xcodebuild -version >> h-paired-results/environment.txt
+          sysctl hw.model hw.ncpu hw.memsize >> h-paired-results/environment.txt
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > h-paired-results/source-guard-before.txt
+          python3 -B Experiments/R005Swift/candidate_proof_inputs.py write h-paired-results/runtime-inputs.json
+          python3 -B - <<'PYCODE'
+          import os
+          excluded=['[r005-writer-io-study]','[r005-paged-proof]','[r005-paged-parallel-proof]',
+              '[r005-paged-c-micro]','[r005-paged-c-100]','[r005-paged-candidate]',
+              '[r005-c-targeted]','[r005-micro]','[r005-b-full]','[r005-c-functional]',
+              '[r005-paired-profile]','[r005-epoch-pages]']
+          assert not any(tag in os.environ['HEAD_MESSAGE'] for tag in excluded)
+          PYCODE
+      - name: Prepare a disposable copy using only the existing H owner
+        run: |
+          set -euo pipefail
+          mkdir .h-paired-study
+          cp Experiments/R005Swift/Package.swift .h-paired-study/
+          cp -R Experiments/R005Swift/Sources .h-paired-study/Sources
+          python3 -B Experiments/R005Swift/Evidence/20261007/prepare-h-paired-study.py .h-paired-study
+          python3 -B - <<'PYCODE'
+          import hashlib,json,pathlib
+          source=pathlib.Path('Experiments/R005Swift/Sources');study=pathlib.Path('.h-paired-study/Sources')
+          differences=[];hashes={}
+          for p in sorted(source.rglob('*')):
+              if not p.is_file():continue
+              name=str(p.relative_to(source));q=study/name
+              before=hashlib.sha256(p.read_bytes()).hexdigest();after=hashlib.sha256(q.read_bytes()).hexdigest()
+              hashes[name]={'actual':before,'temporary':after}
+              if before!=after:differences.append(name)
+          assert differences==['SwiftProbe/Main.swift','SwiftProbe/Stage005CRunner.swift']
+          pathlib.Path('h-paired-results/study-source.json').write_text(json.dumps(hashes,indent=2)+'\n')
+          PYCODE
+          cc -dynamiclib -O2 -Wall -Wextra -Werror Experiments/R005Swift/AllocationObserver.c -IExperiments/R005Swift/Sources/ProbePlatform/include -o h-paired-results/AllocationObserver.dylib
+      - name: Build the H diagnostic in Debug and Release
+        run: |
+          set -euo pipefail
+          for mode in debug release; do
+            (cd .h-paired-study && swift build --scratch-path ".build-$mode" -c "$mode" -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror) 2>&1 | tee "h-paired-results/build-$mode.txt"
+          done
+      - name: Exact Debug Release4096 smoke then one Release1M ABBA from one fixture
+        run: |
+          set -euo pipefail
+          trap 'rm -rf .h-paired-study' EXIT
+          python3 -B - <<'PYCODE'
+          import hashlib,importlib.util,json,os,pathlib,shutil,subprocess
+          spec=importlib.util.spec_from_file_location('paired_verifier','Experiments/R005Swift/Evidence/20261007/verify-paged-c.py')
+          verifier=importlib.util.module_from_spec(spec);spec.loader.exec_module(verifier)
+          p=pathlib.Path('h-paired-results');env=os.environ.copy()
+          env['DYLD_INSERT_LIBRARIES']=str((p/'AllocationObserver.dylib').resolve())
+          summaries=[]
+          for mode,count in (('debug',4096),('release',4096),('release',1000000)):
+              binary=pathlib.Path(f'.h-paired-study/.build-{mode}/{mode}/nxr-swift-probe').resolve()
+              command='stage-c-paired-profile-smoke' if count==4096 else 'stage-c-paired-profile'
+              label=f'{mode}-{count}';store=(p/f'store-{label}').resolve()
+              cp=subprocess.run([str(binary),command,str(store),'H'],env=env,text=True,capture_output=True,timeout=1800)
+              f=p/f'PAIRED-H-{label}.json';f.write_text(cp.stdout);(p/f'{label}.stderr.txt').write_text(cp.stderr)
+              assert cp.returncode==0 and not cp.stderr,(label,cp.stderr)
+              r=json.loads(cp.stdout);assert r['status']=='diagnostic' and r['acceptance'] is False
+              assert r['variant']=='H' and r['assets']==count
+              assert r['cAllocationPositiveControl']>0 and r['swiftAllocationPositiveControl']>0
+              assert r['fixture']['deadline']=='none' and r['fixture']['budget']==1024 and r['fixture']['workBudget']==65536
+              orders=[['no-save','save']] if count==4096 else [['no-save','save'],['save','no-save']]
+              assert [q['order'] for q in r['pairs']]==orders
+              observations=[]
+              for pair in r['pairs']:
+                  if mode=='release':observations.append(verifier.verify_pair(pair,r['fixture'],count))
+                  else:
+                      a,b=pair['legs'];assert a['label']=='no-save' and b['label']=='save'
+                      assert all(pair[k] for k in ('logicalTranscriptExact','outputHashExact','finalDigestExact','stateInstallAligned'))
+                      assert a['events']==b['events']==count and a['finalDigest']==b['finalDigest']
+                      assert a['recoveryExact'] and b['recoveryExact'] and a['recoveryDigest']==a['finalDigest'] and b['recoveryDigest']==b['finalDigest']
+                      assert a['advanceCalls']==b['advanceCalls']==len(a['calls'])==len(b['calls'])
+                      assert all(all(x[k]==y[k] for k in verifier.TRANSCRIPT) for x,y in zip(a['calls'],b['calls']))
+                      observations.append({'allocationPolicy':'debug-observe','zeroAllocationClaim':False})
+                  for leg in pair['legs']:
+                      assert type(leg['postProfileOwnedBytes']) is int and leg['postProfileOwnedBytes']>0
+                      assert leg['ownedCapacitySampleNS']>=0
+              summaries.append({'mode':mode,'assets':count,'file':f.name,'sha256':hashlib.sha256(f.read_bytes()).hexdigest(),
+                  'pairs':observations,'postProfileOwnedBytes':[leg['postProfileOwnedBytes'] for pair in r['pairs'] for leg in pair['legs']]})
+              shutil.rmtree(store)
+          report={'status':'diagnostic-verified','acceptance':False,'variant':'H','summaries':summaries,'C100':'NOT_RUN',
+              'scope':'existing paired harness retargeted to existing H in disposable source; actual runtime unchanged; observed capacity excludes allocator/other worlds/UI/physical footprint; fixed-work diagnostic is not C timing or device proof'}
+          (p/'H-PAIRED-STUDY.json').write_text(json.dumps(report,indent=2)+'\n')
+          PYCODE
+      - name: Always verify unchanged actual source
+        if: always()
+        run: |
+          set -euo pipefail
+          python3 -B Checks/financial-diagnostics.py --guard --selftest > h-paired-results/source-guard-after.txt
+          python3 -B Experiments/R005Swift/candidate_proof_inputs.py check h-paired-results/runtime-inputs.json
+          git diff --exit-code
+          rm -rf .h-paired-study
+          echo 'H diagnostic only; all actual42runtime inputs unchanged; no C100 or device acceptance.' > h-paired-results/scope.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r005-h-paired-study
+          path: h-paired-results/
+          if-no-files-found: error
