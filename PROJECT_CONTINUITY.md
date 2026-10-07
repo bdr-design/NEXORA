@@ -1,5 +1,12 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Current allowed live49dcf47e/treeac9e37db (local0a9ba917 equal tree).
+Writer contention37568520463/job112621670063 running: six builds PASS,
+canonical/lifecycle/K3/paired1M pending. Actual42inputs remain observer source;
+C5 overhead FAILED1.38225 and memory NOT_FIXED. Bounded ownership follow-up
+proposed only: cold-credit aliases/backpressure/partial buffers must be proven,
+no hot edits or new runtime model. C OPEN S/H; no100/main/app/device acceptance.
+
 Observer qualified C5 run37567830698 collected SUCCESS but eligibility FAILED:
 H1M5 overhead1.3822529614>1.10; beginp9942042ns/5, advancep991009583ns/1242,
 zero idle/paired/queue PASS. Artifact11459687324 ZIP SHA256
