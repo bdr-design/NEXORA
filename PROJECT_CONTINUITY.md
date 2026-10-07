@@ -1,5 +1,12 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Original successor run37554438056 FAILED in Debug H257 cold expected-byte
+assertion; all five builds PASS, full bounded matrix/comparison NOT_RUN.
+Artifact11453563427 ZIP SHA256d2abf84c48ca7347348ed7f58e96cd35f3655675e526c30a2a27e86944f74aab
+independently verified and failure retained. Corrected test live36675c81/
+treea57532c1, local146c3ae4 equal tree; run37554761173 building. Correction
+only accounts4B physical word padding; no C, threshold, or payload change.
+
 Successor published e2b5e52f/treec2ebb092, local38fecf29 exact tree; bounded
 run37554438056 building. Partial-page numerical audit found the new257 test
 expected5140 cold payload bytes but physical word clone5144B (4B padding).

@@ -111,3 +111,11 @@ AB/K الكاملة على المصدر المؤهل التالي.
 cold payload، لكن كلمة UInt64 الأخيرة تنسخ padding4B أيضًا، فالحجم الفيزيائي
 5144B. الحساب صُحح إلى ceil8Bytes دون تغيير serialized payload أو التنفيذ
 أو بوابات الأداء. تشغيل37554438056 الأصلي يستمر، وأي فشل لا يُعاد تصنيفه.
+
+النتيجة الفعلية37554438056 **FAILED** عند00:57Z في Debug H257 بالرسالة
+`cold mutation must copy and report every changed cold page`. كل5builds
+اجتازت وS Debug lifecycle اجتازت؛ bounded matrix والمقارنة لم تنطلقا.
+Artifact11453563427 ZIP SHA256
+`d2abf84c48ca7347348ed7f58e96cd35f3655675e526c30a2a27e86944f74aab` تحقق
+مستقلًا وحُفظ مع FAILED-COLD-TEST.json وfailures.apple. تصحيح الاختبار على
+36675c81/treea57532c1 يجري في run37554761173؛ لا قبول من build وحدها.
