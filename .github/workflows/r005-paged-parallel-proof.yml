@@ -1,0 +1,281 @@
+name: R005 source proof with six required functional matrix parts
+'on':
+  push:
+    branches:
+    - diagnostic/r005-design-1m-20260930
+permissions:
+  contents: read
+  actions: read
+jobs:
+  routing-guard:
+    if: ${{ contains(github.event.head_commit.message, '[r005-paged-parallel-proof]') }}
+    runs-on: ubuntu-latest
+    env:
+      HEAD_MESSAGE: ${{ github.event.head_commit.message }}
+    steps:
+    - name: Require only the parallel source-proof execution marker
+      run: |
+        python3 -B - <<'PYCODE'
+        import os
+        m=os.environ['HEAD_MESSAGE']
+        assert '[r005-paged-parallel-proof]' in m and '[r005-evidence-only]' in m
+        excluded=['[r005-paged-proof]','[r005-paged-c-micro]','[r005-paged-c-100]',
+            '[r005-c-targeted]','[r005-micro]','[r005-c-functional]',
+            '[r005-b-full]','[r005-paired-profile]','[r005-epoch-pages]','[r005-paged-candidate]']
+        assert not any(tag in m for tag in excluded),'conflicting execution marker'
+        print('PASS parallel A/B/K proof only; C100 cannot start here')
+        PYCODE
+  source-base-proof:
+    if: ${{ contains(github.event.head_commit.message, '[r005-paged-parallel-proof]') && contains(github.event.head_commit.message, '[r005-evidence-only]') }}
+    runs-on: macos-15
+    timeout-minutes: 180
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+        fetch-depth: 1
+    - name: Record source flags and unchanged acceptance rules
+      run: |
+        set -euo pipefail
+        mkdir -p paged-proof
+        git rev-parse HEAD > paged-proof/commit.txt
+        git rev-parse HEAD^{tree} > paged-proof/tree.txt
+        swift --version > paged-proof/environment.txt
+        xcodebuild -version >> paged-proof/environment.txt
+        sw_vers >> paged-proof/environment.txt
+        sysctl hw.model hw.ncpu hw.memsize >> paged-proof/environment.txt
+        python3 -B Checks/financial-diagnostics.py --guard --selftest > paged-proof/source-guard-before.txt
+        python3 -B -m unittest discover -s Experiments/R005Swift/tests -v > paged-proof/proof-gates.txt 2>&1
+        python3 -B Experiments/R005Swift/candidate_proof_inputs.py write paged-proof/runtime-inputs.json
+        printf '%s\n' 'A: EPOCH_PAGES Release' 'B/K: STAGE_C EPOCH_PAGES Debug Release TSan' 'C100: NOT_RUN' 'K10 historical token targets retained epoch buffers; queue bytes=0' > paged-proof/build-flags.txt
+    - name: Fresh A Release build without saving hooks
+      run: |
+        set -euo pipefail
+        cd Experiments/R005Swift
+        swift build --scratch-path .build-paged-a -c release -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../paged-proof/build-a-release.txt
+        cc -dynamiclib -O2 -Wall -Wextra -Werror AllocationObserver.c -ISources/ProbePlatform/include -o ../../paged-proof/AllocationObserver.dylib
+    - name: Fresh A health and 3 processes by 10 runs at 100k 1M 2M on S H
+      run: |
+        set -euo pipefail
+        cd Experiments/R005Swift
+        export NXR_ALLOCATOR_DYLIB="$PWD/../../paged-proof/AllocationObserver.dylib"
+        python3 -B stage005_a.py .build-paged-a/release/nxr-swift-probe ../../paged-proof/STAGE005-A.json 2>&1 | tee ../../paged-proof/a-run.txt
+    - name: Build source-bound B and C functionality in Debug Release TSan
+      run: |
+        set -euo pipefail
+        cd Experiments/R005Swift
+        swift build --scratch-path .build-paged-full-debug -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../paged-proof/build-full-debug.txt
+        swift build --scratch-path .build-paged-full-release -c release -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../paged-proof/build-full-release.txt
+        swift build --scratch-path .build-paged-full-tsan --sanitize=thread -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../paged-proof/build-full-tsan.txt
+    - name: Current-source bounded cross-build and epoch ownership validation
+      run: |
+        set -euo pipefail
+        cd Experiments/R005Swift
+        swift build --scratch-path .build-paged-full-base -c release -Xswiftc -DSTAGE_C -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee ../../paged-proof/build-base-release.txt
+        python3 -B paged_candidate.py .build-paged-full-base/release/nxr-swift-probe .build-paged-full-debug/debug/nxr-swift-probe .build-paged-full-release/release/nxr-swift-probe .build-paged-full-tsan/debug/nxr-swift-probe ../../paged-proof/bounded-matrix ../../paged-proof/AllocationObserver.dylib 2>&1 | tee ../../paged-proof/bounded-matrix-run.txt
+        for mode in debug release tsan; do
+          config="$mode"
+          if test "$mode" = tsan; then config=debug; fi
+          for variant in S H; do
+            TSAN_OPTIONS=halt_on_error=1 ".build-paged-full-$mode/$config/nxr-swift-probe" paged-candidate-lifecycle "../../paged-proof/lifecycle-$mode-$variant" "$variant" > "../../paged-proof/lifecycle-$mode-$variant.json" 2> "../../paged-proof/lifecycle-$mode-$variant.stderr.txt"
+            rm -rf "../../paged-proof/lifecycle-$mode-$variant"
+          done
+        done
+    - name: Fresh B 30-day 60-record retention proof and quotas on the new source
+      run: |
+        set -euo pipefail
+        cd Experiments/R005Swift
+        python3 -B stage005_b.py .build-paged-full-release/release/nxr-swift-probe ../../paged-proof/STAGE005-B.json 2>&1 | tee ../../paged-proof/b-run.txt
+        variant="$(python3 -c 'import json; print(json.load(open("../../paged-proof/STAGE005-A.json"))["decisionA"]["chosen"])')"
+        command=stage-c-crash-bootstrap
+        if test "$variant" = H; then command=stage-c-h-crash-bootstrap; fi
+        .build-paged-full-release/release/nxr-swift-probe "$command" ../../paged-proof/quota-snapshot 1000000 > ../../paged-proof/SNAPSHOT-1M-CHOSEN.json
+        rm -rf ../../paged-proof/quota-snapshot
+        python3 -B candidate_proof_inputs.py quota ../../paged-proof/STAGE005-B.json ../../paged-proof/SNAPSHOT-1M-CHOSEN.json ../../paged-proof/B-QUOTA.json
+    - name: Fresh B recovery and torn-manifest continuation in Debug Release TSan
+      run: |
+        set -euo pipefail
+        cd Experiments/R005Swift
+        for mode in debug release tsan; do
+          config="$mode"
+          if test "$mode" = tsan; then config=debug; fi
+          TSAN_OPTIONS=halt_on_error=1 python3 -B stage005_b_crash.py ".build-paged-full-$mode/$config/nxr-swift-probe" "../../paged-proof/B-RECOVERY-$mode.json" 2>&1 | tee "../../paged-proof/b-recovery-$mode.txt"
+        done
+    - name: Always enforce source identity and preserve boundaries
+      if: always()
+      run: |
+        set -euo pipefail
+        python3 -B Checks/financial-diagnostics.py --guard --selftest > paged-proof/source-guard-after.txt
+        python3 -B Experiments/R005Swift/candidate_proof_inputs.py check paged-proof/runtime-inputs.json
+        bad="$(grep -rnE 'Unsafe|withUnsafe' Experiments/R005Swift/Sources/SwiftProbe --include='*.swift' | grep -v '/Snapshot.swift:' || true)"
+        test -z "$bad"
+        ! grep -rnE '@unchecked Sendable|nonisolated\(unsafe\)|unowned\(unsafe\)|Unmanaged|UnsafeMutable|unsafeBitCast' Experiments/R005Swift/Sources/SwiftProbe --include='*.swift'
+        git diff --exit-code
+        find Experiments/R005Swift/Sources -type f -exec shasum -a 256 {} \; > paged-proof/source-sha256.txt
+        echo 'Fresh A/B and bounded matrix only. Six matrix parts are mandatory before combined functional acceptance. C100 NOT_RUN; historical failures unchanged.' > paged-proof/scope.txt
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: r005-paged-proof-base
+        path: paged-proof/
+        if-no-files-found: error
+    needs: routing-guard
+  functional-matrix:
+    needs: source-base-proof
+    runs-on: macos-15
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        mode:
+        - debug
+        - release
+        - tsan
+        variant:
+        - S
+        - H
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      NXR_MODE: ${{ matrix.mode }}
+      NXR_VARIANT: ${{ matrix.variant }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+        fetch-depth: 1
+    - name: Record matrix source flags and environment
+      run: |
+        set -euo pipefail
+        meta="paged-functional/k-meta-$NXR_MODE-$NXR_VARIANT"
+        mkdir -p "$meta"
+        git rev-parse HEAD > "$meta/commit.txt"
+        git rev-parse HEAD^{tree} > "$meta/tree.txt"
+        swift --version > "$meta/environment.txt"
+        xcodebuild -version >> "$meta/environment.txt"
+        sw_vers >> "$meta/environment.txt"
+        sysctl hw.model hw.ncpu hw.memsize >> "$meta/environment.txt"
+        python3 -B Checks/financial-diagnostics.py --guard --selftest > "$meta/source-guard-before.txt"
+        python3 -B Experiments/R005Swift/candidate_proof_inputs.py write "$meta/runtime-inputs.json"
+        python3 -B - <<'PYCODE'
+        import json,os,pathlib
+        mode,variant=os.environ['NXR_MODE'],os.environ['NXR_VARIANT']
+        assert mode in ('debug','release','tsan') and variant in ('S','H')
+        p=pathlib.Path(f'paged-functional/k-meta-{mode}-{variant}/build-flags.json')
+        p.write_text(json.dumps({'mode':mode,'variant':variant,'flags':['STAGE_C','EPOCH_PAGES'],
+            'threadSanitizer':mode=='tsan','population':1000000,'C100':'NOT_RUN'},indent=2)+'\n')
+        PYCODE
+    - name: Build one required Debug Release or TSan layout test binary
+      run: |
+        set -euo pipefail
+        meta="../../paged-functional/k-meta-$NXR_MODE-$NXR_VARIANT"
+        cd Experiments/R005Swift
+        build_args=(-c debug)
+        if test "$NXR_MODE" = release; then build_args=(-c release); fi
+        if test "$NXR_MODE" = tsan; then build_args=(-c debug --sanitize=thread); fi
+        swift build --scratch-path .build-paged-matrix "${build_args[@]}" -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror 2>&1 | tee "$meta/build.txt"
+    - name: Required 1M K1-K10 and torn WAL continuation for this matrix part
+      run: |
+        set -euo pipefail
+        cd Experiments/R005Swift
+        config="$NXR_MODE"
+        if test "$NXR_MODE" = tsan; then config=debug; fi
+        bin=".build-paged-matrix/$config/nxr-swift-probe"
+        fixture="../../paged-functional/wal-$NXR_MODE-$NXR_VARIANT"
+        TSAN_OPTIONS=halt_on_error=1 "$bin" stage-c-wal-continuation "$fixture" "$NXR_VARIANT" > "../../paged-functional/WAL-CONTINUATION-$NXR_MODE-$NXR_VARIANT.json" 2> "../../paged-functional/wal-$NXR_MODE-$NXR_VARIANT.stderr.txt"
+        rm -rf "$fixture"
+        TSAN_OPTIONS=halt_on_error=1 python3 -B stage005_c_crash.py "$bin" "../../paged-functional/KILLS-1M-$NXR_MODE-$NXR_VARIANT.json" "$NXR_VARIANT" 2>&1 | tee "../../paged-functional/kills-$NXR_MODE-$NXR_VARIANT.txt"
+    - name: Always enforce matrix source identity
+      if: always()
+      run: |
+        set -euo pipefail
+        meta="paged-functional/k-meta-$NXR_MODE-$NXR_VARIANT"
+        python3 -B Checks/financial-diagnostics.py --guard --selftest > "$meta/source-guard-after.txt"
+        python3 -B Experiments/R005Swift/candidate_proof_inputs.py check "$meta/runtime-inputs.json"
+        git diff --exit-code
+        find Experiments/R005Swift/Sources -type f -exec shasum -a 256 {} \; > "$meta/source-sha256.txt"
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: r005-paged-k-${{ matrix.mode }}-${{ matrix.variant }}
+        path: paged-functional/
+        if-no-files-found: error
+  combined-source-proof:
+    needs:
+    - source-base-proof
+    - functional-matrix
+    if: ${{ always() && contains(github.event.head_commit.message, '[r005-paged-parallel-proof]') && contains(github.event.head_commit.message, '[r005-evidence-only]') }}
+    runs-on: ubuntu-latest
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      BASE_JOB_RESULT: ${{ needs.source-base-proof.result }}
+      MATRIX_JOB_RESULT: ${{ needs.functional-matrix.result }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+        fetch-depth: 1
+    - name: Record aggregate identity even if a required part failed
+      run: |
+        set -euo pipefail
+        mkdir -p paged-proof
+        git rev-parse HEAD > paged-proof/aggregate-commit.txt
+        git rev-parse HEAD^{tree} > paged-proof/aggregate-tree.txt
+        python3 -B Experiments/R005Swift/candidate_proof_inputs.py write paged-proof/aggregate-runtime-inputs.json
+        python3 -B Checks/financial-diagnostics.py --guard --selftest > paged-proof/aggregate-guard-before.txt
+    - uses: actions/download-artifact@v4
+      with:
+        name: r005-paged-proof-base
+        path: paged-proof
+    - uses: actions/download-artifact@v4
+      if: ${{ needs.source-base-proof.result == 'success' }}
+      with:
+        pattern: r005-paged-k-*
+        merge-multiple: true
+        path: paged-proof
+    - name: Accept only complete matching A B and all six functional parts
+      run: |
+        set -euo pipefail
+        python3 -B - <<'PYCODE'
+        import hashlib,json,os,pathlib,subprocess,sys
+        sys.path.insert(0,'Experiments/R005Swift')
+        from candidate_proof_inputs import manifest,functional_summary,quotas
+        from proof_gates import stage_a_failures
+        p=pathlib.Path('paged-proof')
+        assert os.environ['BASE_JOB_RESULT']==os.environ['MATRIX_JOB_RESULT']=='success'
+        source=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+        tree=subprocess.check_output(['git','rev-parse','HEAD^{tree}'],text=True).strip()
+        assert (p/'commit.txt').read_text().strip()==source and (p/'tree.txt').read_text().strip()==tree
+        inputs=manifest()
+        assert json.loads((p/'runtime-inputs.json').read_text())==inputs
+        expected={f'k-meta-{mode}-{variant}' for mode in ('debug','release','tsan') for variant in ('S','H')}
+        assert {d.name for d in p.glob('k-meta-*') if d.is_dir()}==expected
+        for mode in ('debug','release','tsan'):
+            for variant in ('S','H'):
+                q=p/f'k-meta-{mode}-{variant}'
+                assert (q/'commit.txt').read_text().strip()==source and (q/'tree.txt').read_text().strip()==tree
+                assert json.loads((q/'runtime-inputs.json').read_text())==inputs
+                flags=json.loads((q/'build-flags.json').read_text())
+                assert flags=={'mode':mode,'variant':variant,'flags':['STAGE_C','EPOCH_PAGES'],
+                    'threadSanitizer':mode=='tsan','population':1000000,'C100':'NOT_RUN'}
+                assert 'PASS baseline' in (q/'source-guard-before.txt').read_text()
+                assert 'PASS baseline' in (q/'source-guard-after.txt').read_text()
+        a=json.loads((p/'STAGE005-A.json').read_text())
+        assert a['status']=='pass' and not a['gateFailures'] and not stage_a_failures(a['A'],a['health'])
+        assert json.loads((p/'B-QUOTA.json').read_text())==quotas(p/'STAGE005-B.json',p/'SNAPSHOT-1M-CHOSEN.json')
+        functional_summary(p)
+        (p/'parallel-part-proof.json').write_text(json.dumps({'status':'pass','source':source,'tree':tree,
+            'parts':sorted(expected),'C100':'NOT_RUN','scope':'same complete tests; functional jobs use independent macOS hosts, A and each later paired/C measure stay within their own single host'},indent=2)+'\n')
+        print('PASS fresh source-bound A/B and every Debug/Release/TSan S/H 1M K/WAL part')
+        PYCODE
+        python3 -B Checks/financial-diagnostics.py --guard --selftest > paged-proof/aggregate-source-guard.txt
+        python3 -B Experiments/R005Swift/candidate_proof_inputs.py check paged-proof/runtime-inputs.json
+        git diff --exit-code
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: r005-paged-source-proof
+        path: paged-proof/
+        if-no-files-found: error

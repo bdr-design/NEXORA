@@ -162,3 +162,36 @@ Stage2 أوDevice أوشهادة السلاسة. أي دمج إنتاجي يحت
 محلية توقفت قبلrender لأن Playwright لا يملك browser executable فيهذه
 البيئة. لا يوجد ادعاء screenshot أوتحقق layout مرئي أوقبول iPhone. الملف
 الأصلي يبقى متاحًا للمراجعة، ولا ربط بمحرك اللعبة أوأثر مالي له.
+
+## تسريع إعادة الإثبات مع إبقاء التغطية كاملة — prepared / NOT_RUN
+
+مراجعة اليوم عند2026-10-07T00:00Z: AGENTS والاستمرارية قُرئا كاملًا؛ الفرع
+diagnostic/r005-design-1m-20260930 الحي73dffa999e902db6cdebcb66fc02c6eeb9ef10c1،
+tree63b9a0fc3492498943375cc2cfe804a31858750c، main38ce39cf ثابت. المصدر هو
+R001 وتحديثاته المسموحة فقط؛ لم يُفتح تنفيذ المرجع أوالفروع المحظورة.
+
+workflow بديل prepared خلف marker مستقل `[r005-paged-parallel-proof]`:
+يشغل A/B/bounded matrix بالأوامر الأصلية نفسها أولًا، ثم ستة jobs مطلوبة
+Debug/Release/TSan × S/H لـK1–K10 عند1M وWAL continuation. fail-fast=false
+يحفظ نتائج الأجزاء الأخرى عند فشل جزء؛ لا continue-on-error. job جمع أخير
+يطلب نجاح جميع الأجزاء، ويطابق commit/tree و42runtime inputs وflags لكل
+جزء، ثم يعيد التحقق من A/B/quota وكل ملفات التعافي. ملفات الأجزاء مستقلة
+الأسماء، فلا يُستبدل دليل تخطيط بدليل آخر عند الجمع. Artifact قبول وظيفي
+مجمع لا يكتسب صلاحية C حتى يمر verifier الكامل؛ الفشل أوالنقص يبقي C مفتوحة.
+
+لم يُشغَّل هذا البديل بعد، ولم يُلغَ التشغيل التسلسلي37544554772. القياسات
+الحساسة A وpaired/C تبقى داخل Apple host واحد لكل تشغيل/مقارنة؛ الأجزاء
+الوظيفية المستقلة تسجل بيئات hosts مختلفة، ولا تُمزج أزمانها كقياس أداء.
+Static YAML/Python/shell وexact A/B/bounded command equality اجتازت محليًا.
+فشل harness أولًا بـKeyError:name لخطواتcheckout/upload غيرالمسماة؛ أصلح
+harness فقط وحُفظ الفشل فيfailures.json. لا نتيجة Apple أوgate قديمة تغيرت.
+
+مراجع أدوات المنصة الأولية فقط، لا مصادر تنفيذ لعبة:
+https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax
+https://github.com/actions/upload-artifact/blob/main/docs/MIGRATION.md
+
+قبل تشغيل البديل، ثبت القرار: إعادة A فيه تختبر wiring وقابلية التكرار،
+ولا تختار نتيجة أكثر ملاءمة. مصدر قرار A المخطط لـC يبقى d415c96c / run
+37544554772. pins في qualified-C تشير لهذا المصدر؛ لا تفتح حملة C100 من
+فحص المسار الموازي. كل42runtime inputs متطابقة، والمصدر الساخن والصيغة
+والـcadence لم تتغير. أي فشل وظيفي جديد يحفظ ويُراجع قبل تأهيل C.

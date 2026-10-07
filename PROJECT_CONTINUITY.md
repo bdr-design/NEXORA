@@ -1,5 +1,23 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Parallel wiring validation selected once on identical42runtime inputs;
+serial37544554772 on d415c96c remains the preselected A decision for C. Parallel
+A is a workflow/reproducibility check, never a favorable-choice replacement.
+No hot source, thresholds or C cadence changed; qualification pins still blocked.
+
+UTC day preflight at2026-10-07T00:00Z: AGENTS/continuity full read, live73dffa99 /
+tree63b9a0fc and main38ce39cf verified; allowed line only. Parallel-proof workflow
+prepared, NOT_RUN: unchanged A/B/bounded commands, six mandatory Debug/Release/
+TSan×S/H 1M K parts, exact source/flags and complete aggregate; no threshold cut.
+Local YAML/Python/shell/command-equality PASS; initial harness KeyError preserved.
+Current serial37544554772 remains running, not cancelled; C100 still NOT_RUN.
+
+Durable checkpoint published atlive73dffa999e902db6cdebcb66fc02c6eeb9ef10c1,
+tree63b9a0fc3492498943375cc2cfe804a31858750c; local22d544fe byte/tree equal.
+Only docs/continuity/new qualified-C workflow changed;42runtime inputs fixed.
+All checkpoint jobs SKIPPED as intended, no micro/C100 triggered. Run37544554772
+continues on d415c96c, full K matrix pending. Main38ce39cf and failures unchanged.
+
 Current-source review at2026-10-06T23:39Z: allowed lived415c96c/tree66842b4b,
 main38ce39cf unchanged, AGENTS/continuity read, no denied/reference code used.
 Fresh proof K1–K10 still running. Draft qualified C adds real five-save failure
