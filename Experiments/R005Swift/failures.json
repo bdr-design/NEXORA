@@ -18,7 +18,8 @@
     "2026-10-07 evidence publication payload harness FAILED with ValueError: too many values to unpack before any blob/ref mutation: git ls-files -s has three metadata fields plus a tab-separated path. Corrected the harness to split metadata and path first. Local evidence commit retained; no source, Apple outcome, or historical failure changed.",
     "2026-10-07 independent paged-C evidence analyzer initially FAILED with KeyError: snapshotSource. The unchanged raw C schema has no such field. Corrected the analyzer to bind immutable ownership through the exact 42-input manifest and recorded compiler flags instead; real ZIP/paired/micro verification then passed. No timing, counter, hot source, or original failure changed.",
     "2026-10-07 post-publication partial-page arithmetic audit rejected the new H257 cold test expectation: physical word clone is 5144B, not the 5140B canonical payload (4B padding). Corrected only the test expected physical byte total; snapshot payload/ownership/gates unchanged. Original Apple run37554438056 on e2b5e52f remains running and its actual result will be retained.",
-    "2026-10-07 bounded artifact verifier initially FAILED with KeyError: status when treating selftest as a status envelope. Its schema contains boundaries and mutations. Corrected the analysis harness to verify boundaries.status=pass and all eight detected mutations per mode explicitly; complete independent artifact verification then PASS. No Apple/source/gate result changed."
+    "2026-10-07 bounded artifact verifier initially FAILED with KeyError: status when treating selftest as a status envelope. Its schema contains boundaries and mutations. Corrected the analysis harness to verify boundaries.status=pass and all eight detected mutations per mode explicitly; complete independent artifact verification then PASS. No Apple/source/gate result changed.",
+    "2026-10-07 failed writer-study artifact verification initially stopped with FileNotFoundError: the preceding rg lookup used the wrong source files and prevented extraction. Repeated exact ZIP extraction and actual CLI guard lookup across Sources; crash-bootstrap supports1M only. Corrected only the workflow invocation to1M, without modifying runtime guard or thresholds. No source or original failure was reclassified."
   ],
   "apple": [
     {
@@ -250,6 +251,23 @@
         "transport-debug.json": "a49cfb1faedb88e8b12747a0e8491ad370fe6351b41b28bf7e29a5eef7a0c917",
         "tree.txt": "8d70d314411d0d15a8b19e84862ad628e1097798837697dc47017aa49a7e6b73"
       }
+    },
+    {
+      "commit": "75b87557bece8985ae1759f4d7f2b3aec32be269",
+      "tree": "82ead4e1e956964b2eb0620eae79bf3fa4cecb3e",
+      "run": 37557127125,
+      "job": 112585817924,
+      "status": "failure",
+      "artifact": 11455177130,
+      "artifactSHA256": "de778aa7e392ee4f23890e0fbea221e26d4dc3b41a159f76c48b7c43e12e375e",
+      "scope": "isolated disposable writer micro; actual runtime unchanged",
+      "passedBeforeFailure": [
+        "six Debug/Release/TSan builds",
+        "base Debug S4096 three epochs",
+        "unchanged runtime and before/after source guard"
+      ],
+      "failedGate": "existing crash-bootstrap command rejects4096: invalid: stage C crash population",
+      "correction": "use existing supported1M population only for limited K3 cases; keep4096 canonical matrix and all runtime source/gates unchanged"
     }
   ],
   "diagnosticThresholdMisses": [

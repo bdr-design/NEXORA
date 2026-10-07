@@ -1,0 +1,42 @@
+{
+  "status": "failure",
+  "acceptance": false,
+  "source": "75b87557bece8985ae1759f4d7f2b3aec32be269",
+  "tree": "82ead4e1e956964b2eb0620eae79bf3fa4cecb3e",
+  "run": 37557127125,
+  "job": 112585817924,
+  "artifact": 11455177130,
+  "zipSHA256": "de778aa7e392ee4f23890e0fbea221e26d4dc3b41a159f76c48b7c43e12e375e",
+  "runtimeInputs": 42,
+  "passed": [
+    "six Debug/Release/TSan builds",
+    "base Debug S4096 three epochs",
+    "unchanged runtime and before/after source guard"
+  ],
+  "failed": "existing crash-bootstrap command rejects4096: invalid: stage C crash population",
+  "K3": "NOT_RUN",
+  "ABBA": "NOT_RUN",
+  "C100": "NOT_RUN",
+  "correction": "use existing supported1M population only for limited K3 cases; keep4096 canonical matrix and all runtime source/gates unchanged",
+  "evidenceSHA256": {
+    "AllocationObserver.dylib": "4875dfe034462dee97d3bde602780ad75e10c486a0dec1b9cf31f3b1524a56bf",
+    "bounded-base-debug-S.json": "839b79038c81e34bbd51049bab654ccd6e4172ac7a48fbaefa87eb5449d90cc4",
+    "bounded-base-debug-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build-base-debug.txt": "16ac6cf72c890317a175243ba4f1eb4d752714a3aa857c0d5165900f2d320f57",
+    "build-base-release.txt": "203decc5e9ee0b0f0266d2b93913372ee9772e15a4bbee92b67015186e4d164e",
+    "build-base-tsan.txt": "a0808760fbce7e47abf32c172e85a6ca7501d6ccc7ef8d2375f697dd481ce2a4",
+    "build-packet-debug.txt": "778dd3c12bb86d52aba7db89d3923b0b2d269dae78f4f7213bbedbfe6a57521f",
+    "build-packet-release.txt": "682a4f0754b428b263fbed51ccc587410aa81d31cabf394981d3f404933c1a58",
+    "build-packet-tsan.txt": "e336872469eec704059a84b80bf88d4bdd4f63f6fa7ae8dd8e458c62056db3ed",
+    "commit.txt": "13d587f119b9aa703232aa6f6e851620999fa1b29799e82fdf66353dabfa330f",
+    "environment.txt": "2279882ee44d1e0fe474b3f0fba1648b8427102ea0bbe469246f67b188b19deb",
+    "runtime-inputs.json": "f0c7c36513c810957189aee1b56a60ed95022f1188d446435d0bf685fabcd77f",
+    "scope.txt": "da1fd3634a5be06fb3ed0e289f5291e064a88192ae93967ec2bff1884e10319e",
+    "source-guard-after.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "source-guard-before.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "study-patch-sha256.txt": "eff2a271c123ae5c110a869a1e87af6cdf960a80afee49c7570b8dafaff5f8bc",
+    "study-source-base.txt": "7df95db263a8ee649164cd1b9bc8e7b684b6c6c647f4ada3753b3eb94584c28e",
+    "study-source-packet.txt": "b808d6b7ff231b8ef12d897cf955c3e8b46d162f07524b01ea29aa572b78cbda",
+    "tree.txt": "c85e820a7fd12a4eda99b8abf70bc2a085ea632e92c1e82d9f5745aa7939a5ae"
+  }
+}

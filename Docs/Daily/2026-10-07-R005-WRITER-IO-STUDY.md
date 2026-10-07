@@ -45,3 +45,17 @@ mirror validation مثل bounded workload، ولا تعتبر C أوiPhone smoot
 تشغيل C100: إذا فشل المرشح الجاري C يُراجع السبب أولًا، وأي تطبيق في runtime
 يلزمه bounded checks ثم A/B/TSan/K1–K10 S/H1M ومصدر مؤهل جديد. الصورة
 الاحتياطية الكاملة والميزانية الإنتاجية والجهاز ما زالت مفتوحة.
+
+## إخفاق إعداد الفحص وتصحيحه
+
+run37557127125 FAILED، artifact11455177130، ZIP SHA256
+`de778aa7e392ee4f23890e0fbea221e26d4dc3b41a159f76c48b7c43e12e375e`.
+الستة builds اجتازت، وbase Debug S4096 canonical/WAL على ثلاثةepochs
+اجتاز؛ الأمر الحالي crash-bootstrap رفض4096 بـinvalid: stage C crash
+population. K3 والمقارنة ABBA لم يُنفذا، فلا نتيجة أداء لهذه المحاولة.
+
+الفحص المباشر لعقد CLI أثبت أن crash-bootstrap يقبل1M فقط. التصحيح إعداد
+workflow فقط:12حالة K3 لكلS/H×Debug/Release/TSan×base/packet عند1M، لا
+توسيع للـguard. مصفوفةcanonical المحدودة تبقى4096، والمقارنةH100k كما
+خُطط. لا تعديل للمصدر الفعلي أو بوابة أو معنى اختبار؛ التشغيل السابق
+يبقى FAILED محفوظًا. الـ1M هنا SIGKILL محدودK3، وليس حملةC100.

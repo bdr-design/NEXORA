@@ -101,11 +101,11 @@ jobs:
                       b=binary(arm,mode);store=(p/f'kill-{arm}-{mode}-{variant}').resolve()
                       prefix='stage-c-h' if variant=='H' else 'stage-c'
                       os.environ['TSAN_OPTIONS']='halt_on_error=1'
-                      boot=run(b,prefix+'-crash-bootstrap',store,4096)
+                      boot=run(b,prefix+'-crash-bootstrap',store,1000000)
                       kill_at(b,store,'c.k3.mid_record',command=prefix+'-crash-action')
                       restored=run(b,prefix+'-recover',store)
                       assert restored['epoch']==1 and restored['digest']==boot['digest']
-                      kills.append({'arm':arm,'mode':mode,'variant':variant,'population':4096,
+                      kills.append({'arm':arm,'mode':mode,'variant':variant,'population':1000000,
                           'point':'c.k3.mid_record','signal':'SIGKILL','exactDigest':True})
                       shutil.rmtree(store)
           for ordinal,arm in enumerate(('base','packet','packet','base'),1):
@@ -115,7 +115,7 @@ jobs:
           report={'status':'diagnostic-verified','acceptance':False,'rows':rows,'K3':kills,
               'H100kOrder':['base','packet','packet','base'],'medianWriterNS':med,
               'diagnosticPacketToBaseRatio':med['packet']/med['base'],'C100':'NOT_RUN',
-              'scope':'temporary writer copies only; exact canonical snapshots/WAL and bounded K3; main runtime unchanged; no full K/A/B/C qualification'}
+              'scope':'temporary writer copies only; exact canonical snapshots/WAL and limited K3 at1M; main runtime unchanged; no full K/A/B/C qualification'}
           (p/'WRITER-IO-STUDY.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
           PYCODE
       - name: Always verify actual runtime did not change

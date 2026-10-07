@@ -1,5 +1,13 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Isolated writer study37557127125 FAILED: six builds and base Debug S4096
+canonical epochs passed, but K3 bootstrap rejects4096 existing population.
+Artifact11455177130 ZIP SHA256de778aa7e392ee4f23890e0fbea221e26d4dc3b41a159f76c48b7c43e12e375e
+independently verified and failures.apple retained. K3/ABBA NOT_RUN. Corrected
+workflow uses existing1M only for12limited K3 cases, leaves4096 matrix/42runtime
+inputs unchanged; no timing retry or gate weakening. Fresh37555679620 full K
+still running; C100 and device acceptance NOT_RUN.
+
 At2026-10-07T01:29Z, allowed live75b87557/tree82ead4e1 and main38ce39cf
 rechecked after complete AGENTS/continuity read. Isolated writer study launched
 as37557127125; actual42inputs remain fixed. Fresh base37555679620 SUCCESS:
