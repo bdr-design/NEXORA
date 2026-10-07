@@ -1,0 +1,967 @@
+{
+  "status": "diagnostic-verified",
+  "acceptance": false,
+  "source": "3fa0b0971e59929e96f4d7a9ecc684e7b2f2e475",
+  "tree": "f299455184276858e7623739fdc03efa44049174",
+  "run": 37567830698,
+  "artifact": 11459687324,
+  "zipSHA256": "73a2d95dcbab056dd053924587457a39b83f66680039b48c839a20ae8d747374",
+  "micro": {
+    "advanceCalls": 10155,
+    "advanceDuringSaveNS": {
+      "marginNS": 90417,
+      "max": 1155375,
+      "p50": 397375,
+      "p99": 1009583,
+      "samples": 1242
+    },
+    "allocationPairing": {
+      "firstViolationAllocations": 0,
+      "firstViolationCall": -1,
+      "firstViolationChunks": 0,
+      "maxExcess": 0,
+      "samples": 1242,
+      "violations": 0
+    },
+    "allocationsIdleMaxPerAdvance": 0,
+    "allocationsWhileSavingMaxPerAdvance": 0,
+    "assets": 1000000,
+    "barrierChunksMaxPerAdvance": 570,
+    "barrierCopy": {
+      "bytesPerSave": [
+        100500000,
+        69612832,
+        62581024,
+        61942048,
+        100500000
+      ],
+      "nsMax": 15294975,
+      "nsP50": 10073538,
+      "nsP99": 15294975,
+      "nsPerSave": [
+        13387961,
+        10073538,
+        6857095,
+        8302645,
+        15294975
+      ],
+      "samples": 5
+    },
+    "beginSaveNS": {
+      "marginNS": 57958,
+      "max": 42042,
+      "p50": 15416,
+      "p99": 42042,
+      "samples": 5
+    },
+    "exactRecoveredDigest": "aed3291397e4de24085e4a48c9224da3645876b5ec25b11c0f46854695d01c85",
+    "idleEvents": 8006441,
+    "idleNSPerEvent": 501.3538137606959,
+    "ignoredWALTailBytes": 0,
+    "limits": "Apple CI process/SIGKILL proof; WAL full-record process persistence, not physical power-cut certification; not iPhone acceptance",
+    "overheadRatio": 1.3822529614197347,
+    "overheadRatioMargin": -0.28225296141973466,
+    "peakQueuedBytes": 0,
+    "recoveredEpoch": 6,
+    "replayedCommands": 156,
+    "restoreNS": 922552292,
+    "saveNSPerEvent": 692.9977937898001,
+    "saves": 5,
+    "savingEvents": 993559,
+    "simulationPhases": {
+      "capturing": {
+        "barrierChunks": 22110,
+        "calls": 1242,
+        "events": 993559,
+        "ns": 688534195,
+        "nsPerEvent": 692.9977937898001,
+        "nsPerWorkUnit": 335.65273781046335,
+        "workUnits": 2051329
+      },
+      "idle": {
+        "barrierChunks": 0,
+        "calls": 8913,
+        "events": 8006441,
+        "ns": 4014059730,
+        "nsPerEvent": 501.3538137606959,
+        "nsPerWorkUnit": 295.7158113149028,
+        "workUnits": 13574045
+      },
+      "writerOnly": {
+        "barrierChunks": 0,
+        "calls": 0,
+        "events": 0,
+        "ns": 0,
+        "nsPerEvent": 0,
+        "nsPerWorkUnit": 0,
+        "workUnits": 0
+      }
+    },
+    "snapshotBytes": 100801772,
+    "snapshotBytesMax": 100801772,
+    "snapshotBytesMin": 100801772,
+    "status": "diagnostic",
+    "thresholds": {
+      "advanceDuringSaveP99NS": 1100000,
+      "beginSaveP99NS": 100000,
+      "idleAllocationsPerAdvance": 0,
+      "overheadRatio": 1.1
+    },
+    "variant": "H",
+    "writeNS": {
+      "max": 217997042,
+      "p50": 181765833,
+      "p99": 217997042,
+      "samples": 5
+    }
+  },
+  "microEligibility": {
+    "status": "failure",
+    "acceptance": false,
+    "scope": "real five-save candidate eligibility only; C100 NOT_RUN",
+    "gates": {
+      "beginP99": true,
+      "advanceP99": true,
+      "overhead": false,
+      "beginSamples": true,
+      "advanceSamples": true,
+      "pairedCoverage": true,
+      "pairedBound": true,
+      "idleZero": true,
+      "queueZero": true
+    },
+    "failedGates": [
+      "overhead"
+    ]
+  },
+  "pairedProfiles": {
+    "PAIRED-SMOKE-S.json": [
+      {
+        "pair": 1,
+        "order": [
+          "no-save",
+          "save"
+        ],
+        "matchedPhases": [
+          {
+            "mode": "all",
+            "matchedCalls": 5,
+            "events": 4096,
+            "saveAdvanceNS": 1645500,
+            "controlAdvanceNS": 1587624,
+            "deltaNS": 57876,
+            "diagnosticMatchedRatio": 1.0364544753669636,
+            "saveAdvanceP99NS": 512666
+          },
+          {
+            "mode": "saveActive",
+            "matchedCalls": 3,
+            "events": 2048,
+            "saveAdvanceNS": 785209,
+            "controlAdvanceNS": 747666,
+            "deltaNS": 37543,
+            "diagnosticMatchedRatio": 1.0502135980504663,
+            "saveAdvanceP99NS": 409125
+          },
+          {
+            "mode": "capturing",
+            "matchedCalls": 3,
+            "events": 2048,
+            "saveAdvanceNS": 785209,
+            "controlAdvanceNS": 747666,
+            "deltaNS": 37543,
+            "diagnosticMatchedRatio": 1.0502135980504663,
+            "saveAdvanceP99NS": 409125
+          },
+          {
+            "mode": "notInstalled",
+            "matchedCalls": 2,
+            "events": 2048,
+            "saveAdvanceNS": 860291,
+            "controlAdvanceNS": 839958,
+            "deltaNS": 20333,
+            "diagnosticMatchedRatio": 1.0242071627390894,
+            "saveAdvanceP99NS": 512666
+          }
+        ],
+        "components": {
+          "advance": {
+            "save": {
+              "allocationBytes": 0,
+              "allocations": 0,
+              "ns": 1645500
+            },
+            "control": {
+              "allocationBytes": 0,
+              "allocations": 0,
+              "ns": 1587624
+            },
+            "deltaNS": 57876
+          },
+          "service": {
+            "save": {
+              "allocationBytes": 0,
+              "allocations": 0,
+              "barrierEmits": 0,
+              "capturingNS": 10252,
+              "drainCalls": 5,
+              "ns": 10252,
+              "writerOnlyNS": 0
+            },
+            "control": {
+              "allocationBytes": 0,
+              "allocations": 0,
+              "barrierEmits": 0,
+              "capturingNS": 0,
+              "drainCalls": 0,
+              "ns": 249,
+              "writerOnlyNS": 0
+            },
+            "deltaNS": 10003
+          },
+          "reschedule": {
+            "save": {
+              "allocationBytes": 0,
+              "allocations": 0,
+              "barrierEmits": 1,
+              "ns": 1378458
+            },
+            "control": {
+              "allocationBytes": 0,
+              "allocations": 0,
+              "barrierEmits": 0,
+              "ns": 1372167
+            },
+            "deltaNS": 6291
+          },
+          "walAdvance": {
+            "save": {
+              "allocationBytes": 3940,
+              "allocations": 80,
+              "ns": 140876
+            },
+            "control": {
+              "allocationBytes": 3940,
+              "allocations": 80,
+              "ns": 119790
+            },
+            "deltaNS": 21086
+          },
+          "walReschedule": {
+            "save": {
+              "allocationBytes": 684,
+              "allocations": 15,
+              "ns": 19667
+            },
+            "control": {
+              "allocationBytes": 684,
+              "allocations": 15,
+              "ns": 12375
+            },
+            "deltaNS": 7292
+          }
+        },
+        "fullLoop": {
+          "saveNS": 6076166,
+          "controlNS": 3772667,
+          "diagnosticRatio": 1.6105757544994033
+        },
+        "writer": {
+          "allocationBytes": 59135,
+          "allocationObserverAvailable": true,
+          "allocations": 275,
+          "bytes": 411324,
+          "chunks": 26,
+          "dispatchToRunNS": 46875,
+          "finalizeNS": 1675875,
+          "peakQueuedBytes": 0,
+          "queueWaitNS": 1916,
+          "recordProcessWriteNS": 1306960,
+          "runNS": 3868083
+        },
+        "barrier": {
+          "bytes": 391168,
+          "copyNS": 25207,
+          "emits": 25
+        },
+        "setup": {
+          "save": {
+            "beginSave": {
+              "allocationBytes": 18876,
+              "allocations": 1,
+              "ns": 6042
+            },
+            "snapshotSink": {
+              "allocationBytes": 633,
+              "allocations": 7,
+              "ns": 20917
+            },
+            "stateInstall": {
+              "allocationBytes": 393292,
+              "allocations": 42,
+              "ns": 34750
+            }
+          },
+          "control": {
+            "beginSave": {
+              "started": false
+            },
+            "snapshotSink": {
+              "started": false
+            },
+            "stateInstall": {
+              "allocationBytes": 393292,
+              "allocations": 42,
+              "ns": 65583
+            }
+          }
+        }
+      }
+    ],
+    "PAIRED-PROFILE-S.json": [
+      {
+        "pair": 1,
+        "order": [
+          "no-save",
+          "save"
+        ],
+        "matchedPhases": [
+          {
+            "mode": "all",
+            "matchedCalls": 984,
+            "events": 1000000,
+            "saveAdvanceNS": 692496848,
+            "controlAdvanceNS": 865087477,
+            "deltaNS": -172590629,
+            "diagnosticMatchedRatio": 0.800493437266576,
+            "saveAdvanceP99NS": 4270625
+          },
+          {
+            "mode": "saveActive",
+            "matchedCalls": 245,
+            "events": 250880,
+            "saveAdvanceNS": 191500628,
+            "controlAdvanceNS": 260822412,
+            "deltaNS": -69321784,
+            "diagnosticMatchedRatio": 0.7342184535890267,
+            "saveAdvanceP99NS": 3394625
+          },
+          {
+            "mode": "capturing",
+            "matchedCalls": 245,
+            "events": 250880,
+            "saveAdvanceNS": 191500628,
+            "controlAdvanceNS": 260822412,
+            "deltaNS": -69321784,
+            "diagnosticMatchedRatio": 0.7342184535890267,
+            "saveAdvanceP99NS": 3394625
+          },
+          {
+            "mode": "idleInstalled",
+            "matchedCalls": 675,
+            "events": 683584,
+            "saveAdvanceNS": 470097388,
+            "controlAdvanceNS": 549909074,
+            "deltaNS": -79811686,
+            "diagnosticMatchedRatio": 0.8548638497280007,
+            "saveAdvanceP99NS": 6481333
+          },
+          {
+            "mode": "notInstalled",
+            "matchedCalls": 64,
+            "events": 65536,
+            "saveAdvanceNS": 30898832,
+            "controlAdvanceNS": 54355991,
+            "deltaNS": -23457159,
+            "diagnosticMatchedRatio": 0.5684531075884534,
+            "saveAdvanceP99NS": 1114750
+          }
+        ],
+        "components": {
+          "advance": {
+            "save": {
+              "allocationBytes": 0,
+              "allocations": 0,
+              "ns": 692496848
+            },
+            "control": {
+              "allocationBytes": 0,
+              "allocations": 0,
+              "ns": 865087477
+            },
+            "deltaNS": -172590629
+          },
+          "service": {
+            "save": {
+              "allocationBytes": 0,
+              "allocations": 0,
+              "barrierEmits": 0,
+              "capturingNS": 977076,
+              "drainCalls": 0,
+              "ns": 1047058,
+              "writerOnlyNS": 0
+            },
+            "control": {
+              "allocationBytes": 0,
+              "allocations": 0,
+              "barrierEmits": 0,
+              "capturingNS": 0,
+              "drainCalls": 0,
+              "ns": 130262,
+              "writerOnlyNS": 0
+            },
+            "deltaNS": 916796
+          },
+          "reschedule": {
+            "save": {
+              "allocationBytes": 0,
+              "allocations": 0,
+              "barrierEmits": 0,
+              "ns": 460297000
+            },
+            "control": {
+              "allocationBytes": 0,
+              "allocations": 0,
+              "barrierEmits": 0,
+              "ns": 501397917
+            },
+            "deltaNS": -41100917
+          },
+          "walAdvance": {
+            "save": {
+              "allocationBytes": 775392,
+              "allocations": 15744,
+              "ns": 21509344
+            },
+            "control": {
+              "allocationBytes": 775392,
+              "allocations": 15744,
+              "ns": 30684772
+            },
+            "deltaNS": -9175428
+          },
+          "walReschedule": {
+            "save": {
+              "allocationBytes": 684,
+              "allocations": 15,
+              "ns": 55458
+            },
+            "control": {
+              "allocationBytes": 684,
+              "allocations": 15,
+              "ns": 95791
+            },
+            "deltaNS": -40333
+          }
+        },
+        "fullLoop": {
+          "saveNS": 1195482708,
+          "controlNS": 1494508250,
+          "diagnosticRatio": 0.7999171018293141
+        },
+        "writer": {
+          "allocationBytes": 1507047,
+          "allocationObserverAvailable": true,
+          "allocations": 29609,
+          "bytes": 95801772,
+          "chunks": 5893,
+          "dispatchToRunNS": 52792,
+          "finalizeNS": 7376167,
+          "peakQueuedBytes": 0,
+          "queueWaitNS": 917,
+          "recordProcessWriteNS": 189408778,
+          "runNS": 198625458
+        },
+        "barrier": {
+          "bytes": 74444320,
+          "copyNS": 6065849,
+          "emits": 4625
+        },
+        "setup": {
+          "save": {
+            "beginSave": {
+              "allocationBytes": 18876,
+              "allocations": 1,
+              "ns": 15375
+            },
+            "snapshotSink": {
+              "allocationBytes": 633,
+              "allocations": 7,
+              "ns": 45917
+            },
+            "stateInstall": {
+              "allocationBytes": 95811576,
+              "allocations": 6000,
+              "ns": 13626500
+            }
+          },
+          "control": {
+            "beginSave": {
+              "started": false
+            },
+            "snapshotSink": {
+              "started": false
+            },
+            "stateInstall": {
+              "allocationBytes": 95811576,
+              "allocations": 6000,
+              "ns": 89625917
+            }
+          }
+        }
+      },
+      {
+        "pair": 2,
+        "order": [
+          "save",
+          "no-save"
+        ],
+        "matchedPhases": [
+          {
+            "mode": "all",
+            "matchedCalls": 984,
+            "events": 1000000,
+            "saveAdvanceNS": 854910943,
+            "controlAdvanceNS": 757248412,
+            "deltaNS": 97662531,
+            "diagnosticMatchedRatio": 1.1289702684777634,
+            "saveAdvanceP99NS": 6288708
+          },
+          {
+            "mode": "saveActive",
+            "matchedCalls": 284,
+            "events": 290816,
+            "saveAdvanceNS": 235075035,
+            "controlAdvanceNS": 203840964,
+            "deltaNS": 31234071,
+            "diagnosticMatchedRatio": 1.1532276456463384,
+            "saveAdvanceP99NS": 3807959
+          },
+          {
+            "mode": "capturing",
+            "matchedCalls": 284,
+            "events": 290816,
+            "saveAdvanceNS": 235075035,
+            "controlAdvanceNS": 203840964,
+            "deltaNS": 31234071,
+            "diagnosticMatchedRatio": 1.1532276456463384,
+            "saveAdvanceP99NS": 3807959
+          },
+          {
+            "mode": "idleInstalled",
+            "matchedCalls": 636,
+            "events": 643648,
+            "saveAdvanceNS": 590796574,
+            "controlAdvanceNS": 523897658,
+            "deltaNS": 66898916,
+            "diagnosticMatchedRatio": 1.1276946269532666,
+            "saveAdvanceP99NS": 7726750
+          },
+          {
+            "mode": "notInstalled",
+            "matchedCalls": 64,
+            "events": 65536,
+            "saveAdvanceNS": 29039334,
+            "controlAdvanceNS": 29509790,
+            "deltaNS": -470456,
+            "diagnosticMatchedRatio": 0.984057629688317,
+            "saveAdvanceP99NS": 952833
+          }
+        ],
+        "components": {
+          "advance": {
+            "save": {
+              "allocationBytes": 0,
+              "allocations": 0,
+              "ns": 854910943
+            },
+            "control": {
+              "allocationBytes": 0,
+              "allocations": 0,
+              "ns": 757248412
+            },
+            "deltaNS": 97662531
+          },
+          "service": {
+            "save": {
+              "allocationBytes": 0,
+              "allocations": 0,
+              "barrierEmits": 0,
+              "capturingNS": 6295042,
+              "drainCalls": 0,
+              "ns": 6395397,
+              "writerOnlyNS": 0
+            },
+            "control": {
+              "allocationBytes": 0,
+              "allocations": 0,
+              "barrierEmits": 0,
+              "capturingNS": 0,
+              "drainCalls": 0,
+              "ns": 119026,
+              "writerOnlyNS": 0
+            },
+            "deltaNS": 6276371
+          },
+          "reschedule": {
+            "save": {
+              "allocationBytes": 0,
+              "allocations": 0,
+              "barrierEmits": 0,
+              "ns": 553381708
+            },
+            "control": {
+              "allocationBytes": 0,
+              "allocations": 0,
+              "barrierEmits": 0,
+              "ns": 388566167
+            },
+            "deltaNS": 164815541
+          },
+          "walAdvance": {
+            "save": {
+              "allocationBytes": 775392,
+              "allocations": 15744,
+              "ns": 27947407
+            },
+            "control": {
+              "allocationBytes": 775392,
+              "allocations": 15744,
+              "ns": 22364672
+            },
+            "deltaNS": 5582735
+          },
+          "walReschedule": {
+            "save": {
+              "allocationBytes": 684,
+              "allocations": 15,
+              "ns": 80791
+            },
+            "control": {
+              "allocationBytes": 684,
+              "allocations": 15,
+              "ns": 56584
+            },
+            "deltaNS": 24207
+          }
+        },
+        "fullLoop": {
+          "saveNS": 1466276500,
+          "controlNS": 1189575791,
+          "diagnosticRatio": 1.2326045226318834
+        },
+        "writer": {
+          "allocationBytes": 1506887,
+          "allocationObserverAvailable": true,
+          "allocations": 29605,
+          "bytes": 95801772,
+          "chunks": 5893,
+          "dispatchToRunNS": 112291,
+          "finalizeNS": 26159667,
+          "peakQueuedBytes": 0,
+          "queueWaitNS": 958,
+          "recordProcessWriteNS": 216661382,
+          "runNS": 244377291
+        },
+        "barrier": {
+          "bytes": 77040160,
+          "copyNS": 6835541,
+          "emits": 4781
+        },
+        "setup": {
+          "save": {
+            "beginSave": {
+              "allocationBytes": 18876,
+              "allocations": 1,
+              "ns": 8584
+            },
+            "snapshotSink": {
+              "allocationBytes": 633,
+              "allocations": 7,
+              "ns": 37750
+            },
+            "stateInstall": {
+              "allocationBytes": 95811576,
+              "allocations": 6000,
+              "ns": 16974709
+            }
+          },
+          "control": {
+            "beginSave": {
+              "started": false
+            },
+            "snapshotSink": {
+              "started": false
+            },
+            "stateInstall": {
+              "allocationBytes": 95811576,
+              "allocations": 6000,
+              "ns": 9969250
+            }
+          }
+        }
+      }
+    ]
+  },
+  "C100": "NOT_RUN",
+  "CPerformance": {
+    "S": "OPEN",
+    "H": "OPEN"
+  },
+  "limitations": [
+    "Five saves cannot close C. Original failures and 1.10 remain.",
+    "S matched ABBA ratios are diagnostic, not H or official C acceptance.",
+    "Writer and simulation overlap; their wall times cannot be added.",
+    "Full spare-image owned capacities exclude complete physical memory and device acceptance."
+  ],
+  "evidenceSHA256": {
+    "AllocationObserver.dylib": "6356a4f0ec5ff639bf85fe2536d9f948ad6ca63694d07e80591b9dd5759a4ee3",
+    "CANDIDATE-MICRO.json": "3f51db654579438432673170c23f8edc8a52b6fcbee1dd531d50a22df2e6195e",
+    "MICRO-ELIGIBILITY.json": "9e069f86546b9eb740a6e6eb9ae69eef0f7bf2c5105fd79208daa3639cccbecf",
+    "PAIRED-PROFILE-S.json": "0d068d66847329046cd853d13a1f4790b40273e7f0c67eec504772028df10ff7",
+    "PAIRED-SMOKE-S.json": "b010faf662e102d0645ccb222253fe925703f673e2d75e6766579af41c8b9592",
+    "SAMPLED-MICRO.json": "4d4698ca437a26ae9f5984bc3055701c58fffcc48df11aad19f149a3d915b1b3",
+    "STAGE005-A.json": "921aadd596b48a8e4ba11f88c4f2236b61ce7080898621a896660419fc24c994",
+    "allocation-probes.json": "0a4c2bdc0e5dfabe14d8722accb53edae512837991bd3994390d74a3462c15a2",
+    "build-flags.txt": "02211c7f4ae5c0c010b700247bef7ed79316cc95946f6482676a5f959b64edfe",
+    "build-release.txt": "333745b030a7d28270fab3eb5c2f0890a4daca697a3e7022c06d7e6ca023a5f7",
+    "commit.txt": "75e8960c33d4b1ab1727d1d305f42a4f2996b777ab6b3ef40766f2fb2c39afa3",
+    "eligibility.json": "25a15179a7d28478f0d56ea7670750afe5ac30dcb1f30d163e0e4f275ac7b181",
+    "environment.txt": "2279882ee44d1e0fe474b3f0fba1648b8427102ea0bbe469246f67b188b19deb",
+    "micro.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "paired-scope.txt": "bd36d0d1c6b308b918267c5fb234cf540b00fbf3350eb65c5531507a8a49360a",
+    "paired-smoke.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "paired.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/AllocationObserver.dylib": "bc4eabdffff9ab48d54996f5fc25bae6ea03d30051adf5cf3ebbde038bc53ef4",
+    "prior/B-QUOTA.json": "824eb14ec819e5c3b9bde4bf63a4d8d9fc1fb76bea87707a57ba584bc6de0c75",
+    "prior/B-RECOVERY-debug.json": "455e1987983c788c03f02ff50abdfe16acd648dc9cb95cd955e61d9301388ce5",
+    "prior/B-RECOVERY-release.json": "455e1987983c788c03f02ff50abdfe16acd648dc9cb95cd955e61d9301388ce5",
+    "prior/B-RECOVERY-tsan.json": "455e1987983c788c03f02ff50abdfe16acd648dc9cb95cd955e61d9301388ce5",
+    "prior/KILLS-1M-debug-H.json": "96cbf230b0dc4005dbbb06d5fe47a3f1426de2a0cefacbc24784b1ba67aea235",
+    "prior/KILLS-1M-debug-S.json": "4db1877c402d449eb45091aed8dddea7fc09bdf01b7cc5b35f91b3e0eabd8954",
+    "prior/KILLS-1M-release-H.json": "96cbf230b0dc4005dbbb06d5fe47a3f1426de2a0cefacbc24784b1ba67aea235",
+    "prior/KILLS-1M-release-S.json": "4db1877c402d449eb45091aed8dddea7fc09bdf01b7cc5b35f91b3e0eabd8954",
+    "prior/KILLS-1M-tsan-H.json": "96cbf230b0dc4005dbbb06d5fe47a3f1426de2a0cefacbc24784b1ba67aea235",
+    "prior/KILLS-1M-tsan-S.json": "4db1877c402d449eb45091aed8dddea7fc09bdf01b7cc5b35f91b3e0eabd8954",
+    "prior/SNAPSHOT-1M-CHOSEN.json": "525ac05350be3011af68d6699abdf371e9c8ee8d95c918624e5417c57460efdf",
+    "prior/SOURCE-FUNCTIONAL-PROOF.json": "cd39a60a6dcc435eb8c5c34deb3cd2212fae7626f247dda5bea73404f0af9f9a",
+    "prior/STAGE005-A.json": "921aadd596b48a8e4ba11f88c4f2236b61ce7080898621a896660419fc24c994",
+    "prior/STAGE005-B.json": "52fe08136f48e969ab457b356c7917f1a90345d64845ca42d0e0b1e1849e9c6c",
+    "prior/WAL-CONTINUATION-debug-H.json": "1f8cc17ee934628b1906e896ff182aca5dff2f78e957d5a7aae156c1d8c91fca",
+    "prior/WAL-CONTINUATION-debug-S.json": "5fe162654c4f5f5d81370c848d12bf10553d9365b28490805dfac3aa8447a141",
+    "prior/WAL-CONTINUATION-release-H.json": "1f8cc17ee934628b1906e896ff182aca5dff2f78e957d5a7aae156c1d8c91fca",
+    "prior/WAL-CONTINUATION-release-S.json": "5fe162654c4f5f5d81370c848d12bf10553d9365b28490805dfac3aa8447a141",
+    "prior/WAL-CONTINUATION-tsan-H.json": "1f8cc17ee934628b1906e896ff182aca5dff2f78e957d5a7aae156c1d8c91fca",
+    "prior/WAL-CONTINUATION-tsan-S.json": "5fe162654c4f5f5d81370c848d12bf10553d9365b28490805dfac3aa8447a141",
+    "prior/a-run.txt": "f1ebd0a432114078246a1a2badf081d99b35547916240cdf274af11791cb4efd",
+    "prior/aggregate-commit.txt": "5a8785679d3eaa4a18726b8bde29f81a791051145420c407cff7b158f1445974",
+    "prior/aggregate-guard-before.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "prior/aggregate-runtime-inputs.json": "bafe9a3e90ee1d59f2d4f9c837aafa2940fe4834fdefcb88e87f395c19896dd9",
+    "prior/aggregate-source-guard.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "prior/aggregate-tree.txt": "85ff003c5d8539f64008585ad07c53ea4df0c2916c813caf39623fdf92628954",
+    "prior/b-recovery-debug.txt": "5cc3ca31e60f8b67d2ce2d27221560fb3a5f70463b3c38adc71bf95a85d9bd30",
+    "prior/b-recovery-release.txt": "5cc3ca31e60f8b67d2ce2d27221560fb3a5f70463b3c38adc71bf95a85d9bd30",
+    "prior/b-recovery-tsan.txt": "5cc3ca31e60f8b67d2ce2d27221560fb3a5f70463b3c38adc71bf95a85d9bd30",
+    "prior/b-run.txt": "86062046e14e48dd38f1007fd09d461543b2bf5a15b2ef35f31ad29c8488955d",
+    "prior/bounded-matrix-run.txt": "96952463f0cf59cb84a9d3a3ecc059af06282dec0d23331e1ae4f47e8a275f25",
+    "prior/bounded-matrix/PAGED-CANDIDATE.json": "07da664097a921bb54b20d39befd2a7b745bdce084a98040558d3fb4ca837085",
+    "prior/bounded-matrix/baseline-release-H-1.json": "581b107ae5c1c1520320e912535584d93d165dde1e56d66a755f3a0ed68a1481",
+    "prior/bounded-matrix/baseline-release-H-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/baseline-release-H-100000.json": "c862e2b59fcf91565328614c7ab7c059fe325b9f4210099a87077740fc2bff3f",
+    "prior/bounded-matrix/baseline-release-H-100000.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/baseline-release-H-257.json": "5290ab344aed53d9ddbedf54b366390e0a284b6d5be69e0e0a68cc2ba3c3533a",
+    "prior/bounded-matrix/baseline-release-H-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/baseline-release-H-3.json": "a59c049ccd2d3ef27d0bdee3666712e48f2d15c6be07ae91df08f07f2b091fac",
+    "prior/bounded-matrix/baseline-release-H-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/baseline-release-H-4096.json": "81333ed4e7195372997a419a6605ddc8c42c13acbee9304c317b00c4c8a1df8e",
+    "prior/bounded-matrix/baseline-release-H-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/baseline-release-H-513.json": "c84c108cb430de20f0a619fd1241ce57c03d807d351d07616dffcf098571169e",
+    "prior/bounded-matrix/baseline-release-H-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/baseline-release-S-1.json": "ea051b2189be0e3089a91a8ccfd7b7a1a89edf2dc04ef431351185f090ebb3bf",
+    "prior/bounded-matrix/baseline-release-S-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/baseline-release-S-100000.json": "a2debfceb5129b283f65d01b069f693abce5ab47d7c97926b3d25f811b613215",
+    "prior/bounded-matrix/baseline-release-S-100000.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/baseline-release-S-257.json": "aaa6f68609ee7356f075df8678f119ddf232af5b0571cb311c76b9bf3a8b8526",
+    "prior/bounded-matrix/baseline-release-S-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/baseline-release-S-3.json": "b74844157d5b91b25ffc3a8e24cf0d352827b95b6dfc14dd246c24b17f674c7d",
+    "prior/bounded-matrix/baseline-release-S-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/baseline-release-S-4096.json": "0ffdf27d43e9f1a9b2b1038f540ff0fa4584b8a60ec840cf6f63562989cd58ce",
+    "prior/bounded-matrix/baseline-release-S-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/baseline-release-S-513.json": "7bf769956ebec644b6e847c663657b85b4146c64eceaa7846fec85da970a542d",
+    "prior/bounded-matrix/baseline-release-S-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-debug-H-1.json": "c2faf4b04d307873162ef486b2abc354446d3d346c911079abac9ff31e140a64",
+    "prior/bounded-matrix/candidate-debug-H-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-debug-H-257.json": "2624bdc27676e9a89d15b58ccc306c4aacfe0bfcfa427ca914cc5523518a5479",
+    "prior/bounded-matrix/candidate-debug-H-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-debug-H-3.json": "ee3b5bf79256acb7b7a81723ea4d9b3fe9e74d62177b76a2c787bbdcba66646e",
+    "prior/bounded-matrix/candidate-debug-H-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-debug-H-4096.json": "32c3173de4a9aa9a41022d7ab23e5a2c3d1e59fa158d6857e9fa766f33ffc2eb",
+    "prior/bounded-matrix/candidate-debug-H-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-debug-H-513.json": "88c70059402f61664fbc4e93a867bc9fab109d03a3072b97d9bebb64db5d01fd",
+    "prior/bounded-matrix/candidate-debug-H-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-debug-S-1.json": "78e142267b038ed237588253c85f64e5065633f8d96ceaae4fa440b11df10698",
+    "prior/bounded-matrix/candidate-debug-S-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-debug-S-257.json": "2b104969eb92bb71639c60ba47a4d7eab94367e3e72689a25229a3362d91dc58",
+    "prior/bounded-matrix/candidate-debug-S-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-debug-S-3.json": "8f32c1909979af968016b717d1f54d594bfc25d297950eb0079d634c26b7ac80",
+    "prior/bounded-matrix/candidate-debug-S-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-debug-S-4096.json": "cbf2555efc80a96eb38cf5dc986d3863d80220e7063e06514fba8a7afdc6ca81",
+    "prior/bounded-matrix/candidate-debug-S-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-debug-S-513.json": "9ff4fc87d03f6879b01673b0abe4ca8e7e45aac1adeefde69df3559f934ef310",
+    "prior/bounded-matrix/candidate-debug-S-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-release-H-1.json": "332b7f3e697a71da4109786ec6774d9d4500bc46058e06e94de459350976c2ce",
+    "prior/bounded-matrix/candidate-release-H-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-release-H-100000.json": "3e89f8663f91193f92dfd27e62596a4c288b3f3ddef5b3471952722d0051416c",
+    "prior/bounded-matrix/candidate-release-H-100000.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-release-H-257.json": "e0b8eb2d6be38696e4c2eed4631b2b94aee4ab9d5628bdf013e7da3b7f5142e0",
+    "prior/bounded-matrix/candidate-release-H-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-release-H-3.json": "294f7e876935cd347aa8f4f80eec9ab94c727bb801e740b0a1d291a9395d392e",
+    "prior/bounded-matrix/candidate-release-H-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-release-H-4096.json": "46684ae9a0d9e63c55150d0f35e8df0b43aa504dbc53b1fbde095fa30c7453f9",
+    "prior/bounded-matrix/candidate-release-H-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-release-H-513.json": "8fa243466266168e36f91d610832da6194704726680469e1136e7ff5bde279b4",
+    "prior/bounded-matrix/candidate-release-H-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-release-S-1.json": "052b6ec7373d2c54d6c042c234febcde40108bdd0eeb235c010e5b517268bfc1",
+    "prior/bounded-matrix/candidate-release-S-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-release-S-100000.json": "5df984028ea1a91a47eef1cd6c2560c0b38e5af748d854102d0972b4dd87497c",
+    "prior/bounded-matrix/candidate-release-S-100000.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-release-S-257.json": "d3fad70551c8c9187e87938fb9ee71d9c3d5551f5f668d72a4e6424c5068a498",
+    "prior/bounded-matrix/candidate-release-S-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-release-S-3.json": "a6d76e7f7aca91b6b51a8be5de805ddde3948b1e792628bde5e8002f4bfc1240",
+    "prior/bounded-matrix/candidate-release-S-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-release-S-4096.json": "ad0b4d46a30c2c9edfb4d7507a3020210f3cfc04452aaf6309b92f740decf640",
+    "prior/bounded-matrix/candidate-release-S-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-release-S-513.json": "d159a38dfbf8ba8ec6071925a6e5f7d973e35e8d864a126226cbbe6fdf5f36ec",
+    "prior/bounded-matrix/candidate-release-S-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-tsan-H-1.json": "0f623903aa10227f99c7e1feda4e2d4cb82891e6417d58a5698f77abea2dafdf",
+    "prior/bounded-matrix/candidate-tsan-H-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-tsan-H-257.json": "e1c2d8fd52eda020be88bc9e7343eeaacb31dd806e6a8b0576cd5000c3314221",
+    "prior/bounded-matrix/candidate-tsan-H-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-tsan-H-3.json": "6ae42481d0e5b0fa6bd169b4fc3cf133821a56bc039ab79bcd7c0fb267509409",
+    "prior/bounded-matrix/candidate-tsan-H-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-tsan-H-4096.json": "f54e8c39ab712fcf0fa1611ffd2329ee2e73e6e3d0324bfc2e790fa97e0e6780",
+    "prior/bounded-matrix/candidate-tsan-H-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-tsan-H-513.json": "0626ba2b9705010f8c66e29719e320c45c25589c779ee0c4449d1151840dc94b",
+    "prior/bounded-matrix/candidate-tsan-H-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-tsan-S-1.json": "230b65661be5947821655f84ecb8a88e38c4b388325ad00b0841b7ec21ebdd11",
+    "prior/bounded-matrix/candidate-tsan-S-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-tsan-S-257.json": "76f2ca5cc07a7d62a3916349ab07885a32e05681b9fde5a83e5e83ddd2f1566d",
+    "prior/bounded-matrix/candidate-tsan-S-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-tsan-S-3.json": "c65d56c793fa202980c3dbff83099cb42fd36f9e63e102b8430d581cd68c4e87",
+    "prior/bounded-matrix/candidate-tsan-S-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-tsan-S-4096.json": "33a220af93b8dd4fb0edfc8b837517a1126c8912fdc34a74ea69c56ff1e7c761",
+    "prior/bounded-matrix/candidate-tsan-S-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/bounded-matrix/candidate-tsan-S-513.json": "5334b7b2e739465a98b7852d4e75d4299afb3cd6ab6c75c001ce8446c736b5f1",
+    "prior/bounded-matrix/candidate-tsan-S-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/build-a-release.txt": "9ae31ba6975f707be691762e47eed5816a759b89c28de5abc3eacbfe09ab3dce",
+    "prior/build-base-release.txt": "f04a7c2d07ac1cb00f1d83914fb04d7c0e853bd2eb172d83e6dcd57d4414d621",
+    "prior/build-flags.txt": "2c79928d0d231f120a03133214c481dbe757d01607de49ec57e93615a00f9a2b",
+    "prior/build-full-debug.txt": "21420ebedeb7d423d893012eddfdbeea5027699f4d6855802582a960dd689eb7",
+    "prior/build-full-release.txt": "fe7d51ff4e3eee652fa5ad0a720718a108f7920bc77b576caf9487a737dcb84b",
+    "prior/build-full-tsan.txt": "5e6f986aaa307bef5a874b4f7fa5027fd8308137bdfa3a25227d2b3d35b74304",
+    "prior/commit.txt": "5a8785679d3eaa4a18726b8bde29f81a791051145420c407cff7b158f1445974",
+    "prior/environment.txt": "4ea4a9ea40880729fcb2d336c894363f501fe6412aea658e13ed3d13bcbc8136",
+    "prior/k-meta-debug-H/build-flags.json": "786e88066357bc603a3355c061a03f291ae332b05e81ab0c72356a32f37985a1",
+    "prior/k-meta-debug-H/build.txt": "fb3db12fd4506e1014b33057a40aecf9dadb78d2ea8c6dd214d41c1a98781668",
+    "prior/k-meta-debug-H/commit.txt": "5a8785679d3eaa4a18726b8bde29f81a791051145420c407cff7b158f1445974",
+    "prior/k-meta-debug-H/environment.txt": "4ea4a9ea40880729fcb2d336c894363f501fe6412aea658e13ed3d13bcbc8136",
+    "prior/k-meta-debug-H/runtime-inputs.json": "bafe9a3e90ee1d59f2d4f9c837aafa2940fe4834fdefcb88e87f395c19896dd9",
+    "prior/k-meta-debug-H/source-guard-after.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "prior/k-meta-debug-H/source-guard-before.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "prior/k-meta-debug-H/source-sha256.txt": "e20fcc591f5f4e4fe72345dd2882ae46d979cfcef8805d5757b39df3371afbba",
+    "prior/k-meta-debug-H/tree.txt": "85ff003c5d8539f64008585ad07c53ea4df0c2916c813caf39623fdf92628954",
+    "prior/k-meta-debug-S/build-flags.json": "957300a8a4b741c40090b1950f03d634f246cf47e65d1c573565bb0c567fb761",
+    "prior/k-meta-debug-S/build.txt": "50a32f0708177931a4d14ed12d3aba1f90e295554218c727f681297c8ad49a78",
+    "prior/k-meta-debug-S/commit.txt": "5a8785679d3eaa4a18726b8bde29f81a791051145420c407cff7b158f1445974",
+    "prior/k-meta-debug-S/environment.txt": "4ea4a9ea40880729fcb2d336c894363f501fe6412aea658e13ed3d13bcbc8136",
+    "prior/k-meta-debug-S/runtime-inputs.json": "bafe9a3e90ee1d59f2d4f9c837aafa2940fe4834fdefcb88e87f395c19896dd9",
+    "prior/k-meta-debug-S/source-guard-after.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "prior/k-meta-debug-S/source-guard-before.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "prior/k-meta-debug-S/source-sha256.txt": "e20fcc591f5f4e4fe72345dd2882ae46d979cfcef8805d5757b39df3371afbba",
+    "prior/k-meta-debug-S/tree.txt": "85ff003c5d8539f64008585ad07c53ea4df0c2916c813caf39623fdf92628954",
+    "prior/k-meta-release-H/build-flags.json": "c406408644f98eef8c40edaaf52fcd34225d66862c1ed07ee09475a9ab35fbb8",
+    "prior/k-meta-release-H/build.txt": "e8e145891c0baf14eb2b10cc3e75068341214a5d1fe3bf203ca8cbcad99e8ef4",
+    "prior/k-meta-release-H/commit.txt": "5a8785679d3eaa4a18726b8bde29f81a791051145420c407cff7b158f1445974",
+    "prior/k-meta-release-H/environment.txt": "4ea4a9ea40880729fcb2d336c894363f501fe6412aea658e13ed3d13bcbc8136",
+    "prior/k-meta-release-H/runtime-inputs.json": "bafe9a3e90ee1d59f2d4f9c837aafa2940fe4834fdefcb88e87f395c19896dd9",
+    "prior/k-meta-release-H/source-guard-after.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "prior/k-meta-release-H/source-guard-before.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "prior/k-meta-release-H/source-sha256.txt": "e20fcc591f5f4e4fe72345dd2882ae46d979cfcef8805d5757b39df3371afbba",
+    "prior/k-meta-release-H/tree.txt": "85ff003c5d8539f64008585ad07c53ea4df0c2916c813caf39623fdf92628954",
+    "prior/k-meta-release-S/build-flags.json": "07dc9e6ea0a2acd2eb8abcec50dc91e195c34cc9775dccd8e0a5187ecfb43890",
+    "prior/k-meta-release-S/build.txt": "c1ce43a76317c1cc174908051ff2f1373080017c9b0cfd3e120f19eaf440b598",
+    "prior/k-meta-release-S/commit.txt": "5a8785679d3eaa4a18726b8bde29f81a791051145420c407cff7b158f1445974",
+    "prior/k-meta-release-S/environment.txt": "4ea4a9ea40880729fcb2d336c894363f501fe6412aea658e13ed3d13bcbc8136",
+    "prior/k-meta-release-S/runtime-inputs.json": "bafe9a3e90ee1d59f2d4f9c837aafa2940fe4834fdefcb88e87f395c19896dd9",
+    "prior/k-meta-release-S/source-guard-after.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "prior/k-meta-release-S/source-guard-before.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "prior/k-meta-release-S/source-sha256.txt": "e20fcc591f5f4e4fe72345dd2882ae46d979cfcef8805d5757b39df3371afbba",
+    "prior/k-meta-release-S/tree.txt": "85ff003c5d8539f64008585ad07c53ea4df0c2916c813caf39623fdf92628954",
+    "prior/k-meta-tsan-H/build-flags.json": "4b0038098d21c6a8d82fd57c848567d07951b8a59df6bdc895bf4f0f290aa08e",
+    "prior/k-meta-tsan-H/build.txt": "25049577c96d06b583794cfc5126bc09978a0b655e91779f10eb3a76e3d4deb9",
+    "prior/k-meta-tsan-H/commit.txt": "5a8785679d3eaa4a18726b8bde29f81a791051145420c407cff7b158f1445974",
+    "prior/k-meta-tsan-H/environment.txt": "4ea4a9ea40880729fcb2d336c894363f501fe6412aea658e13ed3d13bcbc8136",
+    "prior/k-meta-tsan-H/runtime-inputs.json": "bafe9a3e90ee1d59f2d4f9c837aafa2940fe4834fdefcb88e87f395c19896dd9",
+    "prior/k-meta-tsan-H/source-guard-after.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "prior/k-meta-tsan-H/source-guard-before.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "prior/k-meta-tsan-H/source-sha256.txt": "e20fcc591f5f4e4fe72345dd2882ae46d979cfcef8805d5757b39df3371afbba",
+    "prior/k-meta-tsan-H/tree.txt": "85ff003c5d8539f64008585ad07c53ea4df0c2916c813caf39623fdf92628954",
+    "prior/k-meta-tsan-S/build-flags.json": "49b98d0c5e05d177e59c3a120bc8d0f4af3a88bee86188176973bb62bd54c6b7",
+    "prior/k-meta-tsan-S/build.txt": "ae5a272a881a97aaba7a0f6eb1780291ebd8f4662aa9bb6b0239d0090d7a814c",
+    "prior/k-meta-tsan-S/commit.txt": "5a8785679d3eaa4a18726b8bde29f81a791051145420c407cff7b158f1445974",
+    "prior/k-meta-tsan-S/environment.txt": "4ea4a9ea40880729fcb2d336c894363f501fe6412aea658e13ed3d13bcbc8136",
+    "prior/k-meta-tsan-S/runtime-inputs.json": "bafe9a3e90ee1d59f2d4f9c837aafa2940fe4834fdefcb88e87f395c19896dd9",
+    "prior/k-meta-tsan-S/source-guard-after.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "prior/k-meta-tsan-S/source-guard-before.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "prior/k-meta-tsan-S/source-sha256.txt": "e20fcc591f5f4e4fe72345dd2882ae46d979cfcef8805d5757b39df3371afbba",
+    "prior/k-meta-tsan-S/tree.txt": "85ff003c5d8539f64008585ad07c53ea4df0c2916c813caf39623fdf92628954",
+    "prior/kills-debug-H.txt": "38dba17f3c828b47157288585eac791e8b00c1bf11e40628a97a50c7a2595c8a",
+    "prior/kills-debug-S.txt": "38dba17f3c828b47157288585eac791e8b00c1bf11e40628a97a50c7a2595c8a",
+    "prior/kills-release-H.txt": "38dba17f3c828b47157288585eac791e8b00c1bf11e40628a97a50c7a2595c8a",
+    "prior/kills-release-S.txt": "38dba17f3c828b47157288585eac791e8b00c1bf11e40628a97a50c7a2595c8a",
+    "prior/kills-tsan-H.txt": "38dba17f3c828b47157288585eac791e8b00c1bf11e40628a97a50c7a2595c8a",
+    "prior/kills-tsan-S.txt": "38dba17f3c828b47157288585eac791e8b00c1bf11e40628a97a50c7a2595c8a",
+    "prior/lifecycle-debug-H.json": "d6e3789a73bb65b93874e693258619a841b736d948872c038d17af2f5423cab4",
+    "prior/lifecycle-debug-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/lifecycle-debug-S.json": "37384092d495e43af2a0dd02d2ae409c036c7b5be83c13faeae2423698e0e9ec",
+    "prior/lifecycle-debug-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/lifecycle-release-H.json": "d6e3789a73bb65b93874e693258619a841b736d948872c038d17af2f5423cab4",
+    "prior/lifecycle-release-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/lifecycle-release-S.json": "37384092d495e43af2a0dd02d2ae409c036c7b5be83c13faeae2423698e0e9ec",
+    "prior/lifecycle-release-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/lifecycle-tsan-H.json": "d6e3789a73bb65b93874e693258619a841b736d948872c038d17af2f5423cab4",
+    "prior/lifecycle-tsan-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/lifecycle-tsan-S.json": "37384092d495e43af2a0dd02d2ae409c036c7b5be83c13faeae2423698e0e9ec",
+    "prior/lifecycle-tsan-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/parallel-part-proof.json": "65a06f3de3f803af4ca0a2a0d5149ba9a50cde4279864e553b40c7a3027b7df5",
+    "prior/proof-gates.txt": "a4c950007e73d011f2547a25adca8ecd17835494d7232371677f975a07609346",
+    "prior/runtime-inputs.json": "bafe9a3e90ee1d59f2d4f9c837aafa2940fe4834fdefcb88e87f395c19896dd9",
+    "prior/scope.txt": "b8acc6796f232e35eb63775c53e866c535238c340589db39982ac15df414e8dc",
+    "prior/source-guard-after.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "prior/source-guard-before.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "prior/source-sha256.txt": "e20fcc591f5f4e4fe72345dd2882ae46d979cfcef8805d5757b39df3371afbba",
+    "prior/tree.txt": "85ff003c5d8539f64008585ad07c53ea4df0c2916c813caf39623fdf92628954",
+    "prior/wal-debug-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/wal-debug-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/wal-release-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/wal-release-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/wal-tsan-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prior/wal-tsan-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "profile-stacks.txt": "6418f48b2998dc620b49c3e3878d172b983685d0f9fc2db40f0bf67606a9d689",
+    "proof-gates.txt": "106c698b10d956515dcb2f330f643faabae6593e2ae08ef53da637e96d961999",
+    "runtime-inputs.json": "bafe9a3e90ee1d59f2d4f9c837aafa2940fe4834fdefcb88e87f395c19896dd9",
+    "sampled-process-exit-status.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "sampled.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sampler-exit-status.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "sampler-log.txt": "1e683abb669e84f329828b400f926755cefe8840cdadc7fe3ae6917cfacbce2a",
+    "sampler-scope.txt": "7de103ba2b4d25ff540af6a707150797f94e69bc9f735c2b34bc7c5835d813f9",
+    "scope.txt": "ce58bdc74148d5ed2b4b3d6f38f9f03dafdf1535e5f9d2c0c96c5dcf073cf2e6",
+    "source-guard-after.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "source-guard-before.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "source-proof.zip": "e62b577d4cd881bf14c1a1aaf1b188923f98c395490446308c99fc3607125b3f",
+    "source-sha256.txt": "e20fcc591f5f4e4fe72345dd2882ae46d979cfcef8805d5757b39df3371afbba",
+    "tree.txt": "646cef20d588e867c1a2121ae464a78b1e720617dce1d4ca525645b83f4b0dae"
+  },
+  "optimisticCopyOnlyTheoreticalRatio": 1.2740145514595145,
+  "memoryScope": "full-spare main-world owned210772320B/1M remains NOT_FIXED; no physical device proof"
+}

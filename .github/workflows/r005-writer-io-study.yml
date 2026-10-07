@@ -1,4 +1,4 @@
-name: R005 isolated immutable writer packet micro
+name: R005 isolated immutable writer packet and contention study
 on:
   push:
     branches: ["diagnostic/r005-design-1m-20260930"]
@@ -44,9 +44,28 @@ jobs:
             cp Experiments/R005Swift/Package.swift ".writer-io-study/$arm/"
             cp -R Experiments/R005Swift/Sources ".writer-io-study/$arm/Sources"
             python3 -B Experiments/R005Swift/Evidence/20261007/prepare-writer-io-study.py ".writer-io-study/$arm" "$arm"
+            python3 -B Experiments/R005Swift/Evidence/20261007/prepare-writer-contention-study.py ".writer-io-study/$arm"
             find ".writer-io-study/$arm/Sources" -type f -exec shasum -a 256 {} \; > "writer-io-results/study-source-$arm.txt"
           done
           shasum -a 256 Experiments/R005Swift/Evidence/20261007/prepare-writer-io-study.py > writer-io-results/study-patch-sha256.txt
+          shasum -a 256 Experiments/R005Swift/Evidence/20261007/prepare-writer-contention-study.py Experiments/R005Swift/Evidence/20261007/prepare-h-paired-study.py > writer-io-results/paired-patch-sha256.txt
+          python3 -B - <<'PYCODE'
+          import hashlib,json,pathlib
+          actual=pathlib.Path('Experiments/R005Swift/Sources');report={}
+          for arm in ('base','packet'):
+              hashes={};changed=[]
+              for p in sorted(actual.rglob('*')):
+                  if not p.is_file():continue
+                  name=str(p.relative_to(actual));q=pathlib.Path('.writer-io-study')/arm/'Sources'/name
+                  before=hashlib.sha256(p.read_bytes()).hexdigest();after=hashlib.sha256(q.read_bytes()).hexdigest()
+                  hashes[name]={'actual':before,'temporary':after}
+                  if before!=after:changed.append(name)
+              expected={'SwiftProbe/Stage005CPagedChecks.swift','SwiftProbe/Main.swift','SwiftProbe/Stage005CRunner.swift'}
+              if arm=='packet':expected.add('SwiftProbe/EpochSnapshot.swift')
+              assert set(changed)==expected
+              report[arm]=hashes
+          pathlib.Path('writer-io-results/study-source.json').write_text(json.dumps(report,indent=2)+'\n')
+          PYCODE
           cc -dynamiclib -O2 -Wall -Wextra -Werror Experiments/R005Swift/AllocationObserver.c -IExperiments/R005Swift/Sources/ProbePlatform/include -o writer-io-results/AllocationObserver.dylib
       - name: Build both study arms Debug Release TSan without changing main Sources
         run: |
@@ -59,7 +78,7 @@ jobs:
               (cd ".writer-io-study/$arm" && swift build --scratch-path ".build-$mode" "${args[@]}" -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror) 2>&1 | tee "writer-io-results/build-$arm-$mode.txt"
             done
           done
-      - name: Bounded canonical allocation and K3 SIGKILL proof then H100k ABBA
+      - name: Bounded lifecycle canonical K3 proof then held100k and concurrent1M ABBA
         run: |
           set -euo pipefail
           trap 'rm -rf .writer-io-study' EXIT
@@ -70,7 +89,10 @@ jobs:
           from stage005_c_crash import run,kill_at
           import subprocess
           p=pathlib.Path('writer-io-results');observer=(p/'AllocationObserver.dylib').resolve()
-          rows=[];references={};kills=[]
+          rows=[];references={};kills=[];lifecycles=[];profiles=[];profile_references={}
+          import importlib.util
+          spec=importlib.util.spec_from_file_location('paired_verifier','Experiments/R005Swift/Evidence/20261007/verify-paged-c.py')
+          paired=importlib.util.module_from_spec(spec);spec.loader.exec_module(paired)
           def binary(arm,mode):
               config='debug' if mode=='tsan' else mode
               return pathlib.Path(f'.writer-io-study/{arm}/.build-{mode}/{config}/nxr-swift-probe').resolve()
@@ -97,6 +119,15 @@ jobs:
           for mode in ('debug','release','tsan'):
               for variant in ('S','H'):
                   for arm in ('base','packet'):
+                      label=f'lifecycle-{arm}-{mode}-{variant}';store=(p/f'store-{label}').resolve()
+                      env=os.environ.copy();env['TSAN_OPTIONS']='halt_on_error=1'
+                      cp=subprocess.run([str(binary(arm,mode)),'paged-candidate-lifecycle',str(store),variant],env=env,text=True,capture_output=True,timeout=600)
+                      f=p/f'{label}.json';f.write_text(cp.stdout);(p/f'{label}.stderr.txt').write_text(cp.stderr)
+                      assert cp.returncode==0 and not cp.stderr,(label,cp.stderr)
+                      lifecycle=json.loads(cp.stdout)
+                      assert lifecycle['status']=='pass' and lifecycle['copyObserverOwnerExact'] is True
+                      if variant=='H':assert lifecycle['coldMutationDuringFrozenEpochExact'] is True
+                      lifecycles.append({'file':f.name,'sha256':hashlib.sha256(f.read_bytes()).hexdigest()});shutil.rmtree(store)
                       checks(arm,mode,variant,4096,f'bounded-{arm}-{mode}-{variant}')
                       b=binary(arm,mode);store=(p/f'kill-{arm}-{mode}-{variant}').resolve()
                       prefix='stage-c-h' if variant=='H' else 'stage-c'
@@ -104,18 +135,40 @@ jobs:
                       boot=run(b,prefix+'-crash-bootstrap',store,1000000)
                       kill_at(b,store,'c.k3.mid_record',command=prefix+'-crash-action')
                       restored=run(b,prefix+'-recover',store)
+                      raw=p/f'K3-{arm}-{mode}-{variant}.json'
+                      raw.write_text(json.dumps({'bootstrap':boot,'recovery':restored},indent=2)+'\n')
                       assert restored['epoch']==1 and restored['digest']==boot['digest']
                       kills.append({'arm':arm,'mode':mode,'variant':variant,'population':1000000,
-                          'point':'c.k3.mid_record','signal':'SIGKILL','exactDigest':True})
+                          'point':'c.k3.mid_record','signal':'SIGKILL','exactDigest':True,'raw':raw.name,'sha256':hashlib.sha256(raw.read_bytes()).hexdigest()})
                       shutil.rmtree(store)
           for ordinal,arm in enumerate(('base','packet','packet','base'),1):
               checks(arm,'release','H',100000,f'abba-{ordinal}-{arm}')
+          for count in (4096,1000000):
+              for ordinal,arm in enumerate(('base','packet','packet','base'),1):
+                  env=os.environ.copy();env['DYLD_INSERT_LIBRARIES']=str(observer)
+                  store=(p/f'paired-store-{count}-{ordinal}-{arm}').resolve()
+                  command='stage-c-paired-profile-smoke' if count==4096 else 'stage-c-paired-profile'
+                  cp=subprocess.run([str(binary(arm,'release')),command,str(store),'H'],env=env,text=True,capture_output=True,timeout=1200)
+                  f=p/f'PAIRED-H-{count}-{ordinal}-{arm}.json';f.write_text(cp.stdout);(p/f.name.replace('.json','.stderr.txt')).write_text(cp.stderr)
+                  assert cp.returncode==0 and not cp.stderr,(f.name,cp.stderr)
+                  row=json.loads(cp.stdout)
+                  assert row['status']=='diagnostic' and row['acceptance'] is False and row['variant']=='H' and row['assets']==count
+                  assert row['cAllocationPositiveControl']>0 and row['swiftAllocationPositiveControl']>0
+                  assert [pair['order'] for pair in row['pairs']]==[['no-save','save'],['save','no-save']][:1 if count==4096 else 2]
+                  observations=[paired.verify_pair(pair,row['fixture'],count) for pair in row['pairs']]
+                  exact={'fixture':row['fixture'],'legs':[{'label':leg['label'],'finalDigest':leg['finalDigest'],'outputHash':leg['outputHash'],
+                      'calls':[{key:call[key] for key in paired.TRANSCRIPT} for call in leg['calls']]} for pair in row['pairs'] for leg in pair['legs']]}
+                  if count not in profile_references:profile_references[count]=exact
+                  else:assert exact==profile_references[count],f.name
+                  profiles.append({'arm':arm,'assets':count,'file':f.name,'sha256':hashlib.sha256(f.read_bytes()).hexdigest(),'pairs':observations,
+                      'postProfileOwnedBytes':[leg['postProfileOwnedBytes'] for pair in row['pairs'] for leg in pair['legs']]})
+                  shutil.rmtree(store)
           timed=[r for r in rows if r['assets']==100000]
           med={arm:statistics.median(n for r in timed if r['arm']==arm for n in r['writerNS']) for arm in ('base','packet')}
-          report={'status':'diagnostic-verified','acceptance':False,'rows':rows,'K3':kills,
+          report={'status':'diagnostic-verified','acceptance':False,'rows':rows,'K3':kills,'lifecycles':lifecycles,'HConcurrentProfiles':profiles,
               'H100kOrder':['base','packet','packet','base'],'medianWriterNS':med,
               'diagnosticPacketToBaseRatio':med['packet']/med['base'],'C100':'NOT_RUN',
-              'scope':'temporary writer copies only; exact canonical snapshots/WAL and limited K3 at1M; main runtime unchanged; no full K/A/B/C qualification'}
+              'scope':'temporary writer packet current-source contention study; exact canonical/lifecycle/WAL and raw limited K3 at1M, H1M paired outer ABBA; main runtime unchanged, no full K/A/B/C or memory/device qualification'}
           (p/'WRITER-IO-STUDY.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
           PYCODE
       - name: Always verify actual runtime did not change

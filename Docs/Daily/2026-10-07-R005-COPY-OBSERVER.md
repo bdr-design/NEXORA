@@ -166,3 +166,11 @@ Full-spare memory remains NOT_FIXED; no production/iPhone smoothness follows.
 tree29ee5f98 and localcc5cd946 identical tree/clean, main38ce39cf reverified.
 No denied branch/reference code opened; actual42inputs stay fixed. All local
 source-guard/selftest and23existing proof-gate tests PASS after pin preparation.
+
+Qualified real five-save37567830698 FAILED eligibility at overhead1.3822529614.
+Raw/proof11459687324 SHA25673a2d95dcbab056dd053924587457a39b83f66680039b48c839a20ae8d747374
+verified. Begin42042ns/5 and advance1009583ns/1242 pass; idle/paired/queue pass.
+53.916214ms measured total copy subtraction gives optimistic1.2740145515>1.10,
+so copy-only work cannot close C. Full-pool memory remains NOT_FIXED. Actual
+source retained for diagnosis; no100-save campaign. Sourceproof remains valid,
+C5 failure does not change A/B/functional PASS into a performance PASS.

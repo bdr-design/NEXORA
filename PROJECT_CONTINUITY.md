@@ -1,5 +1,15 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Observer qualified C5 run37567830698 collected SUCCESS but eligibility FAILED:
+H1M5 overhead1.3822529614>1.10; beginp9942042ns/5, advancep991009583ns/1242,
+zero idle/paired/queue PASS. Artifact11459687324 ZIP SHA256
+73a2d95dcbab056dd053924587457a39b83f66680039b48c839a20ae8d747374
+independently verified; optimistic all-copy removal still1.274014551>1.10.
+Original/current failures retained, actual42inputs fixed, micro pins0/PENDING.
+Next isolated packet-writer1M concurrent paired study estimated, NOT_RUN;
+writer100k8% alone is not a credible C100 candidate. Memory NOT_FIXED,
+C OPEN S/H, no C100/main/results/Stage2–4/app/IPA/device acceptance.
+
 At03:36UTC complete AGENTS/continuity re-read, live91544240/tree29ee5f98
 and main38ce39cf verified, only allowed successors. Fresh37563538884 ALL
 SUCCESS; final artifact11458419655 ZIP SHA256
