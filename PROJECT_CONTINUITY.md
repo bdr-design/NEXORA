@@ -1,5 +1,12 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Generic-test follow-up review found deadline0 incorrect; actual default is
+UInt64.max. Fixed those2testcalls and added finite loop cap. Superseded
+37562742555 on948d660f was still building, targeted exact-head cancellation
+requested; eventual status/raw must be retained, performance NOT_MEASURED.
+Only test/workflow/docs changed, hot observer source identical. Corrected
+bounded run pending; C pins blocked, memory NOT_FIXED, no C100/main/device.
+
 Copy-observer37562437344 FAILED candidate Debug build (generic test omitted
 advance default args); legacy Debug/Release PASS, functional/ABBA NOT_RUN.
 Artifact11457591361 ZIP SHA256

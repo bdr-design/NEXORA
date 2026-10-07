@@ -107,7 +107,16 @@ the new generic test's omitted advance arguments. Protocol requirements do not
 provide the concrete owners' defaults. Artifact11457591361 ZIP SHA256
 6918f04d6c6e1e32ae4cc829957ee61ee5a12a74fa91261042d19e31d37a3226 verified
 against source/tree/all source hashes and guard logs; functional/ABBA NOT_RUN.
-Only two generic test calls now pass work65536/checkLimit Int.max/deadline0/
+Only two generic test calls now pass work65536/checkLimit Int.max/deadline UInt64.max/
 injectnil explicitly, matching existing generic paged checks and real defaults.
 No hot source, payload, workload or threshold changed after original failure.
 Corrected limited Apple check remains pending; original stays FAILED.
+
+Review caught that the first explicit-argument correction used deadline0,
+which returns time before work, while the concrete/default existing generic
+calls use UInt64.max. Run37562742555 on948d660f was still building; targeted
+cancellation requested to stop a known-invalid unbounded test. Actual deadline
+now matches the default and new owner test has a finite call cap. Its cancelled
+or eventual failure is separate from performance, which was NOT_MEASURED.
+One CI job can cancel only inspected37562742555 after exact head948d660f check;
+no other workflow, history or result is changed. Preserve partial raw evidence.

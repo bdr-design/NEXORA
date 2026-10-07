@@ -297,11 +297,14 @@ private func pagedObserverOwner<W: PagedCheckWorld>(_ directory: String, make: (
     do { try world.checkBegin(inactive, rejectedSink) } catch { rejected = true }
     try require(rejected && !inactive.inFlight && inactive.epoch == 0, "inactive state took active epoch")
     try cancelledWriter(rejectedSink)
+    var calls = 0
     while true {
+        calls += 1
+        try require(calls < world.count * 100 + 100_000, "observer owner bounded liveness")
         let actual = try world.advance(to: 600, budget: 1024, workBudget: 65536, checkLimit: Int.max,
-                                       deadlineNS: 0, injectFailureAt: nil)
+                                       deadlineNS: UInt64.max, injectFailureAt: nil)
         let expected = try mirror.advance(to: 600, budget: 1024, workBudget: 65536, checkLimit: Int.max,
-                                       deadlineNS: 0, injectFailureAt: nil)
+                                       deadlineNS: UInt64.max, injectFailureAt: nil)
         try require(actual.events == expected.events && actual.units == expected.units &&
                     actual.reached == expected.reached && actual.stop == expected.stop, "observer owner transcript")
         try wal.appendAdvance(target: 600, budget: 1024, units: actual.units, events: actual.events)
