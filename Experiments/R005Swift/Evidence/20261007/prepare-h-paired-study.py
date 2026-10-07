@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 
 package = Path(sys.argv[1]).resolve()
-assert package.name == '.h-paired-study'
+assert package.name == 'current' and package.parent.name == '.h-paired-study'
 source = package / 'Sources/SwiftProbe'
 p = source / 'Stage005CRunner.swift'
 s = p.read_text()

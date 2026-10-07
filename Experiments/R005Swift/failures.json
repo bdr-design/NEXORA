@@ -19,7 +19,8 @@
     "2026-10-07 independent paged-C evidence analyzer initially FAILED with KeyError: snapshotSource. The unchanged raw C schema has no such field. Corrected the analyzer to bind immutable ownership through the exact 42-input manifest and recorded compiler flags instead; real ZIP/paired/micro verification then passed. No timing, counter, hot source, or original failure changed.",
     "2026-10-07 post-publication partial-page arithmetic audit rejected the new H257 cold test expectation: physical word clone is 5144B, not the 5140B canonical payload (4B padding). Corrected only the test expected physical byte total; snapshot payload/ownership/gates unchanged. Original Apple run37554438056 on e2b5e52f remains running and its actual result will be retained.",
     "2026-10-07 bounded artifact verifier initially FAILED with KeyError: status when treating selftest as a status envelope. Its schema contains boundaries and mutations. Corrected the analysis harness to verify boundaries.status=pass and all eight detected mutations per mode explicitly; complete independent artifact verification then PASS. No Apple/source/gate result changed.",
-    "2026-10-07 failed writer-study artifact verification initially stopped with FileNotFoundError: the preceding rg lookup used the wrong source files and prevented extraction. Repeated exact ZIP extraction and actual CLI guard lookup across Sources; crash-bootstrap supports1M only. Corrected only the workflow invocation to1M, without modifying runtime guard or thresholds. No source or original failure was reclassified."
+    "2026-10-07 failed writer-study artifact verification initially stopped with FileNotFoundError: the preceding rg lookup used the wrong source files and prevented extraction. Repeated exact ZIP extraction and actual CLI guard lookup across Sources; crash-bootstrap supports1M only. Corrected only the workflow invocation to1M, without modifying runtime guard or thresholds. No source or original failure was reclassified.",
+    "2026-10-07 H paired-study commentary initially inferred an S/H restoration API mismatch before reading the build log. Actual37559041669 log proves a temporary package path failure before compilation. Attribution corrected in commentary, proof and continuity; run stays FAILED, no S/H runtime/source or prior result changed."
   ],
   "apple": [
     {
@@ -268,6 +269,19 @@
       ],
       "failedGate": "existing crash-bootstrap command rejects4096: invalid: stage C crash population",
       "correction": "use existing supported1M population only for limited K3 cases; keep4096 canonical matrix and all runtime source/gates unchanged"
+    },
+    {
+      "commit": "e969955279ab0bff9015939a9c8e4dbcdc1d5ed7",
+      "tree": "7e3a8b76e99cd2cd999402415b7e28b3668f809d",
+      "run": 37559041669,
+      "job": 112591893469,
+      "artifact": 11455852543,
+      "artifactSHA256": "0db1551e6ad80fefcbd20e2448ce514917d313770c6d51e401c0e95f85f56c4e",
+      "status": "failure",
+      "scope": "disposable H paired harness; actual42runtime inputs unchanged",
+      "passedBeforeFailure": "runtime/guards and temporary-only source patch verified; Swift compilation and all profile commands NOT_RUN",
+      "failedGate": "temporary package directory one level too shallow for unchanged dependency path ../..; compiler did not start",
+      "correction": "nest the package at .h-paired-study/current so ../.. resolves to the permitted repository root; actual Package/Sources unchanged"
     }
   ],
   "diagnosticThresholdMisses": [

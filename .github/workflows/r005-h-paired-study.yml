@@ -39,13 +39,13 @@ jobs:
       - name: Prepare a disposable copy using only the existing H owner
         run: |
           set -euo pipefail
-          mkdir .h-paired-study
-          cp Experiments/R005Swift/Package.swift .h-paired-study/
-          cp -R Experiments/R005Swift/Sources .h-paired-study/Sources
-          python3 -B Experiments/R005Swift/Evidence/20261007/prepare-h-paired-study.py .h-paired-study
+          mkdir -p .h-paired-study/current
+          cp Experiments/R005Swift/Package.swift .h-paired-study/current/
+          cp -R Experiments/R005Swift/Sources .h-paired-study/current/Sources
+          python3 -B Experiments/R005Swift/Evidence/20261007/prepare-h-paired-study.py .h-paired-study/current
           python3 -B - <<'PYCODE'
           import hashlib,json,pathlib
-          source=pathlib.Path('Experiments/R005Swift/Sources');study=pathlib.Path('.h-paired-study/Sources')
+          source=pathlib.Path('Experiments/R005Swift/Sources');study=pathlib.Path('.h-paired-study/current/Sources')
           differences=[];hashes={}
           for p in sorted(source.rglob('*')):
               if not p.is_file():continue
@@ -61,7 +61,7 @@ jobs:
         run: |
           set -euo pipefail
           for mode in debug release; do
-            (cd .h-paired-study && swift build --scratch-path ".build-$mode" -c "$mode" -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror) 2>&1 | tee "h-paired-results/build-$mode.txt"
+            (cd .h-paired-study/current && swift build --scratch-path ".build-$mode" -c "$mode" -Xswiftc -DSTAGE_C -Xswiftc -DEPOCH_PAGES -Xswiftc -warnings-as-errors -Xcc -Werror) 2>&1 | tee "h-paired-results/build-$mode.txt"
           done
       - name: Exact Debug Release4096 smoke then one Release1M ABBA from one fixture
         run: |
@@ -75,7 +75,7 @@ jobs:
           env['DYLD_INSERT_LIBRARIES']=str((p/'AllocationObserver.dylib').resolve())
           summaries=[]
           for mode,count in (('debug',4096),('release',4096),('release',1000000)):
-              binary=pathlib.Path(f'.h-paired-study/.build-{mode}/{mode}/nxr-swift-probe').resolve()
+              binary=pathlib.Path(f'.h-paired-study/current/.build-{mode}/{mode}/nxr-swift-probe').resolve()
               command='stage-c-paired-profile-smoke' if count==4096 else 'stage-c-paired-profile'
               label=f'{mode}-{count}';store=(p/f'store-{label}').resolve()
               cp=subprocess.run([str(binary),command,str(store),'H'],env=env,text=True,capture_output=True,timeout=1800)

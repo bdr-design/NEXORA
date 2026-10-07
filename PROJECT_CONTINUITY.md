@@ -1,5 +1,13 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+H paired37559041669 FAILED before Swift compilation: temporary package
+one level too shallow for existing ../.. dependency. Artifact11455852543 ZIP
+SHA2560db1551e6ad80fefcbd20e2448ce514917d313770c6d51e401c0e95f85f56c4e
+independently verified and failure kept. Corrected package at .h-paired-study/
+current, actual42inputs unchanged; no H profile yet. Writer37557593873 SUCCESS,
+artifact11455952326 downloading/verification; preliminary8% median writer
+change is not C eligibility. Fresh37555679620 S1M TSan still running.
+
 H-specific paired diagnosis PREPARED in a disposable copy of current owner,
 not actual runtime: Debug/Release4096 then Release1M ABBA one fixture, separate
 advance/service/WAL/writer/full-loop and post-profile owned-capacity sample.

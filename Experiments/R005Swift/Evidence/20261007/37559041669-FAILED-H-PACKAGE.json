@@ -1,0 +1,29 @@
+{
+  "status": "failure",
+  "acceptance": false,
+  "source": "e969955279ab0bff9015939a9c8e4dbcdc1d5ed7",
+  "tree": "7e3a8b76e99cd2cd999402415b7e28b3668f809d",
+  "run": 37559041669,
+  "job": 112591893469,
+  "artifact": 11455852543,
+  "zipSHA256": "0db1551e6ad80fefcbd20e2448ce514917d313770c6d51e401c0e95f85f56c4e",
+  "failed": "temporary package directory one level too shallow for unchanged dependency path ../..; compiler did not start",
+  "correction": "nest the package at .h-paired-study/current so ../.. resolves to the permitted repository root; actual Package/Sources unchanged",
+  "DebugSwiftCompilation": "NOT_RUN",
+  "ReleaseSwiftCompilation": "NOT_RUN",
+  "HProfile": "NOT_RUN",
+  "C100": "NOT_RUN",
+  "runtimeInputs": 42,
+  "evidenceSHA256": {
+    "AllocationObserver.dylib": "8dd34c8971ad2cf0929d549d5d204e7d10d321f8f6e092f0bb43358b89e74577",
+    "build-debug.txt": "e550f116b805b32957b6767161a3b31452c7ded8b334721bacb748a1fc12bbe1",
+    "commit.txt": "9e251ce65ed77971bb2259bd4cb19f26c91b2a2253cffbb4de92e99bcb04ce31",
+    "environment.txt": "2279882ee44d1e0fe474b3f0fba1648b8427102ea0bbe469246f67b188b19deb",
+    "runtime-inputs.json": "f0c7c36513c810957189aee1b56a60ed95022f1188d446435d0bf685fabcd77f",
+    "scope.txt": "777b325ca6c548429abc3e8d29ecb2e6c6e54f9ede07a7e51df6f85adedb2b3c",
+    "source-guard-after.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "source-guard-before.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "study-source.json": "9da22c0407bc9a792dd35f7c6405019f9d3fecd9477c893779fb0534d450fdef",
+    "tree.txt": "a48e007ab94d6f55e7219477a2e97d3e87042f5f08907f196d586eb718f2539b"
+  }
+}
