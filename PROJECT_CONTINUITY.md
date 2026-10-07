@@ -1,5 +1,19 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Sealed-WAL bounded diagnostic run `37619163175` VERIFIED SUCCESS on source
+`44e47245c09b33b89d9c246bfe7940ab45d57a73`, tree
+`04379368ac2b803fbe04f948816dbe6291d74ecd`; artifact `11481530720`, ZIP
+SHA256 `1044c90f28a2e620056d72fac4a14974f196a50659be4fe6045d0316c8f9bf4b`.
+Apple Swift6.1.2/Xcode16.4 Debug, Release and TSan compiled and ran with empty
+stderr; 20 corruption cases fail closed, the clean whole-suffix rollback is one
+explicit `EXPECTED_KNOWN_GAP`, 11 crash boundaries returned only their allowed
+old/new exact state or fail-closed outcomes, and recover→append→seal→recover was
+exact. Actual24 Sources/42inputs stayed byte-identical. This workflow success is
+only execution integrity: output remains `SEALED_WAL_MICRO_PARTIAL_BLOCKED` /
+`NO_GO_INTEGRATION_C100`, acceptance=false. Release synthetic32-call ABBA ratio
+was130.22895658448164 (not C); H1M/C5/C100 NOT_RUN and safeToRunC=false. Eleven
+unrelated workflows were skipped; neither prior C failure changed.
+
 Sealed-WAL isolated draft hardened, still `DIAGNOSTIC_PARTIAL_BLOCKED` and
 `NO_GO_INTEGRATION_C100`: crash recovery comparison now checks root/value/
 durableLSN/generation outside the recovery catch; every pre-manifest failure
@@ -8,10 +22,14 @@ covered. Clean removal of the newest manifest plus all descendants is recorded
 as `EXPECTED_KNOWN_GAP` because no separately durable CURRENT authority exists.
 Request ID/status query, real syscall fault injection, fixed metadata pools,
 atomic compaction CAS/publication and physical power-loss proof remain absent.
-Local evidence SHA256 `66f35a8234d197f793d4558309f1bd8f3e392432957b3e3acd9f857264f04811`;
-independent final audit says `GO_FOR_BOUNDED_COMPILE_RUN` only. Disposable
-Debug/Release/TSan workflow and fail-closed verifier are locally checked;
-NOT_COMPILED/NOT_RUN until its marked Apple commit. No Sources/C change.
+Allocation observation, physical footprint, logical-vs-allocated disk and write
+amplification are NOT_MEASURED; backpressure/compactor overlap are neither
+implemented nor measured. Callback delivery after durable dirsync is uncertain.
+Production recovery SLA, cross-process lock, authentication, full S/H state,
+smoothness and iPhone behavior remain unproved. Micro source SHA256
+`66f35a8234d197f793d4558309f1bd8f3e392432957b3e3acd9f857264f04811`;
+independent final audit allowed only the bounded compile/run recorded above.
+No runtime Sources/C change.
 
 Independent immutable-page feasibility verdict remains NO_GO under the current
 atomic transcript. H live is105408880B; only22591120B remains under128MB, or
