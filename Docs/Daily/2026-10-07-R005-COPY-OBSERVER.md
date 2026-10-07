@@ -120,3 +120,33 @@ now matches the default and new owner test has a finite call cap. Its cancelled
 or eventual failure is separate from performance, which was NOT_MEASURED.
 One CI job can cancel only inspected37562742555 after exact head948d660f check;
 no other workflow, history or result is changed. Preserve partial raw evidence.
+
+## Corrected bounded proof — independently verified
+
+Run37562941693 SUCCESS, sourceb543b495adbc4861d0b65f301db0f2a1aa68bc42/
+tree507cd804d071a1422c61e9f0b6ccc0ce31a87172, artifact11457379432, ZIP
+SHA256d0394dbe35f95e67f9af41e311010219bdeb8e7c9b213a614a8075b6aa63cebc.
+44cases/132epochs/32canonical cross-build comparisons,6lifecycle, including
+S/H held observer-owner misuse and H cold held epoch in Debug/Release/TSan,
+PASS. Release advance/completion-service allocations zero with positive C/
+Swift controls; TSan observations null. Exact transcript/v2/WAL retained.
+
+Same-host H100k old36675/new ABBA six epochs each: median advance29.100334→
+27.7644185ms, ratio0.95409278; broad overlapping samples, mixed mirror/workload
+not pure simulation. Both arms copy8050000 physical bytes each epoch. This is
+a modest diagnostic observation, does not establish <=1.10 C eligibility.
+Full-loop ranges old56.660–92.352ms/new48.032–92.300ms overlap. No C100.
+
+Fresh qualification is selected prospectively on this fixed successor source.
+That run's A alone will decide C layout; no old A/B/K reuse or favorable choice.
+Only orchestration dependency changes: base A/B and six independent K/WAL
+parts start after routing guard on separate hosts. Exact test commands and
+all inputs, three builds×both layouts×1M, K1–K10/K9 continuation/chains/torn
+cases remain; aggregate requires successful base AND complete six-part matrix.
+No timing data is pooled across hosts. One-off cancellation rights removed.
+
+Superseded37562742555 is CANCELLED, all five builds PASS, lifecycle JSON absent
+and matrix/ABBA NOT_RUN. Artifact11457343944 ZIP SHA256
+24b9a369d810de4f36ea122eda3dd0024aea578eae7c865813e5061a19fd55fd verified.
+This cannot replace the earlier failed build or any failed C ratio. C OPEN S/H
+and full spare-image memory failure NOT_FIXED; product/IPA/device remain gated.

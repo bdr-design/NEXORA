@@ -1,5 +1,17 @@
 # NEXORA — current checkpoint / 2026-10-07
 
+Corrected copy-observer37562941693 SUCCESS onb543b495/tree507cd804:
+artifact11457379432 ZIP SHA256
+d0394dbe35f95e67f9af41e311010219bdeb8e7c9b213a614a8075b6aa63cebc verified
+44cases/132epochs/32canonical/6lifecycle, S/H observer-owner +H cold held
+Debug/Release/TSan PASS. Release advance/service zero, TSan null. H100kABBA
+median29.100→27.764ms ratio0.95409, overlapping mixed measurements NOT C.
+Fresh A/B+six1M K qualification next, sole A prospectively selected. Base/K
+can start independently, aggregate still requires both/all tests. Runtime42
+fixed sinceb543, no C100; memory NOT_FIXED, C OPEN S/H, no main/device/results.
+Superseded37562742555 CANCELLED/raw SHA24b9a369 verified, no lifecycle/ABBA;
+original37562437344 build FAILED and all earlier failures preserved.
+
 Generic-test follow-up review found deadline0 incorrect; actual default is
 UInt64.max. Fixed those2testcalls and added finite loop cap. Superseded
 37562742555 on948d660f was still building, targeted exact-head cancellation

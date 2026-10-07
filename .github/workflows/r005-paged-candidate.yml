@@ -5,25 +5,6 @@ on:
 permissions:
   contents: read
 jobs:
-  cancel-invalid-test:
-    if: ${{ contains(github.event.head_commit.message, '[r005-cancel-bad-test]') && contains(github.event.head_commit.message, '[r005-paged-candidate]') && contains(github.event.head_commit.message, '[r005-evidence-only]') }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: write
-    env:
-      GH_TOKEN: ${{ github.token }}
-    steps:
-      - name: Stop only the inspected superseded invalid test run
-        run: |
-          set -euo pipefail
-          ref="repos/bdr-design/NEXORA/actions/runs/37562742555"
-          test "$(gh api "$ref" --jq .head_sha)" = 948d660f89210da17e17cfdf05c457940aeefc6e
-          status="$(gh api "$ref" --jq .status)"
-          if test "$status" != completed; then
-            gh api --method POST "$ref/cancel"
-          fi
-          echo 'Invalid generic test deadline run cancelled if still active; no valid timing existed. Original status and artifacts must be retained.'
   bounded-paged-candidate:
     if: ${{ contains(github.event.head_commit.message, '[r005-paged-candidate]') && contains(github.event.head_commit.message, '[r005-evidence-only]') && !contains(github.event.head_commit.message, '[r005-c-targeted]') && !contains(github.event.head_commit.message, '[r005-epoch-pages]') && !contains(github.event.head_commit.message, '[r005-micro]') }}
     runs-on: macos-15

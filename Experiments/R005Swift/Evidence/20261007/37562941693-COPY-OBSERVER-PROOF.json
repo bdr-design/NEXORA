@@ -1,0 +1,308 @@
+{
+  "status": "pass",
+  "acceptance": false,
+  "source": "b543b495adbc4861d0b65f301db0f2a1aa68bc42",
+  "tree": "507cd804d071a1422c61e9f0b6ccc0ce31a87172",
+  "run": 37562941693,
+  "artifact": 11457379432,
+  "zipSHA256": "d0394dbe35f95e67f9af41e311010219bdeb8e7c9b213a614a8075b6aa63cebc",
+  "boundedCases": 44,
+  "boundedEpochs": 132,
+  "canonicalComparisons": 32,
+  "lifecycleCases": 6,
+  "copyObserverOwnerModes": [
+    "debug",
+    "release",
+    "tsan"
+  ],
+  "coldHeldEpochModes": [
+    "debug",
+    "release",
+    "tsan"
+  ],
+  "sameHostH100kABBA": {
+    "status": "diagnostic-verified",
+    "acceptance": false,
+    "layout": "H",
+    "assets": 100000,
+    "order": [
+      "old",
+      "new",
+      "new",
+      "old"
+    ],
+    "rows": [
+      {
+        "arm": "old",
+        "file": "1-old.json",
+        "sha256": "60d4f08f55d0bf9c815f3fa21c8e92c4e3f17f392e86343a21328b80a465bec9",
+        "advanceNS": [
+          22054703,
+          33034749,
+          39474331
+        ],
+        "barrierNS": [
+          612294,
+          722613,
+          889416
+        ],
+        "barrierBytes": [
+          8050000,
+          8050000,
+          8050000
+        ],
+        "fullLoopNS": [
+          57415125,
+          82958208,
+          92352292
+        ]
+      },
+      {
+        "arm": "new",
+        "file": "2-new.json",
+        "sha256": "7bd16925976f4918fa4e2617d43e2bde7e4da63c53aa9207ffdb6e5a3a517d98",
+        "advanceNS": [
+          26960626,
+          28155879,
+          27372958
+        ],
+        "barrierNS": [
+          810999,
+          718243,
+          703746
+        ],
+        "barrierBytes": [
+          8050000,
+          8050000,
+          8050000
+        ],
+        "fullLoopNS": [
+          70891833,
+          68590667,
+          66117000
+        ]
+      },
+      {
+        "arm": "new",
+        "file": "3-new.json",
+        "sha256": "004d57f71d416faf5278996322b1601ffd5a15d81b7dd5c011e3a4433de1dcfb",
+        "advanceNS": [
+          17515456,
+          28313125,
+          37238872
+        ],
+        "barrierNS": [
+          639866,
+          675104,
+          757992
+        ],
+        "barrierBytes": [
+          8050000,
+          8050000,
+          8050000
+        ],
+        "fullLoopNS": [
+          48031541,
+          68921292,
+          92299916
+        ]
+      },
+      {
+        "arm": "old",
+        "file": "4-old.json",
+        "sha256": "1129f47f3b459ffa13dfc4b366f61f9f51c20197786c8ae0bdfacfbf13b32971",
+        "advanceNS": [
+          21604665,
+          33445498,
+          25165919
+        ],
+        "barrierNS": [
+          705850,
+          687180,
+          647837
+        ],
+        "barrierBytes": [
+          8050000,
+          8050000,
+          8050000
+        ],
+        "fullLoopNS": [
+          56660084,
+          78374041,
+          62085542
+        ]
+      }
+    ],
+    "medianAdvanceNS": {
+      "old": 29100334.0,
+      "new": 27764418.5
+    },
+    "diagnosticNewToOldRatio": 0.9540927777667432,
+    "C100": "NOT_RUN",
+    "scope": "same-host bounded mirror/order/WAL test, not pure simulation timing or A/C acceptance; no pacing or idle padding"
+  },
+  "runtimeInputs": 42,
+  "changedInputs": [
+    "Experiments/R005Swift/Sources/SwiftProbe/Core.swift",
+    "Experiments/R005Swift/Sources/SwiftProbe/EpochPages.swift",
+    "Experiments/R005Swift/Sources/SwiftProbe/Hybrid.swift",
+    "Experiments/R005Swift/Sources/SwiftProbe/Stage005CPagedChecks.swift",
+    "Experiments/R005Swift/Sources/SwiftProbe/Stage005CSave.swift"
+  ],
+  "previousPermittedSource": "36675c8163191b58b6d39fe64654ee0327372165",
+  "C100": "NOT_RUN",
+  "CPerformance": {
+    "S": "OPEN",
+    "H": "OPEN"
+  },
+  "scope": "bounded old/new mirror verification only; A/B and both-layout1M K must be fresh on this successor",
+  "evidenceSHA256": {
+    "AllocationObserver.dylib": "f67e3b61e73d6341b963bb603664a89d17a08d41d692c4b8d00b5b54856bdb2d",
+    "accessor-comparison/1-old.json": "60d4f08f55d0bf9c815f3fa21c8e92c4e3f17f392e86343a21328b80a465bec9",
+    "accessor-comparison/1-old.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "accessor-comparison/2-new.json": "7bd16925976f4918fa4e2617d43e2bde7e4da63c53aa9207ffdb6e5a3a517d98",
+    "accessor-comparison/2-new.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "accessor-comparison/3-new.json": "004d57f71d416faf5278996322b1601ffd5a15d81b7dd5c011e3a4433de1dcfb",
+    "accessor-comparison/3-new.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "accessor-comparison/4-old.json": "1129f47f3b459ffa13dfc4b366f61f9f51c20197786c8ae0bdfacfbf13b32971",
+    "accessor-comparison/4-old.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "accessor-comparison/ACCESSOR-COMPARISON.json": "3edbed6e1bbce4d03f14fa943f15587e8db8a5db8e797f8b0787df6db6ac65e1",
+    "build-base-debug.txt": "0214b489b65e27d5583cd59b21808bae4eef611e5500f31a00984aa28ee34160",
+    "build-base-release.txt": "41705fc1040446e48cfa8b2a4e36bdab4ec33647c1485adec42929f9ebb0ae5e",
+    "build-candidate-debug.txt": "a689d693252c47f4881783c61fa1c82707f80f934ada5c97f5a919eb5deecb51",
+    "build-candidate-release.txt": "aa30bb8bad4ec0e98051e9f5fb525a8bb188b1989d5121b9ee40eee620d99e77",
+    "build-candidate-tsan.txt": "9bbe8e0154e4434b03b64a17b0d6393179cf2a46751b7ffc3237ec2e5e54446f",
+    "build-flags.txt": "71f54830478d8912602713093a2a67a595c4f299b5830837e98577d56842c587",
+    "build-previous-paged-release.txt": "a38e2b3b4a2260da7972ae42da7d28784c779d9e21128eb6c8e2cd26abc51813",
+    "commit.txt": "db3fea1b1d9ce5177c0fda78829f5fe642940bcad0565c1917fb97482518dda2",
+    "environment.txt": "4ea4a9ea40880729fcb2d336c894363f501fe6412aea658e13ed3d13bcbc8136",
+    "hybrid-layout-debug.json": "103e2c9e6aff4194b649e983b5f2c692ae61c33d1a98fbac387fd14d0563489c",
+    "hybrid-layout-release.json": "103e2c9e6aff4194b649e983b5f2c692ae61c33d1a98fbac387fd14d0563489c",
+    "hybrid-layout-tsan.json": "103e2c9e6aff4194b649e983b5f2c692ae61c33d1a98fbac387fd14d0563489c",
+    "hybrid-mutants-debug.json": "8debe32748d5fb163df87c3fe198d170cd6cb3cc32407f0690821a45ec88aed8",
+    "hybrid-mutants-release.json": "8debe32748d5fb163df87c3fe198d170cd6cb3cc32407f0690821a45ec88aed8",
+    "hybrid-mutants-tsan.json": "8debe32748d5fb163df87c3fe198d170cd6cb3cc32407f0690821a45ec88aed8",
+    "hybrid-order-debug.json": "410e7a1d0e76d3b3978afc8944ec8325e39e76b047900b2183a79544b37d0549",
+    "hybrid-order-release.json": "410e7a1d0e76d3b3978afc8944ec8325e39e76b047900b2183a79544b37d0549",
+    "hybrid-order-tsan.json": "410e7a1d0e76d3b3978afc8944ec8325e39e76b047900b2183a79544b37d0549",
+    "lifecycle-debug-H.json": "d6e3789a73bb65b93874e693258619a841b736d948872c038d17af2f5423cab4",
+    "lifecycle-debug-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-debug-S.json": "37384092d495e43af2a0dd02d2ae409c036c7b5be83c13faeae2423698e0e9ec",
+    "lifecycle-debug-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-release-H.json": "d6e3789a73bb65b93874e693258619a841b736d948872c038d17af2f5423cab4",
+    "lifecycle-release-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-release-S.json": "37384092d495e43af2a0dd02d2ae409c036c7b5be83c13faeae2423698e0e9ec",
+    "lifecycle-release-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-tsan-H.json": "d6e3789a73bb65b93874e693258619a841b736d948872c038d17af2f5423cab4",
+    "lifecycle-tsan-H.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lifecycle-tsan-S.json": "37384092d495e43af2a0dd02d2ae409c036c7b5be83c13faeae2423698e0e9ec",
+    "lifecycle-tsan-S.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/PAGED-CANDIDATE.json": "2bb5f7f1a1133138238a96ce4d558751ee82827155620f84e9189a38ff6287ec",
+    "matrix/baseline-release-H-1.json": "37591227536088f34f7f213850b82b2357a48dd063f31903a50bccc6b9f46a0f",
+    "matrix/baseline-release-H-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/baseline-release-H-100000.json": "97da6e1a94a7dfae7437e004e28a49aae7525a5b49ebf00537bcb4aee50baf3b",
+    "matrix/baseline-release-H-100000.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/baseline-release-H-257.json": "177d6e870e9f05afe953ab7e1d01deba573d3057bd4a07e0977a78700d06c47c",
+    "matrix/baseline-release-H-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/baseline-release-H-3.json": "837c4a20761de48fc384d9ccac58c96a26acb381372fa204f01304fbfde69636",
+    "matrix/baseline-release-H-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/baseline-release-H-4096.json": "803a84cd9f2fb2fca68c6c5b56742dc6e4be0a385c94d5e4d6a9c5bbe3186537",
+    "matrix/baseline-release-H-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/baseline-release-H-513.json": "3c6eb9699b3353d43aec2980b848cf7bd75fe816be4e71cf10fd0bca999f73e5",
+    "matrix/baseline-release-H-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/baseline-release-S-1.json": "b3d6c242c124cf43371def98ad9a58569c69aaedf3c12b40da165248fc95db98",
+    "matrix/baseline-release-S-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/baseline-release-S-100000.json": "75377db8937d70c924ac449b5b94e0b5e3b6e6cf4e2501284b44b3b24e270562",
+    "matrix/baseline-release-S-100000.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/baseline-release-S-257.json": "41dabc48a481203e3c3890d536be906b063e22a07a184f605351f1222c434788",
+    "matrix/baseline-release-S-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/baseline-release-S-3.json": "3fe69b1c86ddc1668ea6bcb05876a830950f41a2ea89214b1c05280255484c48",
+    "matrix/baseline-release-S-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/baseline-release-S-4096.json": "bafa618704e02e534ae85192d0adc36180280f229d6f6f9e77a34b5d9612513a",
+    "matrix/baseline-release-S-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/baseline-release-S-513.json": "99186ceb6dbb24579bb50b392e0e6ec1c83849cfa2d081f302e4ca6008d43d70",
+    "matrix/baseline-release-S-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-debug-H-1.json": "3d95a9169d52f7060a48066a4e582de5552d2dc5c711683145352b98dbcf8273",
+    "matrix/candidate-debug-H-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-debug-H-257.json": "fc55319f4a2a07d26a19ff8032c4fb98c111db6a608051bc26a0059d5f50d735",
+    "matrix/candidate-debug-H-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-debug-H-3.json": "f7d61af907d09f548f8c0c0edc48a4d31f6bf7ebae56f83b84a022d20f7f1929",
+    "matrix/candidate-debug-H-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-debug-H-4096.json": "20cf4e9c35a4fbe3a0ae6d3bab53ba2269b1779a46cf7513e9243ac4fcb71b9d",
+    "matrix/candidate-debug-H-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-debug-H-513.json": "ffbe946bb421038cdee174bec2989d49ee2dc9b8166c29c99a0a43e57553f591",
+    "matrix/candidate-debug-H-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-debug-S-1.json": "02add2a4e31fd9f3345afbba7755f89cb7ce8f32d8f7cf95b468f7581f0a8181",
+    "matrix/candidate-debug-S-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-debug-S-257.json": "2dae106974f98f3828081e3f73fd589574406cf7e696d3924dd19eb58fa5cbce",
+    "matrix/candidate-debug-S-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-debug-S-3.json": "11726fdf32a3c6ab33bfc3eedaf3a98218d6fff54af8e9512cf3588925d7b07f",
+    "matrix/candidate-debug-S-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-debug-S-4096.json": "48ff6b7e9a9d763807d9c50c45c914ea634a1d329470b6faf82b3653d09c5672",
+    "matrix/candidate-debug-S-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-debug-S-513.json": "f537aca9b1a38659d83851940964e6e05e2f7ec753799811d507a4ce8313f9d4",
+    "matrix/candidate-debug-S-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-release-H-1.json": "3ce0c0ac556f0d898af5108acea1be4290bef7fabfde2addf9462c7ac9a0e863",
+    "matrix/candidate-release-H-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-release-H-100000.json": "87d9ce99b96a67438ebeb0ecc08a21a7ba805e41c5e49611bbb07092d0f3693a",
+    "matrix/candidate-release-H-100000.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-release-H-257.json": "169868d748459caf9298449b1bb4439cf8090647a4867dd48e4b64633d2dac38",
+    "matrix/candidate-release-H-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-release-H-3.json": "fb5080b64ddcbe3be9bf8da4ea21bf0a74415fad5b377e9bdf6bec7e994dcce0",
+    "matrix/candidate-release-H-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-release-H-4096.json": "4ea842f7256e799d76216f8b7fa8dfbcd86d82284faaa8b6cd583807eabf5f65",
+    "matrix/candidate-release-H-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-release-H-513.json": "7bc27c52379e9f977adf9a3b46c45538972cf8a926750bc9b74960c0e9b8faa0",
+    "matrix/candidate-release-H-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-release-S-1.json": "ab9d8164a02f0f36bd29ba7bb72f519b61d3167488ae4c005978bbe4ab787edf",
+    "matrix/candidate-release-S-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-release-S-100000.json": "b27bf5a6b3016cfce3609caea1a264cfbad25f2f8edb19895142245eaccb6ddb",
+    "matrix/candidate-release-S-100000.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-release-S-257.json": "6d3e77d931695aaed3d5606a4386bf078b02f30a8003337c99197292535bbc78",
+    "matrix/candidate-release-S-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-release-S-3.json": "b64c2e5ff1cf46dcef6afef0c9e2524c425dc690e072fd699be0d532622fd6a3",
+    "matrix/candidate-release-S-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-release-S-4096.json": "65cf33d71aba188390986286e8a5eb12fa21b4001dd95e0a21b7aa6b2a2d2ad7",
+    "matrix/candidate-release-S-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-release-S-513.json": "6e10d010987bfccac8af0b7ebb5f6f6d79cba79569b0cace504ec0d9a16c8f70",
+    "matrix/candidate-release-S-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-tsan-H-1.json": "86293bc5e57d9bc00ec32c58b77760a72a0c548e9fa953943f9db27233d44e52",
+    "matrix/candidate-tsan-H-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-tsan-H-257.json": "91bf38926adf4daec149fee148c6918ad05c56280aace84133c5ce5820c13354",
+    "matrix/candidate-tsan-H-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-tsan-H-3.json": "38aaa266a4441dde393dad98d616a29e31227f6794b89ed3d790ce10eba88e22",
+    "matrix/candidate-tsan-H-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-tsan-H-4096.json": "4fc2fb0f8164e5f306e216cc614b317f4aa5f0c68c30c1a619e23180d02f337a",
+    "matrix/candidate-tsan-H-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-tsan-H-513.json": "d0ba224427ebd527a216af4aa71c15b1a6e7a4439911be6fd4002f9e39aea295",
+    "matrix/candidate-tsan-H-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-tsan-S-1.json": "c2749fb70a1da9600a2f84b66d04d9d0c110ad8834216bb41ebe26db5ecf3a8c",
+    "matrix/candidate-tsan-S-1.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-tsan-S-257.json": "da82e66c57db93724ede95bc1ee57c8eecd48dc5a7c9ea27cf0726f3b3c19660",
+    "matrix/candidate-tsan-S-257.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-tsan-S-3.json": "26579ea46abc15afaf7d0c356a4791c001ea8e4cd4a7c77fea3a40fbc98fa71a",
+    "matrix/candidate-tsan-S-3.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-tsan-S-4096.json": "b47d0bf5ff9e457002e418583f78a0a19565cfeb69159dcc2eca44bb057e9eb1",
+    "matrix/candidate-tsan-S-4096.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix/candidate-tsan-S-513.json": "984430ce79e4b2a7dacac6ef9e02551eb280c39786e7c738d05ce4d77f16519f",
+    "matrix/candidate-tsan-S-513.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "matrix-run.txt": "86230c000c8f308911f66c290d83816bda841814fd2669a5070c6005e993a743",
+    "order-debug.json": "ab6f8235e2865925042ae813b8c4e9d98f948aefe67f6420f2c908fde061dd61",
+    "order-release.json": "374e13e575b0c04cbdea6c04e99c5414b44507724b2365a9fd3be7126a0eb0b4",
+    "order-tsan.json": "5a5d1a52bd3c41f3ad987caa2ccfe3da2b9b8de020e1458ed3dd405ee3eda974",
+    "previous-runtime-inputs.json": "f0c7c36513c810957189aee1b56a60ed95022f1188d446435d0bf685fabcd77f",
+    "proof-gates.txt": "e878a3ba27945e52dd12261c0118ae91374557b525db2c883c0a379c2c310957",
+    "runtime-inputs.json": "bafe9a3e90ee1d59f2d4f9c837aafa2940fe4834fdefcb88e87f395c19896dd9",
+    "scope.txt": "5c67c0c08864cf43ee17ae772147fc81ec49034bd486ccebb5ad4cf7b5f25c84",
+    "selftest-debug.json": "d87767b22bc5f6112cd3c3a180501bbd8903eed40587c113624a7a1bf465963c",
+    "selftest-release.json": "d87767b22bc5f6112cd3c3a180501bbd8903eed40587c113624a7a1bf465963c",
+    "selftest-tsan.json": "d87767b22bc5f6112cd3c3a180501bbd8903eed40587c113624a7a1bf465963c",
+    "source-guard-after.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "source-guard-before.txt": "a270604751865bdbf34416c3b6f8fc0ae6948636c63fd9cce52e973f875b90c7",
+    "source-sha256.txt": "e20fcc591f5f4e4fe72345dd2882ae46d979cfcef8805d5757b39df3371afbba",
+    "transport-debug.json": "a49cfb1faedb88e8b12747a0e8491ad370fe6351b41b28bf7e29a5eef7a0c917",
+    "transport-release.json": "a49cfb1faedb88e8b12747a0e8491ad370fe6351b41b28bf7e29a5eef7a0c917",
+    "transport-tsan.json": "a49cfb1faedb88e8b12747a0e8491ad370fe6351b41b28bf7e29a5eef7a0c917",
+    "tree.txt": "3824a9c8fb2c2ade0f792e1791a7f828b355157e9d7db87bf8414ee8d91add9a"
+  }
+}
