@@ -1,5 +1,15 @@
 # NEXORA — isolated reschedule protocol micro checkpoint / 2026-10-11
 
+## Verified Apple CI proof — 2026-10-11
+
+- Code-proven source commit: `415f053ba6104cf78ee07cdb0afd7908cfb4e92b`; source tree `0a2f048cd08079be3ef016a48f1bd186218f1753`.
+- Apple workflow `38140216852`: **SUCCESS**, job `114472380605`; macOS 15.7.9 (arm64), Xcode 16.4, Swift 6.1.2.
+- Independent Swift 6 mock unit suite: Debug 10/10 PASS; Release 10/10 PASS; TSan 10/10 PASS. Tests run serially; TSan is not proof of real engine concurrency.
+- Artifact ID `11703265647`, ZIP SHA-256 `ada727087f04e4e195a79bd70dd2a42af93d84d39f3ce7a9be146f1595937cf4`; downloaded and SHA recomputed byte-for-byte, commit/tree and exact three raw test logs independently inspected. ZIP GitHub digest matches.
+- GitHub comparison from permitted R005 HEAD lists exactly seven paths (new micro, workflow, daily document and continuity), none in the original production-side `Sources/`, `Tests/`, or `Checks/`. Four micro blobs match locally tested sources by SHA.
+- The explicit companion review issue is https://github.com/bdr-design/NEXORA/issues/1; no external-model review exists (Laguna max review run `38139581248` BLOCKED 429). No code changes have been integrated into R005.
+- Classification remains: `ISOLATED_MICRO_PROTOCOL_PASS`, `NO_GO_ENGINE_INTEGRATION`, `C_OPEN_S_AND_H`, `DEVICE_NOT_TESTED`, `NO_IPA`. The failed R005 C and memory numbers are untouched.
+
 The original authorized R005 branch HEAD was rechecked at `aee6949e2fb7b14e9c1a49d96df580f57478b3fb`.
 A new branch `experiment/r005-atomic-reschedule-20261011` derives ONLY from this permitted source,
 not from any excluded branch or the previous game's technical implementation.
