@@ -97,6 +97,22 @@ def validate_request(data):
     return data
 
 
+def safe_provider_error(value):
+    """Return strictly allowlisted provider failure metadata, never provider message text."""
+    if not isinstance(value, dict):
+        return "PROVIDER_RESPONSE_ERROR_UNKNOWN"
+    code = value.get("code")
+    code_text = str(code) if type(code) is int and 400 <= code <= 599 else "UNKNOWN"
+    meta = value.get("metadata")
+    category = meta.get("error_type") if isinstance(meta, dict) else None
+    allowed = {"authentication", "rate_limit_exceeded", "provider_unavailable",
+               "provider_overloaded", "invalid_request", "timeout",
+               "context_length_exceeded", "content_policy_violation", "server"}
+    if category in allowed:
+        return "PROVIDER_RESPONSE_ERROR_" + code_text + "_" + category.upper()
+    return "PROVIDER_RESPONSE_ERROR_" + code_text
+
+
 def api_call(path, key="", payload=None):
     if path not in ("/models", "/key", "/chat/completions"):
         raise Blocked("ENDPOINT_NOT_ALLOWED")
@@ -114,7 +130,7 @@ def api_call(path, key="", payload=None):
         if not isinstance(result, dict):
             raise Blocked("INVALID_RESPONSE_SHAPE")
         if "error" in result:
-            raise Blocked("PROVIDER_RESPONSE_ERROR")
+            raise Blocked(safe_provider_error(result["error"]))
         return result
     except HTTPError as error:
         # Never echo response bodies, request headers, credentials or URLs.

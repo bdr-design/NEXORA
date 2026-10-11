@@ -82,6 +82,14 @@ class BridgeTests(unittest.TestCase):
             self.assertEqual(b.main(), 2)
             self.assertEqual(call.call_count, 1)
 
+    def test_provider_error_is_metadata_only(self):
+        value = {"code": 429, "message": "sk-or-v1-" + "x" * 40,
+                 "metadata": {"error_type": "rate_limit_exceeded"}}
+        self.assertEqual(b.safe_provider_error(value),
+                         "PROVIDER_RESPONSE_ERROR_429_RATE_LIMIT_EXCEEDED")
+        self.assertEqual(b.safe_provider_error({"code": "private-info"}),
+                         "PROVIDER_RESPONSE_ERROR_UNKNOWN")
+
     def test_bad_endpoint(self):
         with self.assertRaises(b.Blocked):
             b.api_call("https://example.invalid", "test")
