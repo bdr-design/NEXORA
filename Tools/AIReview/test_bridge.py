@@ -25,13 +25,23 @@ class BridgeTests(unittest.TestCase):
     def test_nonfinite_price(self):
         self.assertFalse(b.free_model(model(request="NaN")))
 
-    def test_two_families(self):
-        selected = b.choose_models([model(), model("moonshotai/example:free"), model("deepseek/other:free")], [])
-        self.assertEqual(selected, ["deepseek/example:free", "moonshotai/example:free"])
+    def test_explicit_qualified_models(self):
+        approved = sorted(b.QUALIFIED_FREE_MODELS)
+        selected = b.choose_models([model(name) for name in approved], approved)
+        self.assertEqual(selected, approved)
 
-    def test_no_two_families(self):
-        with self.assertRaises(b.Blocked):
-            b.choose_models([model()], [])
+    def test_no_automatic_low_tier_fallback(self):
+        with self.assertRaisesRegex(b.Blocked, "EXPLICIT_QUALIFIED_FREE_MODELS_REQUIRED"):
+            b.choose_models([model("nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free")], [])
+
+    def test_unqualified_small_model_rejected(self):
+        with self.assertRaisesRegex(b.Blocked, "MODEL_NOT_QUALIFIED_FOR_NEXORA"):
+            b.choose_models([model("apodex/apodex-1.1-mini:free")], ["apodex/apodex-1.1-mini:free"])
+
+    def test_unavailable_qualified_model_rejected(self):
+        with self.assertRaisesRegex(b.Blocked, "QUALIFIED_FREE_MODEL_UNAVAILABLE"):
+            b.choose_models([model("apodex/apodex-1.1-mini:free")],
+                            ["deepseek/deepseek-v4-flash-0731:free"])
 
     def test_explicit_paid_model_rejected(self):
         with self.assertRaises(b.Blocked):

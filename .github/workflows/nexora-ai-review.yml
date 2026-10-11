@@ -22,6 +22,10 @@ jobs:
           fetch-depth: 1
       - name: Offline safety tests (no API secret)
         run: python3 -B -m unittest discover -s Tools/AIReview -p 'test_*.py' -v
+      - name: Public free-model catalog and coding benchmark probe (no project data)
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: python3 -B Tools/AIReview/quality_probe.py
       - name: Bounded external call (free models only)
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}

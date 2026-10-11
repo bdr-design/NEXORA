@@ -1,6 +1,9 @@
 {
   "request_id": "nexora-connection-001",
   "mode": "smoke",
-  "models": [],
+  "models": [
+    "deepseek/deepseek-v4-flash-0731:free",
+    "poolside/laguna-s-2.1:free"
+  ],
   "prompt": "Connection test only. Do not send or review project source, and do not modify NEXORA."
 }

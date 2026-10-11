@@ -54,31 +54,27 @@ def free_model(model):
             and all(zero(v) for v in prices.values()))
 
 
+# Quality floor for engineering reviewers; no opportunistic low-tier fallback.
+# Models require current $0 prompt/completion pricing, explicit owner-approved ID,
+# and supporting independent coding evidence. This is NOT an absolute-best claim.
+QUALIFIED_FREE_MODELS = frozenset({
+    "deepseek/deepseek-v4-flash-0731:free",
+    "poolside/laguna-s-2.1:free",
+})
+
+
 def choose_models(catalog, explicit):
     available = {m["id"]: m for m in catalog if free_model(m)}
-    if explicit:
-        if (not isinstance(explicit, list) or not 1 <= len(explicit) <= 2
-                or any(not isinstance(m, str) for m in explicit)
-                or len(set(explicit)) != len(explicit)
-                or any(m not in available for m in explicit)):
-            raise Blocked("REQUESTED_MODELS_NOT_DISTINCT_VERIFIED_FREE")
-        return explicit
-    # Preference is a documented selection policy, NOT a quality benchmark.
-    families = ("deepseek/", "moonshotai/", "qwen/", "z-ai/", "nvidia/")
-    def rank(identifier):
-        family = identifier.split("/", 1)[0] + "/"
-        return (families.index(family) if family in families else len(families), identifier)
-    selected, seen = [], set()
-    for identifier in sorted(available, key=rank):
-        family = identifier.split("/", 1)[0]
-        if family not in seen:
-            selected.append(identifier)
-            seen.add(family)
-        if len(selected) == 2:
-            break
-    if len(selected) != 2:
-        raise Blocked("TWO_FREE_MODEL_FAMILIES_UNAVAILABLE")
-    return selected
+    if not isinstance(explicit, list) or not 1 <= len(explicit) <= 2:
+        raise Blocked("EXPLICIT_QUALIFIED_FREE_MODELS_REQUIRED")
+    if (any(not isinstance(m, str) for m in explicit)
+            or len(set(explicit)) != len(explicit)):
+        raise Blocked("INVALID_OR_DUPLICATE_MODEL_SELECTION")
+    if any(m not in QUALIFIED_FREE_MODELS for m in explicit):
+        raise Blocked("MODEL_NOT_QUALIFIED_FOR_NEXORA")
+    if any(m not in available for m in explicit):
+        raise Blocked("QUALIFIED_FREE_MODEL_UNAVAILABLE")
+    return explicit
 
 
 def validate_request(data):
