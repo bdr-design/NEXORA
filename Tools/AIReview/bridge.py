@@ -58,7 +58,6 @@ def free_model(model):
 # Models require current $0 prompt/completion pricing, explicit owner-approved ID,
 # and supporting independent coding evidence. This is NOT an absolute-best claim.
 QUALIFIED_FREE_MODELS = frozenset({
-    "deepseek/deepseek-v4-flash-0731:free",
     "poolside/laguna-s-2.1:free",
 })
 
