@@ -41,7 +41,7 @@ class BridgeTests(unittest.TestCase):
     def test_unavailable_qualified_model_rejected(self):
         with self.assertRaisesRegex(b.Blocked, "QUALIFIED_FREE_MODEL_UNAVAILABLE"):
             b.choose_models([model("apodex/apodex-1.1-mini:free")],
-                            ["deepseek/deepseek-v4-flash-0731:free"])
+                            ["poolside/laguna-s-2.1:free"])
 
     def test_explicit_paid_model_rejected(self):
         with self.assertRaises(b.Blocked):
