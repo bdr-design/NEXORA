@@ -1,3 +1,30 @@
+# NEXORA R005 / 11 October 2026 — verified second Apple gate and NO_GO decision
+
+- Permitted worktree: `experiment/r005-atomic-reschedule-20261011`
+  based only on R001-derived R005; root AGENTS and continuation checked.
+- Red-team identified and reproduced an isolated mock false receipt acceptance
+  for foreign world at equal asset count; fixed using a noncryptographic
+  mock fingerprint and exposed recovery boundary for nonempty prior state.
+- Source `63fbee880b2294112abf99710976a74b5f63bd22`: Apple run
+  `38145934383` SUCCESS, 14/14 Debug, Release, TSan; artifact `11705201013`,
+  downloaded SHA-256 `66ed17477f1eb556b21344ec1e354861276482984d40d20ca8a3c9e53f3be30e`.
+- Exact 1M theoretical mock cadence test `2*ceil(1M/budget)+1`:
+  1001->2001 calls, 1002->1999, 1024->1955; NOT a production SLA.
+- Source `bb131774a9498275718818bf747f6af24fb82a09`: Apple run
+  `38146201687` SUCCESS, 14/14 Debug/Release/TSan; artifact
+  `11704457735`, SHA-256 `6abe1dfd5588637b6b5ca01fda76312a8415a07edbcde15e4a141732be99ddea`;
+  checked source/tree/three raw logs.
+- OpenRouter Laguna max public-review attempt `38139581248` attempt 3:
+  BLOCKED `HTTP_429` with no model response; no external review approval.
+- **NO_GO ENGINE INTEGRATION**: micro globally blocks reads, lacks durable
+  nonempty-base recovery and collision-resistant state root, cannot prove
+  Stage A memory/Stage C ratio. H prepared 210772320B, C5 ratio1.38225>1.10
+  persist; original engine sources unchanged; main HEAD 38ce39cf unchanged.
+- This evidence-only append does not alter executable sources or reopen
+  source-bound Apple proof. Next candidate must address reader visibility,
+  durable authority, memory and C before touching hot paths.
+
+---
 # NEXORA R005 exact cadence arithmetic / 11 October 2026
 
 - Experiments-only test improvement on isolated branch, parent `63fbee880b2294112abf99710976a74b5f63bd22`.

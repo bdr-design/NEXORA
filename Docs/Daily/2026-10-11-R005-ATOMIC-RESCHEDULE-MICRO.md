@@ -103,3 +103,56 @@ comparison); budget 1002 yields **1999 calls**, and budget 1024 gives
 measurements, production scheduler parity, or official Stage C timings.
 A dedicated assertion was run locally: Debug/Release/TSan 14/14 each.
 New source-bound Apple CI must be checked before Apple PASS is asserted.
+
+## Exact Apple source-bound follow-up / 2026-10-11
+
+1. Red-team corrected source commit `63fbee880b2294112abf99710976a74b5f63bd22`:
+   [GitHub Apple CI 38145934383](https://github.com/bdr-design/NEXORA/actions/runs/38145934383) **SUCCESS**.
+   14/14 named Debug, 14/14 Release, 14/14 TSan PASS on Apple Swift 6.1.2,
+   Xcode 16.4/macOS 15.7.9 arm64. Artifact 11705201013, independently
+   downloaded ZIP SHA-256 `66ed17477f1eb556b21344ec1e354861276482984d40d20ca8a3c9e53f3be30e`.
+   Code/test remote blob SHA match the locally compiled files:
+   `30dc8a83669d451c1a89024f0d2c257ef03e463b` and
+   `5683a363bab9b41b96374afed798c26d47fc6892`.
+
+2. Further source-limited arithmetic assertion commit
+   `bb131774a9498275718818bf747f6af24fb82a09`, tree
+   `e1e06ea0c8fc8a27bccd049cdd33f1530c17af31`:
+   [Apple CI 38146201687](https://github.com/bdr-design/NEXORA/actions/runs/38146201687) **SUCCESS**.
+   Debug 14/14, Release 14/14, TSan 14/14 PASS, all steps complete. Artifact
+   `11704457735`, GitHub digest and independently downloaded ZIP SHA-256
+   `6abe1dfd5588637b6b5ca01fda76312a8415a07edbcde15e4a141732be99ddea`.
+   ZIP internal `commit.txt`/`tree.txt` match exact source; debug/release/tsan
+   logs each confirm 14 named tests, 0 failures.
+
+3. An independent strongest-allowed external Laguna Max review was requested
+   using *public product/performance evidence only*. One controlled replay of
+   [workflow 38139581248](https://github.com/bdr-design/NEXORA/actions/runs/38139581248)
+   failed `PROVIDER_HTTP_429` again (attempt 3). Its 44 offline safety tests and
+   free catalog check passed, but **no model response** was produced. Neither
+   its max-request setting nor smoke-test connectivity is an independent review.
+   No smaller model substituted; no secrets or code from the previous game sent.
+
+### Narrow conclusion — do NOT turn a passing micro into an engine upgrade
+
+The **cross-world receipt substitution** was a real fail in the isolated model,
+then was prevented in the revised mock, evidenced by a regression test. However
+the mock FNV-64 marker is not a durable, cryptographic state root. The recovery
+method still only handles a fresh empty base and requires caller-supplied
+expected-base identity. It does **not** reconstruct a prior nonempty state
+or verify it after a physical crash. These boundaries must remain fail-closed.
+
+The read-starvation test is explicitly **negative evidence**: all business
+reads are blocked throughout two passes plus mock publication, even when
+per-call work is bounded. This is not a playable-world visibility design.
+Source changes to a real `HybridWorld`, `SwiftWorld`, scheduler, WAL, save
+contract, or financial state have NOT occurred and are not justified by this
+experiment.
+
+**Current integration decision: NO_GO.** Original R005 H memory
+`210,772,320B`, H1M/C5 overhead `1.3822529614`, and all other C failures
+remain unchanged. No Stage A/B/K/C proof, release-ready gameplay, IPA or iPhone
+certificate is claimed. Before another candidate, independently prove
+nonblocking published views (not second world), stable durable request ID and
+manifest authority, real recovery from nonempty base, source-bound memory and
+latency budgets. Keep main unmodified and preserve the fixed `<=1.10` gate.
