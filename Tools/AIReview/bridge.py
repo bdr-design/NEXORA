@@ -78,7 +78,7 @@ def choose_models(catalog, explicit):
 
 
 def validate_request(data):
-    if not isinstance(data, dict) or data.get("mode") not in ("smoke", "review"):
+    if not isinstance(data, dict) or data.get("mode") not in ("smoke", "review", "public_review"):
         raise Blocked("INVALID_REQUEST_MODE")
     if set(data) - {"mode", "request_id", "prompt", "models"}:
         raise Blocked("REQUEST_SETTING_OVERRIDE_FORBIDDEN")
@@ -89,6 +89,15 @@ def validate_request(data):
         raise Blocked("INVALID_PROMPT_LENGTH")
     if SECRET_PATTERN.search(prompt):
         raise Blocked("SECRET_LIKE_TEXT_IN_PROMPT")
+    if data["mode"] == "public_review":
+        # Explicitly separate public-evidence advice from private code review.
+        # Only public, attributed repository notes may be submitted here.
+        if not prompt.startswith("PUBLIC NEXORA EVIDENCE ONLY\\n"):
+            raise Blocked("PUBLIC_EVIDENCE_HEADER_REQUIRED")
+        if "https://github.com/bdr-design/NEXORA/blob/" not in prompt:
+            raise Blocked("PUBLIC_NEXORA_SOURCE_REQUIRED")
+        if len(prompt) > 6000:
+            raise Blocked("PUBLIC_EVIDENCE_TOO_LARGE")
     models = data.get("models", [])
     if not isinstance(models, list) or len(models) > 2 or any(not isinstance(m, str) for m in models):
         raise Blocked("INVALID_MODEL_LIST")
@@ -155,7 +164,7 @@ def request_body(identifier, request, metadata):
         "stream": False,
         # Smoke sends a fixed handshake only; code review remains privacy-restricted.
         "provider": {"allow_fallbacks": False, "require_parameters": True,
-                     "data_collection": "allow" if smoke else "deny",
+                     "data_collection": "allow" if request["mode"] in ("smoke", "public_review") else "deny",
                      "max_price": {"prompt": 0, "completion": 0}},
     }
 

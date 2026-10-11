@@ -71,6 +71,29 @@ class BridgeTests(unittest.TestCase):
         self.assertFalse(body["provider"]["allow_fallbacks"])
         self.assertEqual(body["provider"]["data_collection"], "allow")
 
+    def test_public_evidence_mode_is_explicit_and_privacy_scoped(self):
+        prompt = ("PUBLIC NEXORA EVIDENCE ONLY\\n"
+                  "https://github.com/bdr-design/NEXORA/blob/known/Docs/PRODUCT-RULES.md\\n"
+                  "Discuss the published Stage C failure, no private source.")
+        b.validate_request({"mode": "public_review", "request_id": "public-1", "prompt": prompt,
+                            "models": ["poolside/laguna-s-2.1:free"]})
+        body = b.request_body("deepseek/example:free", {"mode": "public_review", "prompt": prompt},
+                              {"id": "deepseek/example:free", "supported_parameters": ["reasoning"],
+                               "reasoning": {"supported_efforts": ["max"]}, "context_length": 262144,
+                               "top_provider": {"max_completion_tokens": 32768}})
+        self.assertEqual(body["provider"]["data_collection"], "allow")
+        self.assertTrue(body["provider"]["require_parameters"])
+        self.assertFalse(body["provider"]["allow_fallbacks"])
+        self.assertNotIn("tools", body)
+
+    def test_public_evidence_without_source_or_header_is_blocked(self):
+        for prompt in ("PUBLIC NEXORA EVIDENCE ONLY\\nuncited summary",
+                       "My private draft",
+                       "PUBLIC NEXORA EVIDENCE ONLY\\n"
+                       "https://github.com/bdr-design/NEXORA/blob/known/Docs/file\\n" + "x" * 7000):
+            with self.subTest(prefix=prompt[:30]), self.assertRaises(b.Blocked):
+                b.validate_request({"mode": "public_review", "request_id": "public-2", "prompt": prompt})
+
     def test_review_stays_privacy_restricted(self):
         body = b.request_body("deepseek/example:free", {"mode": "review", "prompt": "Review public project evidence"}, reasoning_model())
         self.assertEqual(body["provider"]["data_collection"], "deny")
