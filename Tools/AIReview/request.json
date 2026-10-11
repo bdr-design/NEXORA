@@ -1,0 +1,6 @@
+{
+  "request_id": "nexora-connection-001",
+  "mode": "smoke",
+  "models": [],
+  "prompt": "Connection test only. Do not send or review project source, and do not modify NEXORA."
+}
