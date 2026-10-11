@@ -5,6 +5,15 @@ from unittest.mock import patch
 import bridge as b
 
 
+def reasoning_model(name="deepseek/example:free"):
+    # Synthetic metadata for isolated tests, NOT a real model qualification.
+    return {"id": name, "supported_parameters": ["reasoning"],
+            "reasoning": {"supported_efforts": ["high", "medium", "low"]},
+            "context_length": 262144,
+            "top_provider": {"max_completion_tokens": 131072}}
+
+
+
 def model(name="deepseek/example:free", **prices):
     return {"id": name, "pricing": {"prompt": "0", "completion": "0", **prices}}
 
@@ -56,14 +65,14 @@ class BridgeTests(unittest.TestCase):
             b.validate_request({"mode": "review", "request_id": "test", "prompt": "sk-or-v1-" + "x" * 40})
 
     def test_secret_not_sent_in_smoke_prompt(self):
-        body = b.request_body("deepseek/example:free", {"mode": "smoke", "prompt": "USER TEXT"})
+        body = b.request_body("deepseek/example:free", {"mode": "smoke", "prompt": "USER TEXT"}, reasoning_model())
         self.assertNotIn("USER TEXT", json.dumps(body))
         self.assertEqual(body["provider"]["max_price"], {"prompt": 0, "completion": 0})
         self.assertFalse(body["provider"]["allow_fallbacks"])
         self.assertEqual(body["provider"]["data_collection"], "allow")
 
     def test_review_stays_privacy_restricted(self):
-        body = b.request_body("deepseek/example:free", {"mode": "review", "prompt": "Review public project evidence"})
+        body = b.request_body("deepseek/example:free", {"mode": "review", "prompt": "Review public project evidence"}, reasoning_model())
         self.assertEqual(body["provider"]["data_collection"], "deny")
         self.assertEqual(body["provider"]["max_price"], {"prompt": 0, "completion": 0})
         self.assertFalse(body["provider"]["allow_fallbacks"])

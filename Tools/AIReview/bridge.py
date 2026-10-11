@@ -8,6 +8,7 @@ import os
 import re
 import sys
 from decimal import Decimal, InvalidOperation
+from effort_policy import EffortPolicyError, maximum_reasoning, completion_budget
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import HTTPRedirectHandler, Request, build_opener
@@ -79,6 +80,8 @@ def choose_models(catalog, explicit):
 def validate_request(data):
     if not isinstance(data, dict) or data.get("mode") not in ("smoke", "review"):
         raise Blocked("INVALID_REQUEST_MODE")
+    if set(data) - {"mode", "request_id", "prompt", "models"}:
+        raise Blocked("REQUEST_SETTING_OVERRIDE_FORBIDDEN")
     if not isinstance(data.get("request_id"), str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", data["request_id"]):
         raise Blocked("INVALID_REQUEST_ID")
     prompt = data.get("prompt", "")
@@ -136,16 +139,23 @@ def api_call(path, key="", payload=None):
         raise Blocked("INVALID_PROVIDER_JSON") from None
 
 
-def request_body(identifier, request):
+def request_body(identifier, request, metadata):
     smoke = request["mode"] == "smoke"
     prompt = "Reply exactly NEXORA_CONNECTION_OK, without explanation." if smoke else request["prompt"]
+    try:
+        reasoning, evidence = maximum_reasoning(identifier, metadata)
+        limit = completion_budget(metadata, prompt, POLICY)
+    except EffortPolicyError as error:
+        raise Blocked(str(error)) from None
     return {
         "model": identifier,
         "messages": [{"role": "system", "content": POLICY}, {"role": "user", "content": prompt}],
-        "max_tokens": 1024 if smoke else 4096,
+        "max_tokens": limit,
+        "reasoning": reasoning,
         "stream": False,
         # Smoke sends a fixed handshake only; code review remains privacy-restricted.
-        "provider": {"allow_fallbacks": False, "data_collection": "allow" if smoke else "deny",
+        "provider": {"allow_fallbacks": False, "require_parameters": True,
+                     "data_collection": "allow" if smoke else "deny",
                      "max_price": {"prompt": 0, "completion": 0}},
     }
 
@@ -211,8 +221,23 @@ def main():
             raise Blocked("INVALID_MODEL_CATALOG")
         models = choose_models(catalog, data.get("models", []))
         report["selected_models"] = models
+        # Validate every selected model before the first inference; no partial
+        # low-effort fallback if another selected model lacks supported controls.
+        prepared = []
+        report["reasoning_requests"] = []
         for identifier in models:
-            body = request_body(identifier, data)
+            matches = [m for m in catalog if isinstance(m, dict) and m.get("id") == identifier]
+            if len(matches) != 1:
+                raise Blocked("AMBIGUOUS_MODEL_METADATA")
+            metadata = matches[0]
+            body = request_body(identifier, data, metadata)
+            _, evidence = maximum_reasoning(identifier, metadata)
+            report["reasoning_requests"].append({
+                "model": identifier, "requested_reasoning": body["reasoning"],
+                "max_completion_tokens": body["max_tokens"],
+                "require_parameters": True, "allow_fallbacks": False, **evidence})
+            prepared.append((identifier, body))
+        for identifier, body in prepared:
             response = api_call("/chat/completions", key, body)
             report["responses"].append(parse_answer(response, identifier, data["mode"]))
         report["status"] = "SMOKE_COMPLETE_NOT_PROJECT_ACCEPTANCE" if data["mode"] == "smoke" else "ADVICE_READY_FOR_HUMAN_REVIEW"
