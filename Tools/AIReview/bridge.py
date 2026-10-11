@@ -133,7 +133,8 @@ def request_body(identifier, request):
         "messages": [{"role": "system", "content": POLICY}, {"role": "user", "content": prompt}],
         "max_tokens": 1024 if smoke else 4096,
         "stream": False,
-        "provider": {"allow_fallbacks": False, "data_collection": "deny",
+        # Smoke sends a fixed handshake only; code review remains privacy-restricted.
+        "provider": {"allow_fallbacks": False, "data_collection": "allow" if smoke else "deny",
                      "max_price": {"prompt": 0, "completion": 0}},
     }
 

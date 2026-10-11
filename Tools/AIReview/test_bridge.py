@@ -50,6 +50,14 @@ class BridgeTests(unittest.TestCase):
         self.assertNotIn("USER TEXT", json.dumps(body))
         self.assertEqual(body["provider"]["max_price"], {"prompt": 0, "completion": 0})
         self.assertFalse(body["provider"]["allow_fallbacks"])
+        self.assertEqual(body["provider"]["data_collection"], "allow")
+
+    def test_review_stays_privacy_restricted(self):
+        body = b.request_body("deepseek/example:free", {"mode": "review", "prompt": "Review public project evidence"})
+        self.assertEqual(body["provider"]["data_collection"], "deny")
+        self.assertEqual(body["provider"]["max_price"], {"prompt": 0, "completion": 0})
+        self.assertFalse(body["provider"]["allow_fallbacks"])
+        self.assertNotIn("tools", body)
         self.assertNotIn("tools", body)
 
     def test_reply_validation(self):
