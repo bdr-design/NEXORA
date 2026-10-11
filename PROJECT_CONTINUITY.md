@@ -1,3 +1,34 @@
+# NEXORA — isolated reschedule protocol micro checkpoint / 2026-10-11
+
+The original authorized R005 branch HEAD was rechecked at `aee6949e2fb7b14e9c1a49d96df580f57478b3fb`.
+A new branch `experiment/r005-atomic-reschedule-20261011` derives ONLY from this permitted source,
+not from any excluded branch or the previous game's technical implementation.
+`main` stays `38ce39cf9322f47e4def5f6eddb425c5a66ea7f9`.
+AGENTS, product rules and prior R005 measured failures remain in force.
+
+This experiment adds a **disposable, stand-alone Swift 6 model** of budgeted
+preflight, hidden partial application, mock journal publication and fail-stop
+recovery. It is NOT a runtime integration, an actual WAL protocol, a save
+certificate, a new app/IPA, iPhone performance proof or Stage C closure.
+Ten named protocol tests passed locally on Linux Swift 6.2.1 in Debug,
+Release and TSan; macOS Apple CI evidence was pending at initial publication.
+The 24 R005 hot source files and 42 original proof inputs are unchanged.
+The two-phase model costs 2N logical work units, an arithmetic 1000 work
+units/call minimum for 1M over 2000 calls BEFORE actual simulation overhead.
+Production C (S/H) remains OPEN; measured H1M C5=1.3822529614 > 1.10,
+memory H prepared=210772320B. The experimental model does not fix either.
+A Laguna S 2.1 maximum-effort public review was attempted independently in
+the tooling branch, but OpenRouter returned HTTP 429; no external review was
+received. See its actual workflow evidence; never call the reviewer PASSED.
+
+Local test command `swift test [-c release | --sanitize=thread] -Xswiftc -warnings-as-errors`
+from `Experiments/R005AtomicReschedule`. CI path:
+`.github/workflows/r005-atomic-reschedule-micro.yml`. Next safe step:
+inspect source-pinned Apple logs and independent red-team, then decide
+whether any integration candidate can satisfy memory/cadence/durability,
+before changing any actual production state or relaxing a threshold.
+
+---
 # NEXORA — current checkpoint / 2026-10-07
 
 Sealed-WAL bounded diagnostic run `37619163175` VERIFIED SUCCESS on source

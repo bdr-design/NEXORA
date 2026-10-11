@@ -1,0 +1,52 @@
+name: NEXORA R005 Isolated Reschedule Protocol Micro
+on:
+  push:
+    branches: [experiment/r005-atomic-reschedule-20261011]
+    paths:
+      - 'Experiments/R005AtomicReschedule/**'
+      - '.github/workflows/r005-atomic-reschedule-micro.yml'
+permissions:
+  contents: read
+jobs:
+  micro:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Identify exact evidence source
+        run: |
+          set -euo pipefail
+          mkdir -p r005-atomic-evidence
+          git rev-parse HEAD > r005-atomic-evidence/commit.txt
+          git rev-parse HEAD^{tree} > r005-atomic-evidence/tree.txt
+          xcodebuild -version > r005-atomic-evidence/environment.txt
+          swift --version >> r005-atomic-evidence/environment.txt
+          sw_vers >> r005-atomic-evidence/environment.txt
+          # These are the original, production-side NEXORA paths. No diff allowed.
+          git diff --exit-code HEAD^ HEAD -- Sources Tests Checks
+      - name: Independent micro Debug
+        run: |
+          set -euo pipefail
+          swift test --package-path Experiments/R005AtomicReschedule -Xswiftc -warnings-as-errors 2>&1 | tee r005-atomic-evidence/debug.txt
+      - name: Independent micro Release
+        run: |
+          set -euo pipefail
+          swift test --package-path Experiments/R005AtomicReschedule -c release -Xswiftc -warnings-as-errors 2>&1 | tee r005-atomic-evidence/release.txt
+      - name: Independent micro TSan (logic only, no concurrency proof)
+        run: |
+          set -euo pipefail
+          swift test --package-path Experiments/R005AtomicReschedule --sanitize=thread -Xswiftc -warnings-as-errors 2>&1 | tee r005-atomic-evidence/tsan.txt
+      - name: Preserve exact clean source
+        if: success()
+        run: |
+          set -euo pipefail
+          git diff --exit-code
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: r005-atomic-reschedule-micro-evidence
+          path: r005-atomic-evidence/
+          if-no-files-found: error
