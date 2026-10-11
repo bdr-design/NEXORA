@@ -89,3 +89,17 @@ Local Swift 6.2.1 Linux Debug/Release/TSan **14/14** each; Apple CI still
 stays tied to `415f053b` and must not be reused as new source evidence.
 `Sources/`, `Tests/`, `Checks/` and the original R005 engine files are
 still untouched. No external Laguna review was received (429).
+
+## Refined exact theoretical 2,000-call bound (mock only)
+
+The first-order two-pass bound `2N/2000 = 1000` visits/call is
+**not sufficient** in the micro: each phase rounds up separately and
+mock journal publication consumes one additional call. For N=1,000,000,
+the exact modeled call count is
+`2 * ceil(1,000,000 / budget) + 1`.
+At budgets 1000 and 1001 this is **2001 calls** (fails a 2000-call
+comparison); budget 1002 yields **1999 calls**, and budget 1024 gives
+**1955 calls**. These are analytical call counts, *not* 1M Apple
+measurements, production scheduler parity, or official Stage C timings.
+A dedicated assertion was run locally: Debug/Release/TSan 14/14 each.
+New source-bound Apple CI must be checked before Apple PASS is asserted.

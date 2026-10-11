@@ -1,3 +1,17 @@
+# NEXORA R005 exact cadence arithmetic / 11 October 2026
+
+- Experiments-only test improvement on isolated branch, parent `63fbee880b2294112abf99710976a74b5f63bd22`.
+- Phase-aware two-pass model count: `2*ceil(1_000_000/budget)+1` calls;
+  budget 1001 -> 2001 (not enough for 2000); budget 1002 -> 1999;
+  budget 1024 -> 1955. This models only mock calls, not real R005 C.
+- Local Debug, Release and TSan: all 14/14 PASS. Apple source-bound CI
+  NOT_YET_VERIFIED for new test; 14/14 Apple PASS of parent remains
+  tied to parent only. No runtime/world/source mutation, no main merge,
+  no C or memory gate changes, no iPhone/IPA.
+- Prior red-team cross-world receipt flaw and fail-closed restrictions
+  remain separately documented in the preceding checkpoint.
+
+---
 # NEXORA red-team correction checkpoint — 2026-10-11
 
 - Repo: `bdr-design/NEXORA` only; isolated branch `experiment/r005-atomic-reschedule-20261011`; source parent

@@ -251,5 +251,15 @@ final class ChunkedTransactionTests: XCTestCase {
         let needed = 2 * count
         XCTAssertEqual((needed + 1999) / 2000, 1000)
         XCTAssertGreaterThan((needed + 999) / 1000, 1_999)
+        // The first arithmetic floor is necessary but NOT sufficient because
+        // validation and staging each round up to whole calls, and journal
+        // publication consumes an extra call in this mock.
+        func calls(_ budget: Int) -> Int { 2 * ((count + budget - 1) / budget) + 1 }
+        XCTAssertEqual(calls(1_000), 2_001)
+        XCTAssertEqual(calls(1_001), 2_001)
+        XCTAssertEqual(calls(1_002), 1_999)
+        XCTAssertEqual(calls(1_024), 1_955)
+        XCTAssertGreaterThan(calls(1_001), 2_000)
+        XCTAssertLessThanOrEqual(calls(1_002), 2_000)
     }
 }
