@@ -127,7 +127,10 @@ class MaximumEffortTests(unittest.TestCase):
 
     def test_completed_response_remains_connection_only(self):
         reply = {"model": ID, "choices": [{"finish_reason": "stop", "message": {"content": "NEXORA_CONNECTION_OK"}}], "usage": {"cost": 0}}
+        fixture_request = {"mode": "smoke", "request_id": "isolated-smoke",
+                           "models": [ID], "prompt": "Connection only"}
         with patch.dict(os.environ, {"OPENROUTER_API_KEY": "sk-or-test"}), \
+             patch.object(b.Path, "read_text", return_value=json.dumps(fixture_request)), \
              patch.object(b, "api_call", side_effect=[{}, {"data": [fixture()]}, reply]), \
              patch.object(b, "emit") as emit:
             self.assertEqual(b.main(), 0)
