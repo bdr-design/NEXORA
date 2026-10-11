@@ -60,3 +60,32 @@ received HTTP 429 and no answer; do not invent that critique.
 - The explicit companion review issue is https://github.com/bdr-design/NEXORA/issues/1; no external-model review exists (Laguna max review run `38139581248` BLOCKED 429). No code changes have been integrated into R005.
 - Classification remains: `ISOLATED_MICRO_PROTOCOL_PASS`, `NO_GO_ENGINE_INTEGRATION`, `C_OPEN_S_AND_H`, `DEVICE_NOT_TESTED`, `NO_IPA`. The failed R005 C and memory numbers are untouched.
 
+
+## Independent red-team correction — 11 October 2026 (Apple CI pending)
+
+A newly written regression was first run on the published 10-test mock and
+**FAILED**: two worlds with equal `count` but unequal scheduled operations
+could claim the same request's journal receipt without proving world state.
+The test had a deliberate `XCTAssertThrowsError` which correctly exposed
+that no error was thrown.
+
+A limited corrective model change now:
+- binds mock journal receipts to a rolling state fingerprint, and checks the
+  published world marker on idempotent receipt queries;
+- prevents an unqualified fresh-empty recovery from silently replacing a
+  nonempty pretransaction world; explicit caller-supplied baseline identity is
+  required, and unsupported recovery fails closed;
+- adds regression coverage of foreign-world receipt substitution, nonempty/
+  mismatched baseline, and long-running read starvation.
+
+**Limits:** 64-bit noncryptographic marker and caller-supplied baseline are
+not a durable/secure root or filesystem proof. In fact the read-starvation
+test demonstrates that merely splitting work across ticks is not production
+viable. A real design needs durable baseline, immutable reader views and
+source-bound state ownership, while still meeting unchanged R005 A/B/C gates.
+
+Local Swift 6.2.1 Linux Debug/Release/TSan **14/14** each; Apple CI still
+`NOT_VERIFIED` for this new commit. Original model's 10/10 Apple evidence
+stays tied to `415f053b` and must not be reused as new source evidence.
+`Sources/`, `Tests/`, `Checks/` and the original R005 engine files are
+still untouched. No external Laguna review was received (429).

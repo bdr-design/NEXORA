@@ -1,3 +1,25 @@
+# NEXORA red-team correction checkpoint — 2026-10-11
+
+- Repo: `bdr-design/NEXORA` only; isolated branch `experiment/r005-atomic-reschedule-20261011`; source parent
+  `e7b3afcf7f4ee909ccb8a7acf1be70caec4fe478` (which was itself a docs-only successor of the permitted R005
+  candidate `415f053ba6104cf78ee07cdb0afd7908cfb4e92b`).
+- Root `AGENTS.md` and existing continuity reviewed; excluded branches and
+  other game's code/methods untouched.
+- Red-team **reproduced** a cross-world journal-receipt acceptance flaw in
+  the stand-alone Swift 6 micro (pre-fix regression FAILED). Corrected mock
+  receipt lineage and added fail-closed unsupported baseline recovery; read
+  starvation remains a known **negative** product observation.
+- Local Linux Swift 6.2.1 Debug, Release, TSan: 14/14 named tests PASS each.
+- New Apple CI and artifact: PENDING before this publication; old
+  `38140216852` 10/10 result remains bound to old source only.
+- A pass here is not production state/WAL/durability or C evidence.
+  S/H Stage C OPEN, `overheadRatio<=1.10` unchanged, H memory threshold
+  still failed; no R005 hot edit, no main merge, no IPA.
+- Next: inspect Mac Debug/Release/TSan logs/commit identity, adversarial
+  review of idempotency/baseline, then decide a *different* viable
+  visibility protocol before any hot-path integration.
+
+---
 # NEXORA — isolated reschedule protocol micro checkpoint / 2026-10-11
 
 ## Verified Apple CI proof — 2026-10-11

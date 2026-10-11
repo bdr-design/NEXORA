@@ -1,6 +1,6 @@
 # NEXORA R005 — budgeted reschedule transaction micro (independent)
 
-**Status: LOCAL_PROTOCOL_TESTS_PASS / NOT_RUNTIME_INTEGRATED / NO_GO_C100.**
+**Status: RED_TEAM_FIX_LOCAL_14_PASS / NOT_RUNTIME_INTEGRATED / NO_GO_C100.**
 
 This is a self-contained Swift 6 reference-state-machine experiment designed
 **exclusively from NEXORA's permitted R005 source and public Swift guidance**.
@@ -55,3 +55,34 @@ Stage C overhead ratio, p99, production read policy, or iPhone FPS data.
 No alteration to the 24 tracked R005 hot source files or 42 pinned proof inputs
 is authorized by a passing micro. No integration until independent scrutiny
 and full A/B/TSan/K/C gates, with unchanged thresholds and owner approval.
+
+## Red-team follow-up / 11 October 2026 — before Apple verification
+
+A new local regression proved that a foreign committed world with the **same
+asset count** could reuse a receipt from another journal with a matching request
+ID: the original mock accepted it because it checked only request equality and
+`visiblePending`, not the committed state. The single red-team test
+**FAILED** on the previously published Swift source as expected.
+
+The independent model now records an incremental 64-bit *noncryptographic*
+fingerprint of staged rows and binds this marker to the mock receipt.
+An idempotent requery must match the locally published fingerprint and the
+journal's marker. The model also requires a caller-supplied expected initial
+world view before replay; recovery from a nonempty initial state that has
+no independent durable base is **rejected** rather than silently replaced by
+a fresh empty world. The caller-supplied view is NOT a persisted authority,
+and FNV-64 is NOT a cryptographic/collision-resistant state root.
+
+Four added named tests cover cross-world receipt substitution, nonempty-base
+fail-closed behavior, wrong-base rejection, and prolonged blocking of regular
+reads. The last is a **negative viability observation**: budgeted staging
+still blocks all business reads during the transaction, unacceptable for
+a playable long-running million-asset simulation without a new visibility
+protocol. None of this proves the actual production scheduler, save,
+durability, crash restore, 1M cadence or UI smoothness.
+
+Linux Swift 6.2.1 local results: Debug **14/14 PASS**, Release **14/14 PASS**,
+TSan **14/14 PASS**; the Linux serial mock TSan result is not proof of real
+concurrency. Apple source-bound CI to be checked separately. No imported
+implementation or method from the earlier game; only NEXORA's source and the
+owner's product lessons informed the test. All original R005 C failures remain.
