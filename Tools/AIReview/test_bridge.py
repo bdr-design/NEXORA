@@ -72,7 +72,7 @@ class BridgeTests(unittest.TestCase):
         self.assertEqual(body["provider"]["data_collection"], "allow")
 
     def test_public_evidence_mode_is_explicit_and_privacy_scoped(self):
-        prompt = ("PUBLIC NEXORA EVIDENCE ONLY\\n"
+        prompt = ("PUBLIC NEXORA EVIDENCE ONLY\n"
                   "https://github.com/bdr-design/NEXORA/blob/known/Docs/PRODUCT-RULES.md\\n"
                   "Discuss the published Stage C failure, no private source.")
         b.validate_request({"mode": "public_review", "request_id": "public-1", "prompt": prompt,
@@ -87,10 +87,10 @@ class BridgeTests(unittest.TestCase):
         self.assertNotIn("tools", body)
 
     def test_public_evidence_without_source_or_header_is_blocked(self):
-        for prompt in ("PUBLIC NEXORA EVIDENCE ONLY\\nuncited summary",
+        for prompt in ("PUBLIC NEXORA EVIDENCE ONLY\nuncited summary",
                        "My private draft",
-                       "PUBLIC NEXORA EVIDENCE ONLY\\n"
-                       "https://github.com/bdr-design/NEXORA/blob/known/Docs/file\\n" + "x" * 7000):
+                       "PUBLIC NEXORA EVIDENCE ONLY\n"
+                       "https://github.com/bdr-design/NEXORA/blob/known/Docs/file\n" + "x" * 7000):
             with self.subTest(prefix=prompt[:30]), self.assertRaises(b.Blocked):
                 b.validate_request({"mode": "public_review", "request_id": "public-2", "prompt": prompt})
 

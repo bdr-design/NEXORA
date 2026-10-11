@@ -92,7 +92,7 @@ def validate_request(data):
     if data["mode"] == "public_review":
         # Explicitly separate public-evidence advice from private code review.
         # Only public, attributed repository notes may be submitted here.
-        if not prompt.startswith("PUBLIC NEXORA EVIDENCE ONLY\\n"):
+        if not prompt.startswith("PUBLIC NEXORA EVIDENCE ONLY\n"):
             raise Blocked("PUBLIC_EVIDENCE_HEADER_REQUIRED")
         if "https://github.com/bdr-design/NEXORA/blob/" not in prompt:
             raise Blocked("PUBLIC_NEXORA_SOURCE_REQUIRED")
